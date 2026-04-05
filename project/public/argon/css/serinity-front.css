@@ -267,3 +267,37 @@
     padding-top: 1rem;
     padding-bottom: 4rem;
 }
+.serinity-top-cards-wrap {
+    max-width: 82%;
+    margin: 0 auto;
+}
+
+.serinity-top-cards-wrap .card-body.py-4 {
+    padding-top: 1.2rem !important;
+    padding-bottom: 1.2rem !important;
+}
+
+.serinity-top-cards-wrap .card-body.py-5 {
+    padding-top: 1.6rem !important;
+    padding-bottom: 1.6rem !important;
+}
+
+.serinity-top-cards-wrap .icon.icon-shape {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.9rem !important;
+}
+
+.serinity-top-cards-wrap h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.35rem !important;
+}
+
+.serinity-top-cards-wrap h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.35rem !important;
+}
+
+.serinity-top-cards-wrap p {
+    margin-bottom: 0 !important;
+}

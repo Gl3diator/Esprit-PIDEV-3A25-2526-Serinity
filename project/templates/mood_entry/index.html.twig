@@ -5,15 +5,132 @@
 {% block front_subtitle %}Track your mood, emotions, and influences over time.{% endblock %}
 {% block front_summary %}
     <h4 class="text-white mb-2">Mood history</h4>
-    <p class="mb-0">Review your entries grouped by day and keep your emotional patterns visible.</p>
+    <p class="mb-0">Review your entries grouped by day and search through type, emotion, or influence.</p>
 {% endblock %}
 
 {% block front_content %}
-    <div class="row mb-4 align-items-center">
-        <div class="col text-right">
-            <a href="{{ path('app_mood_entry_new') }}" class="btn btn-primary">
-                Create new entry
-            </a>
+    <div class="serinity-top-cards-wrap">
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-info text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-calendar-grid-58"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">This week</h6>
+                        <h2 class="mb-0">{{ weekly_count }}</h2>
+                        <p class="text-sm text-muted mb-0">Mood entries saved</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-primary text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-chart-bar-32"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Average mood</h6>
+                        <h2 class="mb-0">
+                            {{ weekly_average_mood is not null ? weekly_average_mood ~ '/5' : '-' }}
+                        </h2>
+                        <p class="text-sm text-muted mb-0">Based on the last 7 days</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-success text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-tag"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Most used type</h6>
+                        <h2 class="mb-0">{{ most_used_type }}</h2>
+                        <p class="text-sm text-muted mb-0">Most frequent mood entry style this week</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-lg-8 mb-3">
+                <div class="card shadow border-0 card-lift--hover h-100">
+                    <div class="card-header bg-transparent pb-0">
+                        <h6 class="text-uppercase text-muted ls-1 mb-1">Filters</h6>
+                        <h3 class="mb-0">Find mood entries</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="get" action="{{ path('app_mood_entry_index') }}">
+                            <div class="row serinity-filter-row">
+                                <div class="col-lg-6 col-md-12 mb-3">
+                                    <label class="form-control-label">Search</label>
+                                    <div class="input-group input-group-alternative">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="ni ni-zoom-split-in"></i>
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            name="q"
+                                            value="{{ search }}"
+                                            class="form-control"
+                                            placeholder="Search by type, emotion, or influence"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label class="form-control-label">Type</label>
+                                    <select name="type" class="form-control">
+                                        <option value="">All</option>
+                                        <option value="DAY" {{ selected_type == 'DAY' ? 'selected' : '' }}>Day</option>
+                                        <option value="MOMENT" {{ selected_type == 'MOMENT' ? 'selected' : '' }}>Moment</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="serinity-filter-actions">
+                                        <button type="submit" class="btn btn-primary btn-icon serinity-filter-apply">
+                                            <span class="btn-inner--icon"><i class="ni ni-check-bold"></i></span>
+                                            <span class="btn-inner--text">Apply</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if search or selected_type %}
+                                <div class="mt-2">
+                                    <a href="{{ path('app_mood_entry_index') }}" class="btn btn-sm btn-outline-secondary btn-icon">
+                                        <span class="btn-inner--icon"><i class="ni ni-refresh"></i></span>
+                                        <span class="btn-inner--text">Reset filters</span>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-3">
+                <div class="card shadow border-0 card-lift--hover h-100">
+                    <div class="card-body d-flex flex-column justify-content-center text-center py-5">
+                        <div class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow mb-4 mx-auto">
+                            <i class="ni ni-fat-add"></i>
+                        </div>
+                        <h4 class="mb-2">New mood entry</h4>
+                        <p class="text-muted mb-4">
+                            Add a new mood record with emotions and influences.
+                        </p>
+                        <a href="{{ path('app_mood_entry_new') }}" class="btn btn-primary btn-icon mx-auto">
+                            <span class="btn-inner--icon"><i class="ni ni-fat-add"></i></span>
+                            <span class="btn-inner--text">Create new entry</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -83,7 +200,7 @@
     {% else %}
         <div class="card serinity-surface-card shadow-sm">
             <div class="card-body text-center text-muted">
-                No records found.
+                No records found for the selected filters.
             </div>
         </div>
     {% endfor %}
