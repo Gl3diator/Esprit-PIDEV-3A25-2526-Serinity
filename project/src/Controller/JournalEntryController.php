@@ -67,9 +67,43 @@ final class JournalEntryController extends AbstractController
             $groupedEntries[$groupKey]['entries'][] = $journalEntry;
         }
 
+        $allEntries = $entityManager->getRepository(JournalEntry::class)->createQueryBuilder('j')
+            ->andWhere('j.userId = :userId')
+            ->setParameter('userId', self::TEMP_USER_ID)
+            ->orderBy('j.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $distinctDays = $this->extractDistinctJournalDays($allEntries);
+
+        $currentStreak = $this->calculateCurrentStreak($distinctDays);
+        $longestStreak = $this->calculateLongestStreak($distinctDays);
+        $entriesPerDay = [];
+
+foreach ($allEntries as $entry) {
+    $createdAt = $entry->getCreatedAt();
+
+    if (!$createdAt instanceof \DateTimeInterface) {
+        continue;
+    }
+
+    $dayKey = $createdAt->format('Y-m-d');
+
+    if (!isset($entriesPerDay[$dayKey])) {
+        $entriesPerDay[$dayKey] = 0;
+    }
+
+    $entriesPerDay[$dayKey]++;
+}
+
+$maxEntriesOneDay = $entriesPerDay === [] ? 0 : max($entriesPerDay);
+
         return $this->render('journal_entry/index.html.twig', [
             'grouped_entries' => $groupedEntries,
             'search' => $search,
+            'current_streak' => $currentStreak,
+            'longest_streak' => $longestStreak,
+            'max_entries_one_day' => $maxEntriesOneDay,
         ]);
     }
 
@@ -136,5 +170,80 @@ final class JournalEntryController extends AbstractController
         }
 
         return $this->redirectToRoute('app_journal_entry_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @param JournalEntry[] $entries
+     * @return string[]
+     */
+    private function extractDistinctJournalDays(array $entries): array
+    {
+        $days = [];
+
+        foreach ($entries as $entry) {
+            $createdAt = $entry->getCreatedAt();
+
+            if (!$createdAt instanceof \DateTimeInterface) {
+                continue;
+            }
+
+            $days[$createdAt->format('Y-m-d')] = true;
+        }
+
+        $distinctDays = array_keys($days);
+        sort($distinctDays);
+
+        return $distinctDays;
+    }
+
+    /**
+     * @param string[] $distinctDays
+     */
+    private function calculateCurrentStreak(array $distinctDays): int
+    {
+        if ($distinctDays === []) {
+            return 0;
+        }
+
+        $daySet = array_flip($distinctDays);
+        $cursor = new \DateTimeImmutable('today');
+        $streak = 0;
+
+        while (isset($daySet[$cursor->format('Y-m-d')])) {
+            $streak++;
+            $cursor = $cursor->modify('-1 day');
+        }
+
+        return $streak;
+    }
+
+    /**
+     * @param string[] $distinctDays
+     */
+    private function calculateLongestStreak(array $distinctDays): int
+    {
+        if ($distinctDays === []) {
+            return 0;
+        }
+
+        $longest = 1;
+        $current = 1;
+
+        for ($i = 1; $i < count($distinctDays); $i++) {
+            $previousDay = new \DateTimeImmutable($distinctDays[$i - 1]);
+            $currentDay = new \DateTimeImmutable($distinctDays[$i]);
+
+            if ($previousDay->modify('+1 day')->format('Y-m-d') === $currentDay->format('Y-m-d')) {
+                $current++;
+            } else {
+                $current = 1;
+            }
+
+            if ($current > $longest) {
+                $longest = $current;
+            }
+        }
+
+        return $longest;
     }
 }
