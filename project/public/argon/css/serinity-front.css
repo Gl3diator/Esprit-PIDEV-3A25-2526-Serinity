@@ -149,12 +149,7 @@
     padding-left: 1rem;
     padding-right: 1rem;
 }
-.serinity-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-}
+
 
 .serinity-brand-icon {
     width: 42px;
@@ -310,4 +305,40 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+.serinity-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+}
+
+.serinity-brand-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    display: block;
+}
+
+.serinity-admin-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;
+}
+.serinity-landing-logo {
+    width: 200px;
+    object-fit: contain;
+    display: block;
+}
+
+.serinity-landing-footer {
+    background: #2b7a78;
+    color: #ffffff;
+    padding: 1.25rem 0;
+    margin-top: 2rem;
+}
+
+.serinity-landing-footer p {
+    color: #ffffff;
 }
