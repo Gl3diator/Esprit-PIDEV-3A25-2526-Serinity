@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'journal_entry')]
@@ -20,10 +21,30 @@ class JournalEntry
     private string $userId;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $title;
+    #[Assert\NotBlank(message: 'Title is required.')]
+    #[Assert\Length(
+    min: 5,
+    max: 255,
+    minMessage: 'Title must contain at least {{ limit }} characters.',
+    maxMessage: 'Title cannot exceed {{ limit }} characters.'
+    )]
+    #[Assert\Regex(
+    pattern: '/.*[A-Za-zÀ-ÿ].*/u',
+    message: 'Title must contain at least one letter.'
+    )]
+    #[Assert\Regex(
+    pattern: "/^[A-Za-zÀ-ÿ0-9\\s'.,!?:()\\-]+$/u",
+    message: 'Title contains invalid characters.'
+    )]
+    private string $title = '';
 
     #[ORM\Column(type: 'text')]
-    private string $content;
+    #[Assert\NotBlank(message: 'Content is required.')]
+    #[Assert\Length(
+    min: 10,
+    minMessage: 'Content must contain at least {{ limit }} characters.'
+    )]
+    private string $content = '';
 
     #[ORM\Column(type: 'datetime', name: 'created_at')]
     private \DateTimeInterface $createdAt;
@@ -62,9 +83,9 @@ class JournalEntry
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(?string $title): static
     {
-        $this->title = $title;
+        $this->title = trim((string) $title);
 
         return $this;
     }
@@ -74,9 +95,9 @@ class JournalEntry
         return $this->content;
     }
 
-    public function setContent(string $content): static
+    public function setContent(?string $content): static
     {
-        $this->content = $content;
+        $this->content = trim((string) $content);
 
         return $this;
     }
