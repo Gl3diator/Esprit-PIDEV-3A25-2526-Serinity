@@ -1,11 +1,34 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/base_front.html.twig' %}
 
-{% block title %}New JournalEntry{% endblock %}
+{% block title %}New journal entry{% endblock %}
+{% block front_title %}New journal entry{% endblock %}
+{% block front_subtitle %}Write a new personal reflection.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">New journal entry</h4>
+    <p class="mb-0">Capture what happened and how you feel about it.</p>
+{% endblock %}
 
-{% block body %}
-    <h1>Create new JournalEntry</h1>
+{% block front_content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-header border-0 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Create new journal entry</h3>
+                        </div>
+                        <div class="col text-right">
+                            <a href="{{ path('app_journal_entry_index') }}" class="btn btn-sm btn-outline-primary">
+                                Back to list
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-    {{ include('journal_entry/_form.html.twig') }}
-
-    <a href="{{ path('app_journal_entry_index') }}">back to list</a>
+                <div class="card-body p-4">
+                    {{ include('journal_entry/_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

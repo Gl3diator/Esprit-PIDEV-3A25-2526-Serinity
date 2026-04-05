@@ -1,59 +1,90 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/base_front.html.twig' %}
 
-{% block title %}MoodEntry index{% endblock %}
+{% block title %}Mood entries{% endblock %}
+{% block front_title %}Mood entries{% endblock %}
+{% block front_subtitle %}Track your mood, emotions, and influences over time.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Mood history</h4>
+    <p class="mb-0">Review your entries grouped by day and keep your emotional patterns visible.</p>
+{% endblock %}
 
-{% block body %}
-    <h1>MoodEntry index</h1>
+{% block front_content %}
+    <div class="row mb-4 align-items-center">
+        <div class="col text-right">
+            <a href="{{ path('app_mood_entry_new') }}" class="btn btn-primary">
+                Create new entry
+            </a>
+        </div>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>UserId</th>
-                <th>EntryDate</th>
-                <th>MomentType</th>
-                <th>MoodLevel</th>
-                <th>Emotions</th>
-                <th>Influences</th>
-                <th>UpdatedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for mood_entry in mood_entries %}
-            <tr>
-                <td>{{ mood_entry.id }}</td>
-                <td>{{ mood_entry.userId }}</td>
-                <td>{{ mood_entry.entryDate ? mood_entry.entryDate|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ mood_entry.momentType }}</td>
-                <td>{{ mood_entry.moodLevel }}</td>
-                <td>
-                    {% for emotion in mood_entry.emotions %}
-                        {{ emotion.name }}{% if not loop.last %}, {% endif %}
-                    {% else %}
-                        -
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for influence in mood_entry.influences %}
-                        {{ influence.name }}{% if not loop.last %}, {% endif %}
-                    {% else %}
-                        -
-                    {% endfor %}
-                </td>
-                <td>{{ mood_entry.updatedAt ? mood_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_mood_entry_show', {'id': mood_entry.id}) }}">show</a>
-                    <a href="{{ path('app_mood_entry_edit', {'id': mood_entry.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="9">no records found</td>
-            </tr>
+    {% for group in grouped_entries %}
+        <div class="mb-3 mt-4">
+            <h3 class="mb-0">{{ group.label }}</h3>
+        </div>
+
+        {% for mood_entry in group.entries %}
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row align-items-start">
+                        <div class="col-md-9">
+                            <div class="d-flex flex-wrap align-items-center mb-3">
+                                <h3 class="mb-0 mr-3">
+                                    {% if mood_entry.momentType == 'DAY' %}
+                                        Day
+                                    {% else %}
+                                        Moment
+                                    {% endif %}
+                                </h3>
+
+                                <span class="badge badge-pill badge-info mr-2 serinity-badge-pill">
+                                    {{ mood_entry.momentType }}
+                                </span>
+
+                                <span class="badge badge-pill badge-primary serinity-badge-pill">
+                                    {{ mood_entry.moodLevel }}/5
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <h5 class="text-muted serinity-section-title">Emotions</h5>
+                                {% for emotion in mood_entry.emotions %}
+                                    <span class="badge badge-secondary mr-1 mb-1 serinity-card-tag">
+                                        {{ emotion.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-0">
+                                <h5 class="text-muted serinity-section-title">Influences</h5>
+                                {% for influence in mood_entry.influences %}
+                                    <span class="badge badge-default mr-1 mb-1 serinity-card-tag">
+                                        {{ influence.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 text-md-right mt-3 mt-md-0">
+                            <a href="{{ path('app_mood_entry_show', {'id': mood_entry.id}) }}" class="btn btn-sm btn-info mb-2">
+                                Show
+                            </a>
+                            <a href="{{ path('app_mood_entry_edit', {'id': mood_entry.id}) }}" class="btn btn-sm btn-secondary mb-2">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_mood_entry_new') }}">Create new</a>
+    {% else %}
+        <div class="card serinity-surface-card shadow-sm">
+            <div class="card-body text-center text-muted">
+                No records found.
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}

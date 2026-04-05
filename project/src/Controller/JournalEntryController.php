@@ -16,16 +16,51 @@ final class JournalEntryController extends AbstractController
     private const TEMP_USER_ID = '6affa2df-dda9-442d-99ee-d2a3c1e78c64';
 
     #[Route(name: 'app_journal_entry_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
-        $journalEntries = $entityManager
-            ->getRepository(JournalEntry::class)
-            ->findAll();
+public function index(EntityManagerInterface $entityManager): Response
+{
+    $journalEntries = $entityManager
+        ->getRepository(JournalEntry::class)
+        ->findBy([], ['createdAt' => 'DESC']);
 
-        return $this->render('journal_entry/index.html.twig', [
-            'journal_entries' => $journalEntries,
-        ]);
+    $today = new \DateTimeImmutable('today');
+    $yesterday = $today->modify('-1 day');
+
+    $groupedEntries = [];
+
+    foreach ($journalEntries as $journalEntry) {
+        $createdAt = $journalEntry->getCreatedAt();
+
+        if (!$createdAt instanceof \DateTimeInterface) {
+            continue;
+        }
+
+        $entryDay = \DateTimeImmutable::createFromInterface($createdAt)->setTime(0, 0);
+
+        if ($entryDay == $today) {
+            $groupKey = 'today';
+            $groupLabel = 'Today';
+        } elseif ($entryDay == $yesterday) {
+            $groupKey = 'yesterday';
+            $groupLabel = 'Yesterday';
+        } else {
+            $groupKey = $entryDay->format('Y-m-d');
+            $groupLabel = $entryDay->format('Y-m-d');
+        }
+
+        if (!isset($groupedEntries[$groupKey])) {
+            $groupedEntries[$groupKey] = [
+                'label' => $groupLabel,
+                'entries' => [],
+            ];
+        }
+
+        $groupedEntries[$groupKey]['entries'][] = $journalEntry;
     }
+
+    return $this->render('journal_entry/index.html.twig', [
+        'grouped_entries' => $groupedEntries,
+    ]);
+}
 
     #[Route('/new', name: 'app_journal_entry_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response

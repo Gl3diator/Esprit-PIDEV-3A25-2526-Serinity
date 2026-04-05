@@ -1,35 +1,55 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Emotion index{% endblock %}
+{% block title %}Emotion management{% endblock %}
 
 {% block admin_content %}
-    <h1>Emotion index</h1>
+    <div class="card shadow">
+        <div class="card-header border-0">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">Emotion management</h3>
+                    <p class="text-sm text-muted mb-0 mt-1">
+                        Manage the emotion list used in mood entries.
+                    </p>
+                </div>
+                <div class="col text-right">
+                    <a href="{{ path('app_admin_emotion_new') }}" class="btn btn-sm btn-primary">
+                        Create new
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for emotion in emotions %}
-            <tr>
-                <td>{{ emotion.id }}</td>
-                <td>{{ emotion.name }}</td>
-                <td>
-                    <a href="{{ path('app_admin_emotion_show', {'id': emotion.id}) }}">show</a>
-                    <a href="{{ path('app_admin_emotion_edit', {'id': emotion.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_admin_emotion_new') }}">Create new</a>
+        <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col" class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for emotion in emotions %}
+                    <tr>
+                        <td>{{ emotion.id }}</td>
+                        <td>{{ emotion.name }}</td>
+                        <td class="text-right">
+                            <a href="{{ path('app_admin_emotion_show', {'id': emotion.id}) }}" class="btn btn-sm btn-info">
+                                Show
+                            </a>
+                            <a href="{{ path('app_admin_emotion_edit', {'id': emotion.id}) }}" class="btn btn-sm btn-secondary">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No records found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

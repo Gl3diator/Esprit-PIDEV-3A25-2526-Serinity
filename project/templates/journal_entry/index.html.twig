@@ -1,49 +1,58 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/base_front.html.twig' %}
 
-{% block title %}JournalEntry index{% endblock %}
+{% block title %}Journal entries{% endblock %}
+{% block front_title %}Journal entries{% endblock %}
+{% block front_subtitle %}Write and review your personal reflections.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Personal journal</h4>
+    <p class="mb-0">Capture thoughts, events, and feelings in a calmer space.</p>
+{% endblock %}
 
-{% block body %}
-    <h1>JournalEntry index</h1>
+{% block front_content %}
+    <div class="row mb-4 align-items-center">
+        <div class="col text-right">
+            <a href="{{ path('app_journal_entry_new') }}" class="btn btn-primary">
+                Create new entry
+            </a>
+        </div>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>UserId</th>
-                <th>Title</th>
-                <th>Content</th>
-                <th>CreatedAt</th>
-                <th>UpdatedAt</th>
-                <th>AiTags</th>
-                <th>AiModelVersion</th>
-                <th>AiGeneratedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for journal_entry in journal_entries %}
-            <tr>
-                <td>{{ journal_entry.id }}</td>
-                <td>{{ journal_entry.userId }}</td>
-                <td>{{ journal_entry.title }}</td>
-                <td>{{ journal_entry.content }}</td>
-                <td>{{ journal_entry.createdAt ? journal_entry.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ journal_entry.updatedAt ? journal_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ journal_entry.aiTags }}</td>
-                <td>{{ journal_entry.aiModelVersion }}</td>
-                <td>{{ journal_entry.aiGeneratedAt ? journal_entry.aiGeneratedAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_journal_entry_show', {'id': journal_entry.id}) }}">show</a>
-                    <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}">edit</a>
-                </td>
-            </tr>
+    {% for group in grouped_entries %}
+        <div class="mb-3 mt-4">
+            <h3 class="mb-0">{{ group.label }}</h3>
+        </div>
+
+        {% for journal_entry in group.entries %}
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="row align-items-start">
+                        <div class="col-md-9">
+                            <h3 class="mb-2">{{ journal_entry.title }}</h3>
+
+                            <p class="text-muted mb-0">
+                                {{ journal_entry.content|length > 220
+                                    ? journal_entry.content|slice(0, 220) ~ '...'
+                                    : journal_entry.content }}
+                            </p>
+                        </div>
+
+                        <div class="col-md-3 text-md-right mt-3 mt-md-0">
+                            <a href="{{ path('app_journal_entry_show', {'id': journal_entry.id}) }}" class="btn btn-sm btn-info mb-2">
+                                Show
+                            </a>
+                            <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}" class="btn btn-sm btn-secondary mb-2">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <tr>
-                <td colspan="10">no records found</td>
-            </tr>
+            <div class="card serinity-surface-card shadow-sm">
+                <div class="card-body text-center text-muted">
+                    No journal entries found.
+                </div>
+            </div>
         {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_journal_entry_new') }}">Create new</a>
+    {% endfor %}
 {% endblock %}
