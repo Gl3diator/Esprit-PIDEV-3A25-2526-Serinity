@@ -2,57 +2,14 @@
 
 {% block title %}Mood entries{% endblock %}
 {% block front_title %}Mood entries{% endblock %}
-{% block front_subtitle %}Track your mood, emotions, and influences over time.{% endblock %}
+{% block front_subtitle %}Search, create, and review your mood entry history.{% endblock %}
 {% block front_summary %}
     <h4 class="text-white mb-2">Mood history</h4>
-    <p class="mb-0">Review your entries grouped by day and search through type, emotion, or influence.</p>
+    <p class="mb-0">Use filters, add a new entry, and browse grouped mood history.</p>
 {% endblock %}
 
 {% block front_content %}
     <div class="serinity-top-cards-wrap">
-        <div class="row mb-4">
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="card shadow-sm border-0 card-lift--hover h-100">
-                    <div class="card-body py-4">
-                        <div class="icon icon-shape bg-info text-white rounded-circle shadow mb-3">
-                            <i class="ni ni-calendar-grid-58"></i>
-                        </div>
-                        <h6 class="text-uppercase text-muted mb-1">This week</h6>
-                        <h2 class="mb-0">{{ weekly_count }}</h2>
-                        <p class="text-sm text-muted mb-0">Mood entries saved</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="card shadow-sm border-0 card-lift--hover h-100">
-                    <div class="card-body py-4">
-                        <div class="icon icon-shape bg-primary text-white rounded-circle shadow mb-3">
-                            <i class="ni ni-chart-bar-32"></i>
-                        </div>
-                        <h6 class="text-uppercase text-muted mb-1">Average mood</h6>
-                        <h2 class="mb-0">
-                            {{ weekly_average_mood is not null ? weekly_average_mood ~ '/5' : '-' }}
-                        </h2>
-                        <p class="text-sm text-muted mb-0">Based on the last 7 days</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-12 mb-3">
-                <div class="card shadow-sm border-0 card-lift--hover h-100">
-                    <div class="card-body py-4">
-                        <div class="icon icon-shape bg-success text-white rounded-circle shadow mb-3">
-                            <i class="ni ni-tag"></i>
-                        </div>
-                        <h6 class="text-uppercase text-muted mb-1">Most used type</h6>
-                        <h2 class="mb-0">{{ most_used_type }}</h2>
-                        <p class="text-sm text-muted mb-0">Most frequent mood entry style this week</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="row mb-5">
             <div class="col-lg-8 mb-3">
                 <div class="card shadow border-0 card-lift--hover h-100">
@@ -64,42 +21,42 @@
                     <div class="card-body">
                         <form method="get" action="{{ path('app_mood_entry_index') }}">
                             <div class="row serinity-filter-row">
-                                <div class="col-lg-6 col-md-12 mb-3">
-                                    <label class="form-control-label">Search</label>
-                                    <div class="input-group input-group-alternative">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="ni ni-zoom-split-in"></i>
-                                            </span>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="q"
-                                            value="{{ search }}"
-                                            class="form-control"
-                                            placeholder="Search by type, emotion, or influence"
-                                        >
-                                    </div>
-                                </div>
+    <div class="col-lg-8 col-md-12 mb-3">
+        <label class="form-control-label">Search</label>
+        <div class="input-group input-group-alternative">
+            <div class="input-group-prepend">
+                <span class="input-group-text">
+                    <i class="ni ni-zoom-split-in"></i>
+                </span>
+            </div>
+            <input
+                type="text"
+                name="q"
+                value="{{ search }}"
+                class="form-control"
+                placeholder="Search by type, emotion, or influence"
+            >
+        </div>
+    </div>
 
-                                <div class="col-lg-3 col-md-6 mb-3">
-                                    <label class="form-control-label">Type</label>
-                                    <select name="type" class="form-control">
-                                        <option value="">All</option>
-                                        <option value="DAY" {{ selected_type == 'DAY' ? 'selected' : '' }}>Day</option>
-                                        <option value="MOMENT" {{ selected_type == 'MOMENT' ? 'selected' : '' }}>Moment</option>
-                                    </select>
-                                </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <label class="form-control-label">Type</label>
+        <select name="type" class="form-control">
+            <option value="">All</option>
+            <option value="DAY" {{ selected_type == 'DAY' ? 'selected' : '' }}>Day</option>
+            <option value="MOMENT" {{ selected_type == 'MOMENT' ? 'selected' : '' }}>Moment</option>
+        </select>
+    </div>
+</div>
 
-                                <div class="col-lg-3 col-md-6 mb-3">
-                                    <div class="serinity-filter-actions">
-                                        <button type="submit" class="btn btn-primary btn-icon serinity-filter-apply">
-                                            <span class="btn-inner--icon"><i class="ni ni-check-bold"></i></span>
-                                            <span class="btn-inner--text">Apply</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+<div class="row serinity-filter-submit-row">
+    <div class="col">
+        <button type="submit" class="btn btn-primary btn-icon serinity-filter-submit-btn">
+            <span class="btn-inner--icon"><i class="ni ni-check-bold"></i></span>
+            <span class="btn-inner--text">Apply</span>
+        </button>
+    </div>
+</div>
 
                             {% if search or selected_type %}
                                 <div class="mt-2">
