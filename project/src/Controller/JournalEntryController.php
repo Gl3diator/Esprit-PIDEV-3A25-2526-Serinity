@@ -16,51 +16,62 @@ final class JournalEntryController extends AbstractController
     private const TEMP_USER_ID = '6affa2df-dda9-442d-99ee-d2a3c1e78c64';
 
     #[Route(name: 'app_journal_entry_index', methods: ['GET'])]
-public function index(EntityManagerInterface $entityManager): Response
-{
-    $journalEntries = $entityManager
-        ->getRepository(JournalEntry::class)
-        ->findBy([], ['createdAt' => 'DESC']);
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $search = trim((string) $request->query->get('q', ''));
 
-    $today = new \DateTimeImmutable('today');
-    $yesterday = $today->modify('-1 day');
+        $qb = $entityManager->getRepository(JournalEntry::class)->createQueryBuilder('j')
+            ->andWhere('j.userId = :userId')
+            ->setParameter('userId', self::TEMP_USER_ID)
+            ->orderBy('j.createdAt', 'DESC');
 
-    $groupedEntries = [];
-
-    foreach ($journalEntries as $journalEntry) {
-        $createdAt = $journalEntry->getCreatedAt();
-
-        if (!$createdAt instanceof \DateTimeInterface) {
-            continue;
+        if ($search !== '') {
+            $qb->andWhere('LOWER(j.title) LIKE :search OR LOWER(j.content) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
         }
 
-        $entryDay = \DateTimeImmutable::createFromInterface($createdAt)->setTime(0, 0);
+        $journalEntries = $qb->getQuery()->getResult();
 
-        if ($entryDay == $today) {
-            $groupKey = 'today';
-            $groupLabel = 'Today';
-        } elseif ($entryDay == $yesterday) {
-            $groupKey = 'yesterday';
-            $groupLabel = 'Yesterday';
-        } else {
-            $groupKey = $entryDay->format('Y-m-d');
-            $groupLabel = $entryDay->format('Y-m-d');
+        $today = new \DateTimeImmutable('today');
+        $yesterday = $today->modify('-1 day');
+
+        $groupedEntries = [];
+
+        foreach ($journalEntries as $journalEntry) {
+            $createdAt = $journalEntry->getCreatedAt();
+
+            if (!$createdAt instanceof \DateTimeInterface) {
+                continue;
+            }
+
+            $entryDay = \DateTimeImmutable::createFromInterface($createdAt)->setTime(0, 0);
+
+            if ($entryDay == $today) {
+                $groupKey = 'today';
+                $groupLabel = 'Today';
+            } elseif ($entryDay == $yesterday) {
+                $groupKey = 'yesterday';
+                $groupLabel = 'Yesterday';
+            } else {
+                $groupKey = $entryDay->format('Y-m-d');
+                $groupLabel = $entryDay->format('Y-m-d');
+            }
+
+            if (!isset($groupedEntries[$groupKey])) {
+                $groupedEntries[$groupKey] = [
+                    'label' => $groupLabel,
+                    'entries' => [],
+                ];
+            }
+
+            $groupedEntries[$groupKey]['entries'][] = $journalEntry;
         }
 
-        if (!isset($groupedEntries[$groupKey])) {
-            $groupedEntries[$groupKey] = [
-                'label' => $groupLabel,
-                'entries' => [],
-            ];
-        }
-
-        $groupedEntries[$groupKey]['entries'][] = $journalEntry;
+        return $this->render('journal_entry/index.html.twig', [
+            'grouped_entries' => $groupedEntries,
+            'search' => $search,
+        ]);
     }
-
-    return $this->render('journal_entry/index.html.twig', [
-        'grouped_entries' => $groupedEntries,
-    ]);
-}
 
     #[Route('/new', name: 'app_journal_entry_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
