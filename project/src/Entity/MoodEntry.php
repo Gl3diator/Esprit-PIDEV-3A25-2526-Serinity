@@ -7,6 +7,8 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'mood_entry')]
@@ -33,18 +35,31 @@ class MoodEntry
     #[ORM\Column(type: 'datetime', name: 'updated_at')]
     private \DateTimeInterface $updatedAt;
 
-    /**
-     * @var Collection<int, Emotion>
-     */
+   /**
+    * @var Collection<int, Emotion>
+    */
+   #[Assert\Count(
+    min: 1,
+    max: 5,
+    minMessage: 'Select at least one emotion.',
+    maxMessage: 'You can select at most {{ limit }} emotions.'
+   )]
     #[ORM\ManyToMany(targetEntity: Emotion::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_emotion')]
     #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id')]
     #[ORM\InverseJoinColumn(name: 'emotion_id', referencedColumnName: 'id')]
     private Collection $emotions;
-
+    
+    
     /**
-     * @var Collection<int, Influence>
-     */
+    * @var Collection<int, Influence>
+    */
+    #[Assert\Count(
+    min: 1,
+    max: 5,
+    minMessage: 'Select at least one influence.',
+    maxMessage: 'You can select at most {{ limit }} influences.'
+    )]
     #[ORM\ManyToMany(targetEntity: Influence::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_influence')]
     #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id')]
