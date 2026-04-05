@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit MoodEntry{% endblock %}
+
+{% block body %}
+    <h1>Edit MoodEntry</h1>
+
+    {{ include('mood_entry/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_mood_entry_index') }}">back to list</a>
+
+    {{ include('mood_entry/_delete_form.html.twig') }}
+{% endblock %}

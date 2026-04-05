@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MoodEntry{% endblock %}
+
+{% block body %}
+    <h1>MoodEntry</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ mood_entry.id }}</td>
+            </tr>
+            <tr>
+                <th>UserId</th>
+                <td>{{ mood_entry.userId }}</td>
+            </tr>
+            <tr>
+                <th>EntryDate</th>
+                <td>{{ mood_entry.entryDate ? mood_entry.entryDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>MomentType</th>
+                <td>{{ mood_entry.momentType }}</td>
+            </tr>
+            <tr>
+                <th>MoodLevel</th>
+                <td>{{ mood_entry.moodLevel }}</td>
+            </tr>
+            <tr>
+                <th>Emotions</th>
+                <td>
+                    {% for emotion in mood_entry.emotions %}
+                        {{ emotion.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        -
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>Influences</th>
+                <td>
+                    {% for influence in mood_entry.influences %}
+                        {{ influence.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        -
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ mood_entry.updatedAt ? mood_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_mood_entry_index') }}">back to list</a>
+    <a href="{{ path('app_mood_entry_edit', {'id': mood_entry.id}) }}">edit</a>
+
+    {{ include('mood_entry/_delete_form.html.twig') }}
+{% endblock %}

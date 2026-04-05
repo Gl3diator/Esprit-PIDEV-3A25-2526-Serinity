@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MoodEntry index{% endblock %}
+
+{% block body %}
+    <h1>MoodEntry index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>UserId</th>
+                <th>EntryDate</th>
+                <th>MomentType</th>
+                <th>MoodLevel</th>
+                <th>Emotions</th>
+                <th>Influences</th>
+                <th>UpdatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for mood_entry in mood_entries %}
+            <tr>
+                <td>{{ mood_entry.id }}</td>
+                <td>{{ mood_entry.userId }}</td>
+                <td>{{ mood_entry.entryDate ? mood_entry.entryDate|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ mood_entry.momentType }}</td>
+                <td>{{ mood_entry.moodLevel }}</td>
+                <td>
+                    {% for emotion in mood_entry.emotions %}
+                        {{ emotion.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        -
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for influence in mood_entry.influences %}
+                        {{ influence.name }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        -
+                    {% endfor %}
+                </td>
+                <td>{{ mood_entry.updatedAt ? mood_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_mood_entry_show', {'id': mood_entry.id}) }}">show</a>
+                    <a href="{{ path('app_mood_entry_edit', {'id': mood_entry.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_mood_entry_new') }}">Create new</a>
+{% endblock %}
