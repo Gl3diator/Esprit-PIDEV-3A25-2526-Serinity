@@ -268,7 +268,7 @@
     padding-bottom: 4rem;
 }
 .serinity-top-cards-wrap {
-    max-width: 82%;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -300,4 +300,14 @@
 
 .serinity-top-cards-wrap p {
     margin-bottom: 0 !important;
+}
+.serinity-filter-submit-row {
+    margin-top: 0.5rem;
+}
+
+.serinity-filter-submit-btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }

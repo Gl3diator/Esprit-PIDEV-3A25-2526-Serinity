@@ -82,6 +82,16 @@ final class MoodEntryController extends AbstractController
             $groupedEntries[$groupKey]['entries'][] = $moodEntry;
         }
 
+        return $this->render('mood_entry/index.html.twig', [
+            'grouped_entries' => $groupedEntries,
+            'search' => $search,
+            'selected_type' => $selectedType,
+        ]);
+    }
+
+    #[Route('/summary', name: 'app_mood_entry_summary', methods: ['GET'])]
+    public function summary(EntityManagerInterface $entityManager): Response
+    {
         $weekStart = (new \DateTimeImmutable('today'))->modify('-6 days')->setTime(0, 0, 0);
         $weekEnd = (new \DateTimeImmutable('today'))->setTime(23, 59, 59);
 
@@ -119,13 +129,52 @@ final class MoodEntryController extends AbstractController
             $mostUsedType = $typeCounts['DAY'] >= $typeCounts['MOMENT'] ? 'DAY' : 'MOMENT';
         }
 
-        return $this->render('mood_entry/index.html.twig', [
-            'grouped_entries' => $groupedEntries,
-            'search' => $search,
-            'selected_type' => $selectedType,
+        $topEmotionRow = $entityManager->getRepository(MoodEntry::class)
+            ->createQueryBuilder('m')
+            ->select('e.name AS name, COUNT(e.id) AS usageCount')
+            ->join('m.emotions', 'e')
+            ->andWhere('m.userId = :userId')
+            ->andWhere('m.entryDate BETWEEN :weekStart AND :weekEnd')
+            ->setParameter('userId', self::TEMP_USER_ID)
+            ->setParameter('weekStart', $weekStart)
+            ->setParameter('weekEnd', $weekEnd)
+            ->groupBy('e.id, e.name')
+            ->orderBy('usageCount', 'DESC')
+            ->addOrderBy('e.name', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getArrayResult();
+
+        $topInfluenceRow = $entityManager->getRepository(MoodEntry::class)
+            ->createQueryBuilder('m')
+            ->select('i.name AS name, COUNT(i.id) AS usageCount')
+            ->join('m.influences', 'i')
+            ->andWhere('m.userId = :userId')
+            ->andWhere('m.entryDate BETWEEN :weekStart AND :weekEnd')
+            ->setParameter('userId', self::TEMP_USER_ID)
+            ->setParameter('weekStart', $weekStart)
+            ->setParameter('weekEnd', $weekEnd)
+            ->groupBy('i.id, i.name')
+            ->orderBy('usageCount', 'DESC')
+            ->addOrderBy('i.name', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getArrayResult();
+
+        $topEmotionName = $topEmotionRow[0]['name'] ?? 'No data';
+        $topEmotionCount = isset($topEmotionRow[0]['usageCount']) ? (int) $topEmotionRow[0]['usageCount'] : 0;
+
+        $topInfluenceName = $topInfluenceRow[0]['name'] ?? 'No data';
+        $topInfluenceCount = isset($topInfluenceRow[0]['usageCount']) ? (int) $topInfluenceRow[0]['usageCount'] : 0;
+
+        return $this->render('mood_entry/summary.html.twig', [
             'weekly_count' => $weeklyCount,
             'weekly_average_mood' => $weeklyAverageMood,
             'most_used_type' => $mostUsedType,
+            'top_emotion_name' => $topEmotionName,
+            'top_emotion_count' => $topEmotionCount,
+            'top_influence_name' => $topInfluenceName,
+            'top_influence_count' => $topInfluenceCount,
         ]);
     }
 

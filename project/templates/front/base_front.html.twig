@@ -21,21 +21,28 @@
 
                 <div class="collapse navbar-collapse" id="frontNavbar">
                     <ul class="navbar-nav ml-4">
-                        <li class="nav-item">
-                            <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_mood_entry_' %}active{% endif %}"
-                               href="{{ path('app_mood_entry_index') }}">
-                                <i class="ni ni-satisfied mr-2"></i>
-                                Mood
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_journal_entry_' %}active{% endif %}"
-                               href="{{ path('app_journal_entry_index') }}">
-                                <i class="ni ni-single-copy-04 mr-2"></i>
-                                Journal
-                            </a>
-                        </li>
-                    </ul>
+    <li class="nav-item">
+        <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_mood_entry_' and currentRoute != 'app_mood_entry_summary' %}active{% endif %}"
+           href="{{ path('app_mood_entry_index') }}">
+            <i class="ni ni-satisfied mr-2"></i>
+            Mood entries
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link serinity-nav-link {% if currentRoute == 'app_mood_entry_summary' %}active{% endif %}"
+           href="{{ path('app_mood_entry_summary') }}">
+            <i class="ni ni-chart-bar-32 mr-2"></i>
+            Mood summary
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_journal_entry_' %}active{% endif %}"
+           href="{{ path('app_journal_entry_index') }}">
+            <i class="ni ni-single-copy-04 mr-2"></i>
+            Journal
+        </a>
+    </li>
+</ul>
 
                     <ul class="navbar-nav align-items-lg-center ml-lg-auto">
                        <li class="nav-item d-none d-lg-block">
