@@ -1,0 +1,47 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="mb-3">
+        {{ form_label(form.entryDate) }}
+        {{ form_widget(form.entryDate, {'attr': {'class': 'form-control'}}) }}
+        <div class="text-danger">
+            {{ form_errors(form.entryDate) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.momentType) }}
+        {{ form_widget(form.momentType, {'attr': {'class': 'form-control'}}) }}
+        <div class="text-danger">
+            {{ form_errors(form.momentType) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.moodLevel) }}
+        {{ form_widget(form.moodLevel, {'attr': {'class': 'form-control'}}) }}
+        <div class="text-danger">
+            {{ form_errors(form.moodLevel) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.emotions) }}
+        {{ form_widget(form.emotions) }}
+        <div class="text-danger">
+            {{ form_errors(form.emotions) }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.influences) }}
+        {{ form_widget(form.influences) }}
+        <div class="text-danger">
+            {{ form_errors(form.influences) }}
+        </div>
+    </div>
+
+    <button class="btn btn-primary">
+        {{ button_label|default('Save') }}
+    </button>
+
+{{ form_end(form) }}
