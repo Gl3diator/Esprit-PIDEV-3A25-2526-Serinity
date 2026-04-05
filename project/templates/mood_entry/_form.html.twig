@@ -1,51 +1,10 @@
 {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
-<style>
-    .choice-pill-input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .choice-pill-item {
-        display: inline-block;
-        margin: 0 0.5rem 0.5rem 0;
-    }
-
-    .choice-pill-label {
-        display: inline-block;
-        padding: 0.6rem 1rem;
-        border-radius: 999px;
-        border: 1px solid #dfe6e9;
-        background: #f8f9fe;
-        color: #525f7f;
-        font-size: 0.88rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        margin-bottom: 0;
-    }
-
-    .choice-pill-label:hover {
-        border-color: #5e72e4;
-        color: #5e72e4;
-        transform: translateY(-1px);
-    }
-
-    .choice-pill-input:checked + .choice-pill-label {
-        background: #5e72e4;
-        border-color: #5e72e4;
-        color: #fff;
-        box-shadow: 0 6px 14px rgba(94, 114, 228, 0.22);
-    }
-
-    .choice-group-box {
-        border: 1px solid #e9ecef;
-        border-radius: 1rem;
-        padding: 1rem;
-        background: #ffffff;
-    }
-</style>
+    {% if form_errors(form) %}
+        <div class="alert alert-danger">
+            {{ form_errors(form) }}
+        </div>
+    {% endif %}
 
     <div class="form-group">
         {{ form_label(form.momentType, 'Type', {'label_attr': {'class': 'form-control-label'}}) }}
@@ -110,7 +69,7 @@
     </div>
 
     <div class="mt-4">
-        <button class="btn btn-primary ">
+        <button class="btn btn-primary">
             {{ button_label|default('Save') }}
         </button>
     </div>
