@@ -1,15 +1,20 @@
 {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
-    <div class="mb-3">
-        {{ form_label(form.name) }}
+    <div class="form-group">
+        {{ form_label(form.name, 'Influence name', {'label_attr': {'class': 'form-control-label'}}) }}
         {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-        <div class="text-danger">
-            {{ form_errors(form.name) }}
-        </div>
+
+        {% if form_errors(form.name) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.name) }}
+            </div>
+        {% endif %}
     </div>
 
-    <button class="btn btn-primary">
-        {{ button_label|default('Save') }}
-    </button>
+    <div class="mt-4">
+        <button class="btn btn-primary">
+            {{ button_label|default('Save') }}
+        </button>
+    </div>
 
 {{ form_end(form) }}

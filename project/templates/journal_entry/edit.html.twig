@@ -1,13 +1,40 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/base_front.html.twig' %}
 
-{% block title %}Edit JournalEntry{% endblock %}
+{% block title %}Edit journal entry{% endblock %}
+{% block front_title %}Edit journal entry{% endblock %}
+{% block front_subtitle %}Update your text and title if needed.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Edit journal entry</h4>
+    <p class="mb-0">Refine your reflection while keeping the same structure.</p>
+{% endblock %}
 
-{% block body %}
-    <h1>Edit JournalEntry</h1>
+{% block front_content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-header border-0 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Edit journal entry</h3>
+                        </div>
+                        <div class="col text-right">
+                            <a href="{{ path('app_journal_entry_index') }}" class="btn btn-sm btn-outline-primary">
+                                Back to list
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-    {{ include('journal_entry/_form.html.twig', {'button_label': 'Update'}) }}
+                <div class="card-body p-4">
+                    {{ include('journal_entry/_form.html.twig', {'button_label': 'Update'}) }}
+                </div>
+            </div>
 
-    <a href="{{ path('app_journal_entry_index') }}">back to list</a>
-
-    {{ include('journal_entry/_delete_form.html.twig') }}
+            <div class="card serinity-surface-card shadow-sm">
+                <div class="card-body">
+                    {{ include('journal_entry/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

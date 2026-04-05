@@ -3,17 +3,34 @@
 {% block title %}Admin{% endblock %}
 
 {% block body %}
-    <div class="admin-layout">
+    <div class="main-content">
         {% include 'admin/partials/navbar.html.twig' %}
 
-        <div style="display: flex; gap: 2rem; align-items: flex-start;">
-            <aside style="min-width: 220px; border-right: 1px solid #ddd; padding-right: 1rem;">
-                {% include 'admin/partials/sidebar.html.twig' %}
-            </aside>
+        <div class="header bg-gradient-primary pb-6 pt-5 pt-md-7">
+            <div class="container-fluid">
+                <div class="header-body">
+                    <div class="row align-items-center py-4">
+                        <div class="col-lg-6 col-7">
+                            <h6 class="h2 text-white d-inline-block mb-0">Serinity Backoffice</h6>
+                            <p class="text-white-50 mb-0 mt-2">
+                                Manage lookup data and administration pages.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <main style="flex: 1;">
-                {% block admin_content %}{% endblock %}
-            </main>
+        <div class="container-fluid mt--6">
+            <div class="row">
+                <div class="col-xl-3 mb-4">
+                    {% include 'admin/partials/sidebar.html.twig' %}
+                </div>
+
+                <div class="col-xl-9">
+                    {% block admin_content %}{% endblock %}
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

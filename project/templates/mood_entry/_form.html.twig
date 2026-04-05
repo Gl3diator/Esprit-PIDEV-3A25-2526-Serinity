@@ -1,47 +1,118 @@
 {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
-    <div class="mb-3">
-        {{ form_label(form.entryDate) }}
-        {{ form_widget(form.entryDate, {'attr': {'class': 'form-control'}}) }}
-        <div class="text-danger">
-            {{ form_errors(form.entryDate) }}
-        </div>
+<style>
+    .choice-pill-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .choice-pill-item {
+        display: inline-block;
+        margin: 0 0.5rem 0.5rem 0;
+    }
+
+    .choice-pill-label {
+        display: inline-block;
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        border: 1px solid #dfe6e9;
+        background: #f8f9fe;
+        color: #525f7f;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        margin-bottom: 0;
+    }
+
+    .choice-pill-label:hover {
+        border-color: #5e72e4;
+        color: #5e72e4;
+        transform: translateY(-1px);
+    }
+
+    .choice-pill-input:checked + .choice-pill-label {
+        background: #5e72e4;
+        border-color: #5e72e4;
+        color: #fff;
+        box-shadow: 0 6px 14px rgba(94, 114, 228, 0.22);
+    }
+
+    .choice-group-box {
+        border: 1px solid #e9ecef;
+        border-radius: 1rem;
+        padding: 1rem;
+        background: #ffffff;
+    }
+</style>
+
+    <div class="form-group">
+        {{ form_label(form.momentType, 'Type', {'label_attr': {'class': 'form-control-label'}}) }}
+        {{ form_widget(form.momentType, {'attr': {'class': 'form-control rounded-pill'}}) }}
+        {% if form_errors(form.momentType) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.momentType) }}
+            </div>
+        {% endif %}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.momentType) }}
-        {{ form_widget(form.momentType, {'attr': {'class': 'form-control'}}) }}
-        <div class="text-danger">
-            {{ form_errors(form.momentType) }}
-        </div>
+    <div class="form-group">
+        {{ form_label(form.moodLevel, 'Mood level', {'label_attr': {'class': 'form-control-label'}}) }}
+        {{ form_widget(form.moodLevel, {'attr': {'class': 'form-control rounded-pill'}}) }}
+        {% if form_errors(form.moodLevel) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.moodLevel) }}
+            </div>
+        {% endif %}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.moodLevel) }}
-        {{ form_widget(form.moodLevel, {'attr': {'class': 'form-control'}}) }}
-        <div class="text-danger">
-            {{ form_errors(form.moodLevel) }}
+    <div class="form-group">
+        {{ form_label(form.emotions, 'Emotions', {'label_attr': {'class': 'form-control-label'}}) }}
+
+        <div class="choice-group-box shadow-sm">
+            {% for choice in form.emotions %}
+                <div class="choice-pill-item">
+                    {{ form_widget(choice, {'attr': {'class': 'choice-pill-input'}}) }}
+                    {{ form_label(choice, null, {'label_attr': {'class': 'choice-pill-label'}}) }}
+                </div>
+            {% endfor %}
         </div>
+
+        <small class="form-text text-muted">Select between 1 and 5 emotions.</small>
+
+        {% if form_errors(form.emotions) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.emotions) }}
+            </div>
+        {% endif %}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.emotions) }}
-        {{ form_widget(form.emotions) }}
-        <div class="text-danger">
-            {{ form_errors(form.emotions) }}
+    <div class="form-group">
+        {{ form_label(form.influences, 'Influences', {'label_attr': {'class': 'form-control-label'}}) }}
+
+        <div class="choice-group-box shadow-sm">
+            {% for choice in form.influences %}
+                <div class="choice-pill-item">
+                    {{ form_widget(choice, {'attr': {'class': 'choice-pill-input'}}) }}
+                    {{ form_label(choice, null, {'label_attr': {'class': 'choice-pill-label'}}) }}
+                </div>
+            {% endfor %}
         </div>
+
+        <small class="form-text text-muted">Select between 1 and 5 influences.</small>
+
+        {% if form_errors(form.influences) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.influences) }}
+            </div>
+        {% endif %}
     </div>
 
-    <div class="mb-3">
-        {{ form_label(form.influences) }}
-        {{ form_widget(form.influences) }}
-        <div class="text-danger">
-            {{ form_errors(form.influences) }}
-        </div>
+    <div class="mt-4">
+        <button class="btn btn-primary ">
+            {{ button_label|default('Save') }}
+        </button>
     </div>
-
-    <button class="btn btn-primary">
-        {{ button_label|default('Save') }}
-    </button>
 
 {{ form_end(form) }}
