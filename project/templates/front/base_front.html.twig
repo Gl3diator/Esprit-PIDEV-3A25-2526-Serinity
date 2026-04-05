@@ -3,22 +3,48 @@
 {% block title %}Serinity{% endblock %}
 
 {% block body %}
-    <div class="serinity-hero">
-        <nav class="navbar navbar-expand-lg serinity-navbar">
-            <div class="container">
-                <a class="navbar-brand" href="{{ path('app_mood_entry_index') }}">SERINITY</a>
+    {% set currentRoute = app.request.attributes.get('_route') %}
 
-                <div class="collapse navbar-collapse show">
-                    <ul class="navbar-nav mr-auto ml-4">
+    <div class="serinity-hero">
+        <nav class="navbar navbar-expand-lg navbar-dark pt-4 serinity-navbar">
+            <div class="container">
+                <a class="navbar-brand serinity-brand" href="{{ path('app_home') }}">
+                    <span class="serinity-brand-icon">
+                        <i class="ni ni-planet"></i>
+                    </span>
+                    <span class="serinity-brand-text">SERINITY</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#frontNavbar" aria-controls="frontNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="frontNavbar">
+                    <ul class="navbar-nav ml-4">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_mood_entry_index') }}">Mood</a>
+                            <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_mood_entry_' %}active{% endif %}"
+                               href="{{ path('app_mood_entry_index') }}">
+                                <i class="ni ni-satisfied mr-2"></i>
+                                Mood
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_journal_entry_index') }}">Journal</a>
+                            <a class="nav-link serinity-nav-link {% if currentRoute starts with 'app_journal_entry_' %}active{% endif %}"
+                               href="{{ path('app_journal_entry_index') }}">
+                                <i class="ni ni-single-copy-04 mr-2"></i>
+                                Journal
+                            </a>
                         </li>
                     </ul>
 
-                    <span class="navbar-text">Mood Control</span>
+                    <ul class="navbar-nav align-items-lg-center ml-lg-auto">
+                       <li class="nav-item d-none d-lg-block">
+                          <span class="serinity-top-badge">
+                          <i class="ni ni-chart-bar-32 mr-2"></i>
+                          Mood Control
+                          </span>
+                          </li>
+</ul>
                 </div>
             </div>
         </nav>
