@@ -1,0 +1,14 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin dashboard{% endblock %}
+
+{% block admin_content %}
+    <h1>Admin dashboard</h1>
+
+    <p>Welcome to the Serinity backoffice.</p>
+
+    <ul>
+        <li><a href="{{ path('app_admin_emotion_index') }}">Manage emotions</a></li>
+        <li><a href="{{ path('app_admin_influence_index') }}">Manage influences</a></li>
+    </ul>
+{% endblock %}

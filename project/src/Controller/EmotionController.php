@@ -10,22 +10,22 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/emotion')]
+#[Route('/admin/emotion')]
 final class EmotionController extends AbstractController
 {
-    #[Route(name: 'app_emotion_index', methods: ['GET'])]
+    #[Route('', name: 'app_admin_emotion_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
         $emotions = $entityManager
             ->getRepository(Emotion::class)
             ->findAll();
 
-        return $this->render('emotion/index.html.twig', [
+        return $this->render('admin/emotion/index.html.twig', [
             'emotions' => $emotions,
         ]);
     }
 
-    #[Route('/new', name: 'app_emotion_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_admin_emotion_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $emotion = new Emotion();
@@ -36,24 +36,24 @@ final class EmotionController extends AbstractController
             $entityManager->persist($emotion);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_emotion_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('emotion/new.html.twig', [
+        return $this->render('admin/emotion/new.html.twig', [
             'emotion' => $emotion,
             'form' => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_emotion_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_admin_emotion_show', methods: ['GET'])]
     public function show(Emotion $emotion): Response
     {
-        return $this->render('emotion/show.html.twig', [
+        return $this->render('admin/emotion/show.html.twig', [
             'emotion' => $emotion,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_emotion_edit', methods: ['GET', 'POST'])]
+    #[Route('/{id}/edit', name: 'app_admin_emotion_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(EmotionType::class, $emotion);
@@ -62,16 +62,16 @@ final class EmotionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_emotion_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('emotion/edit.html.twig', [
+        return $this->render('admin/emotion/edit.html.twig', [
             'emotion' => $emotion,
             'form' => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_emotion_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_admin_emotion_delete', methods: ['POST'])]
     public function delete(Request $request, Emotion $emotion, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$emotion->getId(), $request->getPayload()->getString('_token'))) {
@@ -79,6 +79,6 @@ final class EmotionController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_emotion_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_emotion_index', [], Response::HTTP_SEE_OTHER);
     }
 }

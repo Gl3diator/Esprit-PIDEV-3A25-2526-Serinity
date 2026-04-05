@@ -1,0 +1,15 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+
+{% block title %}Edit Emotion{% endblock %}
+
+{% block admin_content %}
+
+    <h1>Edit Emotion</h1>
+
+    {{ include('admin/emotion/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_admin_emotion_index') }}">back to list</a>
+
+    {{ include('admin/emotion/_delete_form.html.twig') }}
+{% endblock %}

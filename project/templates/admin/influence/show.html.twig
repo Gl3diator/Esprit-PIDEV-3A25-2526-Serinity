@@ -1,8 +1,7 @@
-{% extends 'base.html.twig' %}
-
+{% extends 'admin/base_admin.html.twig' %}
 {% block title %}Influence{% endblock %}
 
-{% block body %}
+{% block admin_content %}
     <h1>Influence</h1>
 
     <table class="table">
@@ -18,9 +17,9 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_influence_index') }}">back to list</a>
+    <a href="{{ path('app_admin_influence_index') }}">back to list</a>
 
-    <a href="{{ path('app_influence_edit', {'id': influence.id}) }}">edit</a>
+    <a href="{{ path('app_admin_influence_edit', {'id': influence.id}) }}">edit</a>
 
-    {{ include('influence/_delete_form.html.twig') }}
+    {{ include('admin/influence/_delete_form.html.twig') }}
 {% endblock %}

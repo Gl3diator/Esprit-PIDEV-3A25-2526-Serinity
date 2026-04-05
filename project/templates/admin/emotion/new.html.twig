@@ -1,0 +1,12 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+
+{% block title %}New Emotion{% endblock %}
+
+{% block admin_content %}
+    <h1>Create new Emotion</h1>
+
+    {{ include('admin/emotion/_form.html.twig') }}
+
+    <a href="{{ path('app_admin_emotion_index') }}">back to list</a>
+{% endblock %}
