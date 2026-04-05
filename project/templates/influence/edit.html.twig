@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Influence{% endblock %}
+
+{% block body %}
+    <h1>Edit Influence</h1>
+
+    {{ include('influence/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_influence_index') }}">back to list</a>
+
+    {{ include('influence/_delete_form.html.twig') }}
+{% endblock %}
