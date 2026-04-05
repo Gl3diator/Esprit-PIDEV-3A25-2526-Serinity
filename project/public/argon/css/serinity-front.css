@@ -126,3 +126,144 @@
     color: #fff;
     box-shadow: 0 6px 14px rgba(94, 114, 228, 0.22);
 }
+.serinity-navbar .navbar-brand {
+    letter-spacing: 0.08em;
+}
+
+.serinity-navbar .nav-link {
+    border-radius: 999px;
+    padding: 0.65rem 1rem !important;
+    margin-right: 0.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.serinity-navbar .nav-link:hover,
+.serinity-navbar .nav-link.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff !important;
+}
+
+.serinity-navbar .btn-white {
+    border-radius: 999px;
+    font-weight: 600;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.serinity-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+}
+
+.serinity-brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.serinity-brand-text {
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.serinity-nav-link {
+    border-radius: 999px;
+    padding: 0.7rem 1rem !important;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.serinity-nav-link:hover,
+.serinity-nav-link.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff !important;
+}
+
+.serinity-top-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-weight: 600;
+}
+.serinity-landing-hero {
+    background: linear-gradient(135deg, #2b7a78 0%, #3aafa9 45%, #5e72e4 100%);
+}
+
+.serinity-landing-shape span {
+    background: rgba(255, 255, 255, 0.14) !important;
+}
+
+.serinity-icon-teal {
+    background: linear-gradient(135deg, #2b7a78 0%, #3aafa9 100%);
+    color: #fff;
+}
+
+.serinity-icon-soft {
+    background: linear-gradient(135deg, #88c9c5 0%, #b8e0dc 100%);
+    color: #1f3d3a;
+}
+
+.serinity-btn-teal {
+    background: #2b7a78;
+    border-color: #2b7a78;
+    color: #fff;
+}
+
+.serinity-btn-teal:hover,
+.serinity-btn-teal:focus {
+    background: #236865;
+    border-color: #236865;
+    color: #fff;
+}
+
+.serinity-btn-soft {
+    background: #e6f4f2;
+    border-color: #cfe9e5;
+    color: #2b7a78;
+}
+
+.serinity-btn-soft:hover,
+.serinity-btn-soft:focus {
+    background: #d7efeb;
+    border-color: #bddfd9;
+    color: #236865;
+}
+
+.serinity-text-teal {
+    color: #2b7a78 !important;
+}
+
+.serinity-text-soft {
+    color: #3aafa9 !important;
+}
+
+.serinity-section-surface {
+    background: transparent;
+}
+
+.serinity-feature-card {
+    border-radius: 1.25rem;
+    background: #ffffff;
+}
+
+.serinity-feature-card .description {
+    color: #6b7c93;
+}
+
+.serinity-cta-section {
+    padding-top: 1rem;
+    padding-bottom: 4rem;
+}
