@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}JournalEntry{% endblock %}
+
+{% block body %}
+    <h1>JournalEntry</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ journal_entry.id }}</td>
+            </tr>
+            <tr>
+                <th>UserId</th>
+                <td>{{ journal_entry.userId }}</td>
+            </tr>
+            <tr>
+                <th>Title</th>
+                <td>{{ journal_entry.title }}</td>
+            </tr>
+            <tr>
+                <th>Content</th>
+                <td>{{ journal_entry.content }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ journal_entry.createdAt ? journal_entry.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>UpdatedAt</th>
+                <td>{{ journal_entry.updatedAt ? journal_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>AiTags</th>
+                <td>{{ journal_entry.aiTags }}</td>
+            </tr>
+            <tr>
+                <th>AiModelVersion</th>
+                <td>{{ journal_entry.aiModelVersion }}</td>
+            </tr>
+            <tr>
+                <th>AiGeneratedAt</th>
+                <td>{{ journal_entry.aiGeneratedAt ? journal_entry.aiGeneratedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_journal_entry_index') }}">back to list</a>
+
+    <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}">edit</a>
+
+    {{ include('journal_entry/_delete_form.html.twig') }}
+{% endblock %}
