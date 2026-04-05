@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}JournalEntry index{% endblock %}
+
+{% block body %}
+    <h1>JournalEntry index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>UserId</th>
+                <th>Title</th>
+                <th>Content</th>
+                <th>CreatedAt</th>
+                <th>UpdatedAt</th>
+                <th>AiTags</th>
+                <th>AiModelVersion</th>
+                <th>AiGeneratedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for journal_entry in journal_entries %}
+            <tr>
+                <td>{{ journal_entry.id }}</td>
+                <td>{{ journal_entry.userId }}</td>
+                <td>{{ journal_entry.title }}</td>
+                <td>{{ journal_entry.content }}</td>
+                <td>{{ journal_entry.createdAt ? journal_entry.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ journal_entry.updatedAt ? journal_entry.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ journal_entry.aiTags }}</td>
+                <td>{{ journal_entry.aiModelVersion }}</td>
+                <td>{{ journal_entry.aiGeneratedAt ? journal_entry.aiGeneratedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_journal_entry_show', {'id': journal_entry.id}) }}">show</a>
+                    <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_journal_entry_new') }}">Create new</a>
+{% endblock %}
