@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ mode == 'create' ? 'New Thread' : 'Edit Thread' }}{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+    <div class="container" style="max-width: 860px;">
+        <section class="card-soft p-4">
+            <h1 class="h4 mb-3">{{ mode == 'create' ? 'Create Thread' : 'Edit Thread' }}</h1>
+            {% set dangerMessages = app.flashes('danger') %}
+            {% set warningMessages = app.flashes('warning') %}
+            {% set threadErrorMessage = threadError|default(null) %}
+            {% if threadErrorMessage %}
+                <div class="thread-error-line" role="alert">{{ threadErrorMessage }}</div>
+            {% endif %}
+            {% for message in dangerMessages %}
+                <div class="thread-error-line" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% for message in warningMessages %}
+                <div class="thread-error-line" role="alert">{{ message }}</div>
+            {% endfor %}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                {{ form_row(form.title) }}
+                {{ form_row(form.content) }}
+                {{ form_row(form.category) }}
+                {{ form_row(form.type) }}
+                {{ form_row(form.isPinned) }}
+                {{ form_row(form.imageFile) }}
+                <button class="btn btn-primary">{{ mode == 'create' ? 'Publish' : 'Update' }}</button>
+            {{ form_end(form) }}
+        </section>
+    </div>
+</main>
+{% endblock %}

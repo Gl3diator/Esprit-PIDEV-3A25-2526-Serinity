@@ -1,0 +1,47 @@
+
+# Local environment and secrets
+.env
+.env.local
+.env.local.*
+.env.*.local
+.env.dev
+.env.test
+
+# Dependency directories
+/vendor/
+/node_modules/
+
+# Symfony runtime/cache/log files
+/var/cache/
+/var/log/
+/var/sessions/
+/var/tmp/
+
+# Generated assets
+/public/assets/
+/assets/vendor/
+
+# User-uploaded files
+/public/uploads/
+
+# PHPUnit
+/phpunit.xml
+/.phpunit.cache/
+
+# IDE/editor files
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# Archives, backups, and local dumps
+*.bak
+*.tmp
+*.log
+*.sql.gz
