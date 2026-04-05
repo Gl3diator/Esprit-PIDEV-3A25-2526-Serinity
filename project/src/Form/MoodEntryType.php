@@ -8,7 +8,6 @@ use App\Entity\MoodEntry;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -17,12 +16,8 @@ class MoodEntryType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('entryDate', DateTimeType::class, [
-                'label' => 'Entry date',
-                'widget' => 'single_text',
-            ])
             ->add('momentType', ChoiceType::class, [
-                'label' => 'Moment type',
+                'label' => 'Type',
                 'choices' => [
                     'Moment' => 'MOMENT',
                     'Day' => 'DAY',

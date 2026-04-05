@@ -16,16 +16,51 @@ final class MoodEntryController extends AbstractController
     private const TEMP_USER_ID = '6affa2df-dda9-442d-99ee-d2a3c1e78c64';
 
     #[Route(name: 'app_mood_entry_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
-        $moodEntries = $entityManager
-            ->getRepository(MoodEntry::class)
-            ->findAll();
+public function index(EntityManagerInterface $entityManager): Response
+{
+    $moodEntries = $entityManager
+        ->getRepository(MoodEntry::class)
+        ->findBy([], ['entryDate' => 'DESC']);
 
-        return $this->render('mood_entry/index.html.twig', [
-            'mood_entries' => $moodEntries,
-        ]);
+    $today = new \DateTimeImmutable('today');
+    $yesterday = $today->modify('-1 day');
+
+    $groupedEntries = [];
+
+    foreach ($moodEntries as $moodEntry) {
+        $entryDate = $moodEntry->getEntryDate();
+
+        if (!$entryDate instanceof \DateTimeInterface) {
+            continue;
+        }
+
+        $entryDay = \DateTimeImmutable::createFromInterface($entryDate)->setTime(0, 0);
+
+        if ($entryDay == $today) {
+            $groupKey = 'today';
+            $groupLabel = 'Today';
+        } elseif ($entryDay == $yesterday) {
+            $groupKey = 'yesterday';
+            $groupLabel = 'Yesterday';
+        } else {
+            $groupKey = $entryDay->format('Y-m-d');
+            $groupLabel = $entryDay->format('Y-m-d');
+        }
+
+        if (!isset($groupedEntries[$groupKey])) {
+            $groupedEntries[$groupKey] = [
+                'label' => $groupLabel,
+                'entries' => [],
+            ];
+        }
+
+        $groupedEntries[$groupKey]['entries'][] = $moodEntry;
     }
+
+    return $this->render('mood_entry/index.html.twig', [
+        'grouped_entries' => $groupedEntries,
+    ]);
+}
 
     #[Route('/new', name: 'app_mood_entry_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response

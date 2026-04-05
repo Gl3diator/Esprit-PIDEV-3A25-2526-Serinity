@@ -1,4 +1,13 @@
-<form method="post" action="{{ path('app_mood_entry_delete', {'id': mood_entry.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mood_entry.id) }}">
-    <button class="btn">Delete</button>
-</form>
+<div class="d-flex justify-content-between align-items-center">
+    <span class="text-muted">This action cannot be undone.</span>
+
+    <form method="post"
+          action="{{ path('app_mood_entry_delete', {'id': mood_entry.id}) }}"
+          onsubmit="return confirm('Are you sure you want to delete this mood entry?');"
+          class="mb-0">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mood_entry.id) }}">
+        <button class="btn btn-danger rounded-pill px-4">
+            Delete entry
+        </button>
+    </form>
+</div>

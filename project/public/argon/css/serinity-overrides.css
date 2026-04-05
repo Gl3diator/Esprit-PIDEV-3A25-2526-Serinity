@@ -1,0 +1,20 @@
+body {
+    background: #edf2f7;
+    min-height: 100vh;
+}
+
+/* optional: softer cards globally */
+.card {
+    background: #fdfdfd;
+    border-radius: 1.25rem;
+}
+
+/* optional: make headers match card background */
+.card-header {
+    background: #fdfdfd !important;
+}
+
+/* optional: smoother sections */
+.choice-group-box {
+    background: #fdfdfd;
+}

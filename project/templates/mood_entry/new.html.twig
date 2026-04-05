@@ -1,11 +1,30 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New MoodEntry{% endblock %}
+{% block title %}New mood entry{% endblock %}
 
 {% block body %}
-    <h1>Create new MoodEntry</h1>
+    <div class="container mt-5 mb-6">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 1.25rem; background: #ffffff;">
+                    <div class="card-header border-0 bg-white" style="border-radius: 1.25rem 1.25rem 0 0;">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h3 class="mb-0">Create new mood entry</h3>
+                            </div>
+                            <div class="col text-right">
+                                <a href="{{ path('app_mood_entry_index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Back to list
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
-    {{ include('mood_entry/_form.html.twig') }}
-
-    <a href="{{ path('app_mood_entry_index') }}">back to list</a>
+                    <div class="card-body p-4">
+                        {{ include('mood_entry/_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
