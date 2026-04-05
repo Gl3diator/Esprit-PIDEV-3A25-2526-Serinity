@@ -7,7 +7,6 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
@@ -23,42 +22,53 @@ class MoodEntry
     #[ORM\Column(type: 'string', length: 36, name: 'user_id')]
     private string $userId;
 
+    #[Assert\NotNull(message: 'Entry date is required.')]
     #[ORM\Column(type: 'datetime', name: 'entry_date')]
     private \DateTimeInterface $entryDate;
 
+    #[Assert\NotBlank(message: 'Type is required.')]
+    #[Assert\Choice(
+        choices: ['MOMENT', 'DAY'],
+        message: 'Type must be either MOMENT or DAY.'
+    )]
     #[ORM\Column(type: 'string', columnDefinition: "ENUM('MOMENT','DAY')", name: 'moment_type')]
     private string $momentType;
 
+    #[Assert\NotNull(message: 'Mood level is required.')]
+    #[Assert\Range(
+        min: 1,
+        max: 5,
+        notInRangeMessage: 'Mood level must be between {{ min }} and {{ max }}.'
+    )]
     #[ORM\Column(type: 'smallint', name: 'mood_level')]
     private int $moodLevel;
 
     #[ORM\Column(type: 'datetime', name: 'updated_at')]
     private \DateTimeInterface $updatedAt;
 
-   /**
-    * @var Collection<int, Emotion>
-    */
-   #[Assert\Count(
-    min: 1,
-    max: 5,
-    minMessage: 'Select at least one emotion.',
-    maxMessage: 'You can select at most {{ limit }} emotions.'
-   )]
+    /**
+     * @var Collection<int, Emotion>
+     */
+    #[Assert\Count(
+        min: 1,
+        max: 5,
+        minMessage: 'Select at least one emotion.',
+        maxMessage: 'You can select at most {{ limit }} emotions.'
+    )]
     #[ORM\ManyToMany(targetEntity: Emotion::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_emotion')]
     #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id')]
     #[ORM\InverseJoinColumn(name: 'emotion_id', referencedColumnName: 'id')]
     private Collection $emotions;
-    
-    
+
     /**
-    * @var Collection<int, Influence>
-    */
+     * @var Collection<int, Influence>
+     */
     #[Assert\Count(
-    min: 1,
-    max: 5,
-    minMessage: 'Select at least one influence.',
-    maxMessage: 'You can select at most {{ limit }} influences.'
+        min: 1,
+        max: 5,
+        minMessage: 'Select at least one influence.',
+        maxMessage: 'You can select at most {{ limit }} influences.'
     )]
     #[ORM\ManyToMany(targetEntity: Influence::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_influence')]
