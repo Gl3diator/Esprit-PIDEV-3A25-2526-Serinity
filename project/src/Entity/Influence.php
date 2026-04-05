@@ -7,9 +7,15 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'influence')]
+#[UniqueEntity(
+    fields: ['name'],
+    message: 'This influence already exists.'
+)]
 class Influence
 {
     #[ORM\Id]
@@ -18,7 +24,16 @@ class Influence
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', unique: true, length: 60)]
-    private string $name;
+    #[Assert\NotBlank(message: 'Influence name is required.')]
+    #[Assert\Length(
+        max: 60,
+        maxMessage: 'Influence name cannot exceed {{ limit }} characters.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[A-Za-z\/ ]+$/',
+        message: 'Influence name can contain only letters, spaces, and /.'
+    )]
+    private string $name = '';
 
     /**
      * @var Collection<int, MoodEntry>
@@ -41,9 +56,9 @@ class Influence
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
-        $this->name = $name;
+        $this->name = trim((string) $name);
 
         return $this;
     }
@@ -70,5 +85,10 @@ class Influence
         $this->moodEntries->removeElement($moodEntry);
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

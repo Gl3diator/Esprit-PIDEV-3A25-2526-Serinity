@@ -15,7 +15,7 @@ The serinity-web project provides security updates for the following versions:
 
 If you discover a security vulnerability in serinity-web, we encourage responsible disclosure. To report a vulnerability:
 
-1. **Contact us** via email at [ghaithbenasalah@proton.me](ghaithbenasalah@proton.me) or [zouariomar20@gmail.com](mailto:zouariomar20@gmail.com) with the details.
+1. **Contact us** via email at [ghaithbensalah@proton.me](ghaithbensalah@proton.me) or [zouariomar20@gmail.com](mailto:zouariomar20@gmail.com) with the details.
 2. Please provide a detailed description of the issue, including steps to reproduce it and, if available, a proof of concept.
 3. We aim to respond within **48 hours** and will work closely with you to resolve the issue.
 
