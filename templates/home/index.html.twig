@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Serinity Sleep{% endblock %}
+
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-serinity">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('app_home') }}">
+                <img src="{{ asset('assets/img/logo2.png') }}"
+                     alt="Serinity Sleep"
+                     height="38"
+                     class="mr-2">
+                Serinity Sleep
+            </a>
+            <button class="navbar-toggler" type="button"
+                    data-toggle="collapse"
+                    data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_sommeil') }}">
+                            <i class="fa fa-bed"></i> Sommeil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_reve') }}">
+                            <i class="fa fa-cloud"></i> Rêves
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="position-relative">
+        <section class="section section-hero section-shaped">
+            <div class="shape shape-style-1 shape-default">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="container shape-container d-flex align-items-center py-lg">
+                <div class="col px-0">
+                    <div class="row align-items-center justify-content-center">
+                        <div class="col-lg-6 text-center">
+                            <img src="{{ asset('assets/img/logo2.png') }}"
+                                 alt="Logo"
+                                 height="80"
+                                 class="hero-logo mb-4">
+                            <h1 class="text-white display-3 font-weight-bold">
+                                Serinity Sleep
+                            </h1>
+                            <p class="lead text-white mt-3">
+                                Suivez vos nuits, analysez vos rêves,<br>améliorez votre bien-être.
+                            </p>
+                            <div class="btn-wrapper mt-5">
+                                <a href="{{ path('app_sommeil') }}" class="btn btn-white btn-icon mb-3 mb-sm-0">
+                                    <span class="btn-inner--icon"><i class="fa fa-bed mr-2"></i></span>
+                                    <span class="btn-inner--text">Mes sommeils</span>
+                                </a>
+                                <a href="{{ path('app_reve') }}" class="btn btn-default btn-icon mb-3 mb-sm-0 ml-1">
+                                    <span class="btn-inner--icon"><i class="fa fa-cloud mr-2"></i></span>
+                                    <span class="btn-inner--text">Mes rêves</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}

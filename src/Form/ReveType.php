@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Form;
+
+use App\Entity\Reves;
+use App\Entity\Sommeil;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class ReveType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('sommeil_id', EntityType::class, [
+                'label'        => 'Nuit associée',
+                'class'        => Sommeil::class,
+                'choice_label' => 'date_nuit',
+                'attr'         => ['class' => 'form-control']
+            ])
+            ->add('titre', TextType::class, [
+                'label' => 'Titre du rêve',
+                'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: Vol au-dessus des nuages...']
+            ])
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
+                'attr'  => ['class' => 'form-control', 'rows' => 4]
+            ])
+            ->add('humeur', ChoiceType::class, [
+                'label'    => 'Humeur',
+                'required' => false,
+                'choices'  => [
+                    '😄 Joyeux'  => '😄 Joyeux',
+                    '😢 Triste'  => '😢 Triste',
+                    '😨 Effrayé' => '😨 Effrayé',
+                    '😌 Serein'  => '😌 Serein',
+                    '😐 Neutre'  => '😐 Neutre',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('type_reve', ChoiceType::class, [
+                'label'    => 'Type de rêve',
+                'required' => false,
+                'choices'  => [
+                    'Normal'       => 'Normal',
+                    'Lucide'       => 'Lucide',
+                    'Cauchemar'    => 'Cauchemar',
+                    'Prémonitoire' => 'Prémonitoire',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('intensite', IntegerType::class, [
+                'label'    => 'Intensité (1-10)',
+                'required' => false,
+                'attr'     => ['class' => 'form-control', 'min' => 1, 'max' => 10]
+            ])
+            ->add('couleur', CheckboxType::class, [
+                'label'    => 'Rêve en couleur ?',
+                'required' => false,
+            ])
+            ->add('emotions', TextType::class, [
+                'label'    => 'Émotions ressenties',
+                'required' => false,
+                'attr'     => ['class' => 'form-control', 'placeholder' => 'Ex: joie, peur, surprise...']
+            ])
+            ->add('symboles', TextareaType::class, [
+                'label'    => 'Symboles',
+                'required' => false,
+                'attr'     => ['class' => 'form-control', 'rows' => 2]
+            ])
+            ->add('recurrent', CheckboxType::class, [
+                'label'    => 'Rêve récurrent ?',
+                'required' => false,
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Reves::class,
+        ]);
+    }
+}

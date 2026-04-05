@@ -1,24 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Serinity Sleep{% endblock %}</title>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    {% block stylesheets %}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+        <link rel="stylesheet" href="{{ asset('assets/css/nucleo-icons.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/nucleo-svg.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/font-awesome.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/argon-design-system.css') }}">
+    {% endblock %}
+</head>
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+<body>
+
+{% block navbar %}{% endblock %}
+
+{% block body %}{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('assets/js/core/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
+    <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('assets/js/argon-design-system.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('assets/css/argon-design-system.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+{% endblock %}
+
+</body>
 </html>
