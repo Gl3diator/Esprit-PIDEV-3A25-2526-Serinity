@@ -22,12 +22,19 @@
                 <div class="col px-0">
                     <div class="row align-items-center justify-content-between">
                         <div class="col-lg-6 text-white">
-                            <h1 class="display-3 text-white">
-                                Serinity
-                                <span class="d-block">Mood Control</span>
-                            </h1>
+                            <div class="d-flex align-items-center mb-4">
+                                <img
+                                    src="{{ asset('argon/img/serinity-logo.png') }}"
+                                    alt="Serinity logo"
+                                    class="serinity-landing-logo mr-3"
+                                >
+                                <div>
+                                    <h1 class="display-3 text-white mb-0">Serinity</h1>
+                                    <h2 class="text-white font-weight-light mb-0">Mood Control</h2>
+                                </div>
+                            </div>
 
-                            <p class="lead text-white">
+                            <p class="lead text-white mb-4">
                                 Track your mood, understand your emotions, and keep a personal journal in one calm space.
                             </p>
 
@@ -44,7 +51,7 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-5">
+                        <div class="col-lg-5 mt-4 mt-lg-0">
                             <div class="card shadow border-0 serinity-feature-card">
                                 <div class="card-body py-5">
                                     <div class="icon icon-shape serinity-icon-teal rounded-circle mb-4">
@@ -113,7 +120,7 @@
                                 <p class="description mt-3">
                                     Use your saved entries to notice patterns and better understand what affects your mood.
                                 </p>
-                                <a href="{{ path('app_mood_entry_index') }}" class="btn serinity-btn-teal mt-4">Start</a>
+                                <a href="{{ path('app_mood_entry_summary') }}" class="btn serinity-btn-teal mt-4">Start</a>
                             </div>
                         </div>
                     </div>
@@ -129,5 +136,15 @@
                 </a>
             </div>
         </section>
+    <footer class="serinity-landing-footer">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-12 text-center">
+                        <p class="mb-0">© 2026 Serinity. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
     </main>
 {% endblock %}

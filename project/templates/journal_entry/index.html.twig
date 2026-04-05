@@ -5,11 +5,52 @@
 {% block front_subtitle %}Write, search, and review your personal reflections.{% endblock %}
 {% block front_summary %}
     <h4 class="text-white mb-2">Journal history</h4>
-    <p class="mb-0">Search your entries by title or content and browse them grouped by day.</p>
+    <p class="mb-0">Search your entries by title or content and keep your writing habit visible.</p>
 {% endblock %}
 
 {% block front_content %}
     <div class="serinity-top-cards-wrap">
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-info text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-time-alarm"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Current streak</h6>
+                        <h2 class="mb-0">{{ current_streak }}</h2>
+                        <p class="text-sm text-muted mb-0">Consecutive days up to today</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-warning text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-trophy"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Longest streak</h6>
+                        <h2 class="mb-0">{{ longest_streak }}</h2>
+                        <p class="text-sm text-muted mb-0">Best streak of all time</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 mb-3">
+    <div class="card shadow-sm border-0 card-lift--hover h-100">
+        <div class="card-body py-4">
+            <div class="icon icon-shape bg-success text-white rounded-circle shadow mb-3">
+                <i class="ni ni-calendar-grid-58"></i>
+            </div>
+            <h6 class="text-uppercase text-muted mb-1">Most entries in 1 day</h6>
+            <h2 class="mb-0">{{ max_entries_one_day }}</h2>
+            <p class="text-sm text-muted mb-0">Highest number of journal entries written on a single day</p>
+        </div>
+    </div>
+</div>
+        </div>
+
         <div class="row mb-5">
             <div class="col-lg-8 mb-3">
                 <div class="card shadow border-0 card-lift--hover h-100">
