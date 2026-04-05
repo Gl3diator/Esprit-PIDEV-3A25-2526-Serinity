@@ -170,7 +170,7 @@ You can [download](https://github.com/zouari-oss/serinity-web/releases) the late
 
 ## Emailware
 
-serinity-web is an emailware. Meaning, if you liked using this app or it has helped you in any way, would like you send as an email at <zouariomar20@gmail.com> or <ghaithbenasalah@proton.me> about anything you'd want to say about this software. I'd really appreciate it!
+serinity-web is an emailware. Meaning, if you liked using this app or it has helped you in any way, would like you send as an email at <zouariomar20@gmail.com> or <ghaithbensalah@proton.me> about anything you'd want to say about this software. I'd really appreciate it!
 
 ## License
 
