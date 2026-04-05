@@ -18,6 +18,7 @@ class MoodEntryType extends AbstractType
         $builder
             ->add('momentType', ChoiceType::class, [
                 'label' => 'Type',
+                'placeholder' => 'Choose a type',
                 'choices' => [
                     'Moment' => 'MOMENT',
                     'Day' => 'DAY',
@@ -25,6 +26,7 @@ class MoodEntryType extends AbstractType
             ])
             ->add('moodLevel', ChoiceType::class, [
                 'label' => 'Mood level',
+                'placeholder' => 'Choose a mood level',
                 'choices' => [
                     '1' => 1,
                     '2' => 2,
