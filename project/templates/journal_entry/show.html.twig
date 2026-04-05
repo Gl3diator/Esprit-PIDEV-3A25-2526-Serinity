@@ -1,38 +1,42 @@
-{% extends 'base.html.twig' %}
+{% extends 'front/base_front.html.twig' %}
 
 {% block title %}Journal entry details{% endblock %}
+{% block front_title %}Journal entry details{% endblock %}
+{% block front_subtitle %}Read one reflection in full.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Journal details</h4>
+    <p class="mb-0">A focused reading view for one journal entry.</p>
+{% endblock %}
 
-{% block body %}
-    <div class="container mt-5 mb-6">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-sm mb-4" style="border-radius: 1.25rem; background: #ffffff;">
-                    <div class="card-header border-0 bg-white" style="border-radius: 1.25rem 1.25rem 0 0;">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h3 class="mb-0">Journal entry details</h3>
-                            </div>
-                            <div class="col text-right">
-                                <a href="{{ path('app_journal_entry_index') }}" class="btn btn-sm btn-outline-primary ">
-                                    Back to list
-                                </a>
-                                <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}" class="btn btn-sm btn-primary ">
-                                    Edit
-                                </a>
-                            </div>
+{% block front_content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-header border-0 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Journal entry details</h3>
                         </div>
-                    </div>
-
-                    <div class="card-body p-4">
-                        <h3 class="mb-3">{{ journal_entry.title }}</h3>
-                        <p class="mb-0" style="white-space: pre-line;">{{ journal_entry.content }}</p>
+                        <div class="col text-right">
+                            <a href="{{ path('app_journal_entry_index') }}" class="btn btn-sm btn-outline-primary">
+                                Back to list
+                            </a>
+                            <a href="{{ path('app_journal_entry_edit', {'id': journal_entry.id}) }}" class="btn btn-sm btn-primary">
+                                Edit
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm" style="border-radius: 1.25rem; background: #ffffff;">
-                    <div class="card-body">
-                        {{ include('journal_entry/_delete_form.html.twig') }}
-                    </div>
+                <div class="card-body p-4">
+                    <h3 class="mb-3">{{ journal_entry.title }}</h3>
+                    <p class="mb-0" style="white-space: pre-line;">{{ journal_entry.content }}</p>
+                </div>
+            </div>
+
+            <div class="card serinity-surface-card shadow-sm">
+                <div class="card-body">
+                    {{ include('journal_entry/_delete_form.html.twig') }}
                 </div>
             </div>
         </div>

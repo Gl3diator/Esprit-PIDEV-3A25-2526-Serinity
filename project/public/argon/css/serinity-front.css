@@ -1,0 +1,128 @@
+.serinity-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2b7a78 0%, #3aafa9 45%, #5e72e4 100%);
+    padding-top: 2rem;
+    padding-bottom: 7rem;
+}
+
+.serinity-hero::before,
+.serinity-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.10);
+}
+
+.serinity-hero::before {
+    width: 240px;
+    height: 240px;
+    top: -60px;
+    right: 8%;
+}
+
+.serinity-hero::after {
+    width: 140px;
+    height: 140px;
+    bottom: 20px;
+    left: 10%;
+}
+
+.serinity-navbar {
+    background: transparent;
+}
+
+.serinity-navbar .navbar-brand,
+.serinity-navbar .nav-link,
+.serinity-navbar .navbar-text {
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.serinity-page-wrap {
+    margin-top: -4rem;
+    position: relative;
+    z-index: 10;
+}
+
+.serinity-glass-card {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(6px);
+    color: #fff;
+}
+
+.text-white-75 {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.serinity-surface-card {
+    border: 0;
+    border-radius: 1.25rem;
+    background: #ffffff;
+}
+
+.serinity-pill {
+    border-radius: 999px;
+}
+
+.serinity-badge-pill {
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+}
+
+.serinity-card-tag {
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    display: inline-block;
+}
+
+.serinity-section-title {
+    margin-bottom: 0.75rem;
+}
+
+.serinity-form-box {
+    border: 1px solid #e9ecef;
+    border-radius: 1rem;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+.choice-pill-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.choice-pill-item {
+    display: inline-block;
+    margin: 0 0.5rem 0.5rem 0;
+}
+
+.choice-pill-label {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    border: 1px solid #dfe6e9;
+    background: #f8f9fe;
+    color: #525f7f;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 0;
+}
+
+.choice-pill-label:hover {
+    border-color: #5e72e4;
+    color: #5e72e4;
+    transform: translateY(-1px);
+}
+
+.choice-pill-input:checked + .choice-pill-label {
+    background: #5e72e4;
+    border-color: #5e72e4;
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(94, 114, 228, 0.22);
+}
