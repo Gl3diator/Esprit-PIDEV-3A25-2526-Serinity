@@ -48,6 +48,11 @@
                                     <span class="btn-inner--icon"><i class="ni ni-single-copy-04"></i></span>
                                     <span class="btn-inner--text">Open journal</span>
                                 </a>
+
+                                <a href="{{ path('app_forum_feed') }}" class="btn serinity-btn-teal btn-icon mb-3 mb-sm-0">
+                                    <span class="btn-inner--icon"><i class="ni ni-chat-round"></i></span>
+                                    <span class="btn-inner--text">Open forum</span>
+                                </a>
                             </div>
                         </div>
 
@@ -121,6 +126,21 @@
                                     Use your saved entries to notice patterns and better understand what affects your mood.
                                 </p>
                                 <a href="{{ path('app_mood_entry_summary') }}" class="btn serinity-btn-teal mt-4">Start</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card card-lift--hover shadow border-0 serinity-feature-card">
+                            <div class="card-body py-5">
+                                <div class="icon icon-shape serinity-icon-soft rounded-circle mb-4">
+                                    <i class="ni ni-chat-round"></i>
+                                </div>
+                                <h5 class="serinity-text-teal text-uppercase">Support forum</h5>
+                                <p class="description mt-3">
+                                    Join discussions, ask for advice, and follow community threads.
+                                </p>
+                                <a href="{{ path('app_forum_feed') }}" class="btn serinity-btn-soft mt-4">Open</a>
                             </div>
                         </div>
                     </div>
