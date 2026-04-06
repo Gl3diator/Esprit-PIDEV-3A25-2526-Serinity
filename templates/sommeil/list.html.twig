@@ -17,20 +17,45 @@
         </div>
     </header>
 
-    <div class="stats-grid mb-4">
-        <div class="stat-card">
-            <h4>Total sommeils</h4>
-            <strong>{{ stats.total }}</strong>
+    <section class="front-stats-block">
+        <div class="stats-grid-front stats-grid-front--small">
+            <div class="stats-card-front">
+                <span>Total nuits</span>
+                <strong>{{ stats.total ?? sommeils|length }}</strong>
+            </div>
+            <div class="stats-card-front">
+                <span>Durée moyenne</span>
+                <strong>{{ stats.avg_duration ?? 0 }} h</strong>
+            </div>
+            <div class="stats-card-front">
+                <span>Qualité moyenne</span>
+                <strong>{{ stats.avg_quality ?? 0 }}%</strong>
+            </div>
         </div>
-        <div class="stat-card">
-            <h4>Durée moyenne</h4>
-            <strong>{{ stats.avg_duration }} h</strong>
+
+        <div class="front-mini-charts">
+            <div class="front-mini-chart-card">
+                <h3>Qualité du sommeil</h3>
+                <div class="front-mini-chart-wrap">
+                    <canvas id="frontSleepQualityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="front-mini-chart-card">
+                <h3>Durée de sommeil</h3>
+                <div class="front-mini-chart-wrap">
+                    <canvas id="frontSleepDurationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="front-mini-chart-card">
+                <h3>Humeur au réveil</h3>
+                <div class="front-mini-chart-wrap">
+                    <canvas id="frontWakeMoodChart"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="stat-card">
-            <h4>Sommeils insuffisants</h4>
-            <strong>{{ stats.insufficient }}</strong>
-        </div>
-    </div>
+    </section>
 
     <form method="get" class="filters-bar mb-4">
         <input
@@ -62,9 +87,8 @@
             </option>
         </select>
 
-        {# on garde sort/direction cachés pour que les filtres restent compatibles avec le tri #}
-        <input type="hidden" name="sort" value="{{ filters.sort|default('date_nuit') }}">
-        <input type="hidden" name="direction" value="{{ filters.direction|default('DESC') }}">
+        <input type="hidden" name="_sort" value="{{ filters.sort|default('date_nuit') }}">
+        <input type="hidden" name="_direction" value="{{ filters.direction|default('DESC') }}">
 
         <button type="submit" class="btn btn--primary">Filtrer</button>
         <a href="{{ path('app_sommeil_list') }}" class="btn btn--secondary">Réinitialiser</a>
@@ -247,6 +271,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
     <script>
         function openDeleteModal(url, label) {
             document.getElementById('deleteForm').action = url;
@@ -264,5 +290,129 @@
                 closeDeleteModal();
             }
         });
+
+        (() => {
+            const sleepPie = document.getElementById('frontSleepQualityChart');
+            if (sleepPie && typeof Chart !== 'undefined') {
+                new Chart(sleepPie, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Excellente', 'Bonne', 'Moyenne', 'Mauvaise'],
+                        datasets: [{
+                            data: [
+                                {{ stats.qualite_excellente|default(0) }},
+                                {{ stats.qualite_bonne|default(0) }},
+                                {{ stats.qualite_moyenne|default(0) }},
+                                {{ stats.qualite_mauvaise|default(0) }}
+                            ],
+                            backgroundColor: ['#0f766e', '#14b8a6', '#99f6e4', '#ccfbf1'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutoutPercentage: 65,
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 10,
+                                padding: 12,
+                                fontColor: '#475569'
+                            }
+                        }
+                    }
+                });
+            }
+            const sleepDurationBar = document.getElementById('frontSleepDurationChart');
+            if (sleepDurationBar && typeof Chart !== 'undefined') {
+                new Chart(sleepDurationBar, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ stats.sleep_duration_labels|default([])|json_encode|raw }},
+                        datasets: [{
+                            data: {{ stats.sleep_duration_data|default([])|json_encode|raw }},
+                            backgroundColor: '#14b8a6',
+                            hoverBackgroundColor: '#0f766e',
+                            borderWidth: 0,
+                            borderRadius: 8,
+                            barPercentage: 0.58,
+                            categoryPercentage: 0.72
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    color: 'rgba(148,163,184,0.18)',
+                                    drawBorder: false
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+
+            const wakeBar = document.getElementById('frontWakeMoodChart');
+            if (wakeBar && typeof Chart !== 'undefined') {
+                new Chart(wakeBar, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ stats.wake_mood_labels|default([])|json_encode|raw }},
+                        datasets: [{
+                            data: {{ stats.wake_mood_data|default([])|json_encode|raw }},
+                            backgroundColor: ['#cbd5e1', '#94a3b8', '#64748b', '#334155', '#0f172a'],
+                            borderWidth: 0,
+                            borderRadius: 8,
+                            barPercentage: 0.58,
+                            categoryPercentage: 0.72
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0,
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    color: 'rgba(148,163,184,0.18)',
+                                    drawBorder: false
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 {% endblock %}

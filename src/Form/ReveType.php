@@ -58,7 +58,7 @@ class ReveType extends AbstractType
                     'Normal'       => 'Normal',
                     'Lucide'       => 'Lucide',
                     'Cauchemar'    => 'Cauchemar',
-                    'Prémonitoire' => 'Prémonitoire',
+                   
                 ],
                 'attr' => ['class' => 'form-control']
             ])

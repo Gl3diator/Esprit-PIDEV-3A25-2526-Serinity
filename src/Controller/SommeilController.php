@@ -41,6 +41,66 @@ final class SommeilController extends AbstractController
         $sommeils = $sommeilRepository->findFrontFiltered($filters);
         $stats = $sommeilRepository->getFrontStats();
 
+        $qualityCounts = [
+            'Excellente' => 0,
+            'Bonne' => 0,
+            'Moyenne' => 0,
+            'Mauvaise' => 0,
+        ];
+
+        $wakeMoodCounts = [
+            'Reposé' => 0,
+            'Joyeux' => 0,
+            'Neutre' => 0,
+            'Fatigué' => 0,
+            'Énergisé' => 0,
+        ];
+
+        $sleepDurationLabels = [];
+        $sleepDurationData = [];
+
+        foreach ($sommeils as $sommeil) {
+            $qualite = $sommeil->getQualite() ?? '';
+            if (array_key_exists($qualite, $qualityCounts)) {
+                $qualityCounts[$qualite]++;
+            }
+
+            $dateLabel = $sommeil->getDateNuit()?->format('d/m') ?? ('#' . $sommeil->getId());
+            $sleepDurationLabels[] = $dateLabel;
+            $sleepDurationData[] = (float) ($sommeil->getDureeSommeil() ?? 0);
+
+            $humeur = trim((string) ($sommeil->getHumeurReveil() ?? ''));
+            $humeurClean = str_replace(
+                ['😌 ', '😄 ', '😐 ', '😴 ', '⚡ '],
+                '',
+                $humeur
+            );
+
+            if (array_key_exists($humeurClean, $wakeMoodCounts)) {
+                $wakeMoodCounts[$humeurClean]++;
+            }
+        }
+
+        $stats['avg_quality'] = (int) round(
+            (
+                $qualityCounts['Excellente'] * 100 +
+                $qualityCounts['Bonne'] * 75 +
+                $qualityCounts['Moyenne'] * 50 +
+                $qualityCounts['Mauvaise'] * 25
+            ) / max(count($sommeils), 1)
+        );
+
+        $stats['qualite_excellente'] = $qualityCounts['Excellente'];
+        $stats['qualite_bonne'] = $qualityCounts['Bonne'];
+        $stats['qualite_moyenne'] = $qualityCounts['Moyenne'];
+        $stats['qualite_mauvaise'] = $qualityCounts['Mauvaise'];
+
+        $stats['sleep_duration_labels'] = $sleepDurationLabels;
+        $stats['sleep_duration_data'] = $sleepDurationData;
+
+        $stats['wake_mood_labels'] = array_keys($wakeMoodCounts);
+        $stats['wake_mood_data'] = array_values($wakeMoodCounts);
+
         return $this->render('sommeil/list.html.twig', [
             'sommeils' => $sommeils,
             'filters' => $filters,

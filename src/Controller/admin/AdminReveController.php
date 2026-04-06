@@ -42,12 +42,35 @@ final class AdminReveController extends AbstractController
                 'description_courte' => mb_strimwidth($reve->getDescription() ?? '', 0, 60, '…'),
                 'type_reve' => $reve->getTypeReve() ?? 'Inconnu',
                 'humeur' => $humeur,
-                'humeur_class' => 'emotion-' . strtolower(str_replace(' ', '-', $humeur)),
+                'humeur_class' => $this->mapEmotionClass($humeur),
             ];
         }
 
         return $this->render('admin/reve/index.html.twig', [
             'reves' => $reves,
         ]);
+    }
+
+    private function mapEmotionClass(string $humeur): string
+    {
+        $value = mb_strtolower(trim($humeur));
+
+        if (str_contains($value, 'joy') || str_contains($value, 'heureux') || str_contains($value, 'heureuse')) {
+            return 'emotion-joyeux';
+        }
+
+        if (str_contains($value, 'peur') || str_contains($value, 'effray') || str_contains($value, 'angoisse') || str_contains($value, 'anx')) {
+            return 'emotion-peur';
+        }
+
+        if (str_contains($value, 'serein') || str_contains($value, 'calme')) {
+            return 'emotion-calme';
+        }
+
+        if (str_contains($value, 'triste')) {
+            return 'emotion-triste';
+        }
+
+        return 'emotion-neutre';
     }
 }
