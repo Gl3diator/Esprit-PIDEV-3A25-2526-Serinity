@@ -254,4 +254,18 @@ class Sommeil
         }
         return $this;
     }
+
+    public function isSommeilInsuffisant(): bool
+    {
+        return $this->duree_sommeil !== null && $this->duree_sommeil < 5;
+    }
+
+    public function getSleepStatusLabel(): ?string
+    {
+        if ($this->isSommeilInsuffisant()) {
+            return 'Sommeil insuffisant';
+        }
+
+        return null;
+    }
 }
