@@ -3,108 +3,121 @@
 
 {% block body %}
 
-    <nav class="breadcrumb">
-        <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
-        <span class="breadcrumb__sep">›</span>
-        <span class="breadcrumb__current">Nouvelle nuit</span>
-    </nav>
+    <div class="sleep-create-page">
 
-    <header class="page-header">
-        <div class="page-header__left">
-            <h1 class="page-header__title">🌙 Nouvelle nuit</h1>
-            <p class="page-header__subtitle">Enregistrez votre nuit de sommeil</p>
-        </div>
-    </header>
+        <nav class="breadcrumb">
+            <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
+            <span>›</span>
+            <span>Nouvelle nuit</span>
+        </nav>
 
-    <div class="card">
-        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+        <header class="page-header">
+            <h1 class="page-title">🌙 Nouvelle nuit</h1>
+            <p class="page-subtitle">Enregistrez votre nuit de sommeil</p>
+        </header>
 
-        <div class="form-section">
-            <div class="form-section__title">⏰ Horaires</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form_label(form.dateNuit, 'Date de la nuit', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.dateNuit, {attr: {class: 'form-control'}}) }}
-                    {{ form_errors(form.dateNuit) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.heureCoucher, 'Heure de coucher', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.heureCoucher, {attr: {class: 'form-control', placeholder: '22:30'}}) }}
-                    {{ form_errors(form.heureCoucher) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.heureReveil, 'Heure de réveil', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.heureReveil, {attr: {class: 'form-control', placeholder: '07:00'}}) }}
-                    {{ form_errors(form.heureReveil) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.dureeSommeil, 'Durée (heures)', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.dureeSommeil, {attr: {class: 'form-control', placeholder: '7.5'}}) }}
-                    {{ form_errors(form.dureeSommeil) }}
+        <div class="sleep-card">
+
+            {{ form_start(form, {attr: {class: 'sleep-form'}}) }}
+
+            <!-- Horaires -->
+            <div class="form-section">
+                <h3>⏰ Horaires</h3>
+                <div class="form-grid">
+
+                    <div>
+                        {{ form_label(form.dateNuit) }}
+                        {{ form_widget(form.dateNuit) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.heureCoucher) }}
+                        {{ form_widget(form.heureCoucher) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.heureReveil) }}
+                        {{ form_widget(form.heureReveil) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.dureeSommeil) }}
+                        {{ form_widget(form.dureeSommeil) }}
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <div class="form-section">
-            <div class="form-section__title">⭐ Qualité & ressenti</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form_label(form.qualite, 'Qualité du sommeil', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.qualite, {attr: {class: 'form-control'}}) }}
-                    {{ form_errors(form.qualite) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.humeurReveil, 'Humeur au réveil', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.humeurReveil, {attr: {class: 'form-control'}}) }}
-                    {{ form_errors(form.humeurReveil) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.interruptions, "Interruptions", {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.interruptions, {attr: {class: 'form-control', min: '0'}}) }}
-                    {{ form_errors(form.interruptions) }}
+            <!-- Qualité -->
+            <div class="form-section">
+                <h3>⭐ Qualité & ressenti</h3>
+                <div class="form-grid">
+
+                    <div>
+                        {{ form_label(form.qualite) }}
+                        {{ form_widget(form.qualite) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.humeurReveil) }}
+                        {{ form_widget(form.humeurReveil) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.interruptions) }}
+                        {{ form_widget(form.interruptions) }}
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <div class="form-section">
-            <div class="form-section__title">🏠 Environnement</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    {{ form_label(form.environnement, 'Environnement', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.environnement, {attr: {class: 'form-control'}}) }}
-                    {{ form_errors(form.environnement) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.temperature, 'Température (°C)', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.temperature, {attr: {class: 'form-control', placeholder: '19.5'}}) }}
-                    {{ form_errors(form.temperature) }}
-                </div>
-                <div class="form-group">
-                    {{ form_label(form.bruitNiveau, 'Niveau de bruit', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.bruitNiveau, {attr: {class: 'form-control'}}) }}
-                    {{ form_errors(form.bruitNiveau) }}
+            <!-- Environnement -->
+            <div class="form-section">
+                <h3>🏠 Environnement</h3>
+                <div class="form-grid">
+
+                    <div>
+                        {{ form_label(form.environnement) }}
+                        {{ form_widget(form.environnement) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.temperature) }}
+                        {{ form_widget(form.temperature) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.bruitNiveau) }}
+                        {{ form_widget(form.bruitNiveau) }}
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <div class="form-section">
-            <div class="form-section__title">📝 Notes</div>
-            <div class="form-group form-group--full">
-                {{ form_label(form.commentaire, 'Commentaire', {label_attr: {class: 'form-label'}}) }}
-                {{ form_widget(form.commentaire, {attr: {class: 'form-control', rows: '4', placeholder: 'Décrivez votre nuit...'}}) }}
-                {{ form_errors(form.commentaire) }}
+            <!-- Notes -->
+            <div class="form-section">
+                <h3>📝 Notes</h3>
+
+                {{ form_label(form.commentaire) }}
+                {{ form_widget(form.commentaire) }}
+
             </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    ✔ Enregistrer
+                </button>
+
+                <a href="{{ path('app_sommeil_index') }}" class="btn-secondary">
+                    Annuler
+                </a>
+            </div>
+
+            {{ form_end(form) }}
+
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn btn--primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                Enregistrer la nuit
-            </button>
-            <a href="{{ path('app_sommeil_index') }}" class="btn btn--secondary">Annuler</a>
-        </div>
-
-        {{ form_end(form) }}
     </div>
 
 {% endblock %}

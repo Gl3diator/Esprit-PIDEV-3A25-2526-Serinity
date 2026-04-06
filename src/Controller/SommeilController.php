@@ -10,12 +10,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
 {
-    #[Route('', name: 'app_sommeil_index', methods: ['GET'])]
-    public function index(Request $request, SommeilRepository $sommeilRepository): Response
+    #[Route('/', name: 'app_sommeil_index', methods: ['GET'])]
+    public function index(EntityManagerInterface $em): Response
+    {
+        $sommeils = $em->getRepository(Sommeil::class)->findAll();
+
+        return $this->render('sommeil/index.html.twig', [
+            'sommeils' => $sommeils,
+        ]);
+    }
+
+    #[Route('/list', name: 'app_sommeil_list', methods: ['GET'])]
+    public function list(Request $request, SommeilRepository $sommeilRepository): Response
     {
         $filters = [
             'q' => $request->query->get('q'),
@@ -36,18 +48,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    #[Route('/list', name: 'app_sommeil_list', methods: ['GET'])]
-    public function list(EntityManagerInterface $em): Response
-    {
-        $sommeils = $em->getRepository(Sommeil::class)->findAll();
-
-        return $this->render('sommeil/list.html.twig', [
-            'sommeils' => $sommeils,
-            'filters' => [],
-            'stats' => null,
-        ]);
-    }
-
     #[Route('/new', name: 'app_sommeil_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -65,7 +65,7 @@ final class SommeilController extends AbstractController
 
             $this->addFlash('success', 'Nuit de sommeil ajoutée avec succès !');
 
-            return $this->redirectToRoute('app_sommeil_index');
+            return $this->redirectToRoute('app_sommeil_list');
         }
 
         return $this->render('sommeil/new.html.twig', [
@@ -93,7 +93,7 @@ final class SommeilController extends AbstractController
 
             $this->addFlash('success', 'Nuit de sommeil modifiée avec succès !');
 
-            return $this->redirectToRoute('app_sommeil_index');
+            return $this->redirectToRoute('app_sommeil_list');
         }
 
         return $this->render('sommeil/edit.html.twig', [
@@ -112,7 +112,7 @@ final class SommeilController extends AbstractController
             $this->addFlash('success', 'Nuit de sommeil supprimée.');
         }
 
-        return $this->redirectToRoute('app_sommeil_index');
+        return $this->redirectToRoute('app_sommeil_list');
     }
 
     #[Route('/export/csv', name: 'app_sommeil_export_csv', methods: ['GET'])]
@@ -171,8 +171,28 @@ final class SommeilController extends AbstractController
             'direction' => $request->query->get('direction', 'DESC'),
         ];
 
-        return $this->render('sommeil/export_pdf.html.twig', [
-            'sommeils' => $sommeilRepository->findFrontFiltered($filters),
+        $sommeils = $sommeilRepository->findFrontFiltered($filters);
+
+        $html = $this->renderView('sommeil/export_pdf.html.twig', [
+            'sommeils' => $sommeils,
         ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="sommeils.pdf"',
+            ]
+        );
     }
 }

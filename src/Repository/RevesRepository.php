@@ -12,40 +12,57 @@ class RevesRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Reves::class);
     }
+
     public function findFrontFiltered(array $filters = []): array
     {
-        $qb = $this->createQueryBuilder('r');
+        $qb = $this->createQueryBuilder('r')
+            ->leftJoin('r.sommeil_id', 's')
+            ->addSelect('s');
 
+        // Recherche globale
         if (!empty($filters['q'])) {
-            $qb->andWhere('r.titre LIKE :q OR r.description LIKE :q OR r.emotions LIKE :q OR r.type_reve LIKE :q')
+            $qb->andWhere('
+                r.titre LIKE :q
+                OR r.description LIKE :q
+                OR r.emotions LIKE :q
+                OR r.type_reve LIKE :q
+                OR r.humeur LIKE :q
+                OR r.symboles LIKE :q
+            ')
                 ->setParameter('q', '%' . $filters['q'] . '%');
         }
 
+        // Filtre type
         if (!empty($filters['type'])) {
             $qb->andWhere('r.type_reve = :type')
                 ->setParameter('type', $filters['type']);
         }
 
+        // Filtre récurrent
         if (isset($filters['recurrent']) && $filters['recurrent'] !== '') {
             $qb->andWhere('r.recurrent = :recurrent')
                 ->setParameter('recurrent', (bool) $filters['recurrent']);
         }
 
-        if (!empty($filters['couleur'])) {
+        // Filtre couleur
+        if ($filters['couleur'] !== null && $filters['couleur'] !== '') {
             $qb->andWhere('r.couleur = :couleur')
-                ->setParameter('couleur', $filters['couleur']);
+                ->setParameter('couleur', (bool) $filters['couleur']);
         }
 
+        // Filtre cauchemars
         if (!empty($filters['cauchemars']) && $filters['cauchemars'] == '1') {
             $qb->andWhere('LOWER(r.type_reve) = :nightmare')
                 ->setParameter('nightmare', 'cauchemar');
         }
 
+        // Tri autorisé
         $allowedSorts = [
-            'date' => 'r.date_reve',
-            'intensite' => 'r.intensite',
-            'anxiete' => 'r.niveau_anxiete',
+            'date' => 'r.created_at',
             'titre' => 'r.titre',
+            'type' => 'r.type_reve',
+            'humeur' => 'r.humeur',
+            'intensite' => 'r.intensite',
         ];
 
         $sort = $filters['sort'] ?? 'date';

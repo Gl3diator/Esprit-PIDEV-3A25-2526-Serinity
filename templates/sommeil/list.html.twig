@@ -3,31 +3,20 @@
 
 {% block body %}
 
-    <header class="page-header sl-header">
-        <div class="page-header__left sl-header-left">
-
+    <header class="sl-header">
+        <div class="sl-header-left">
             <h1 class="sl-title">
                 <span class="title-icon">🌙</span>
-                <span class="sl-title-text">Mes nuits de sommeil</span>
+                Mes nuits de sommeil
             </h1>
-
-
         </div>
 
         <div style="display:flex;gap:12px;">
-            <a href="{{ path('app_sommeil_index') }}" class="sl-btn sl-btn-outline">
-                ← Retour
-            </a>
-
-            <a href="{{ path('app_sommeil_new') }}" class="sl-btn sl-btn-primary">
-                + Ajouter une nuit
-            </a>
+            <a href="{{ path('app_sommeil_index') }}" class="sl-btn sl-btn-outline">← Retour</a>
+            <a href="{{ path('app_sommeil_new') }}" class="sl-btn sl-btn-primary">+ Ajouter une nuit</a>
         </div>
     </header>
 
-    {# =========================
-       BLOC STATISTIQUES
-       ========================= #}
     <div class="stats-grid mb-4">
         <div class="stat-card">
             <h4>Total sommeils</h4>
@@ -43,9 +32,6 @@
         </div>
     </div>
 
-    {# =========================
-       FORMULAIRE FILTRES
-       ========================= #}
     <form method="get" class="filters-bar mb-4">
         <input
                 type="text"
@@ -76,20 +62,12 @@
             </option>
         </select>
 
-        <select name="sort">
-            <option value="date_nuit" {{ filters.sort|default('date_nuit') == 'date_nuit' ? 'selected' : '' }}>Date</option>
-            <option value="duree" {{ filters.sort|default('') == 'duree' ? 'selected' : '' }}>Durée</option>
-            <option value="qualite" {{ filters.sort|default('') == 'qualite' ? 'selected' : '' }}>Qualité</option>
-            <option value="interruptions" {{ filters.sort|default('') == 'interruptions' ? 'selected' : '' }}>Interruptions</option>
-        </select>
-
-        <select name="direction">
-            <option value="DESC" {{ filters.direction|default('DESC') == 'DESC' ? 'selected' : '' }}>Décroissant</option>
-            <option value="ASC" {{ filters.direction|default('') == 'ASC' ? 'selected' : '' }}>Croissant</option>
-        </select>
+        {# on garde sort/direction cachés pour que les filtres restent compatibles avec le tri #}
+        <input type="hidden" name="sort" value="{{ filters.sort|default('date_nuit') }}">
+        <input type="hidden" name="direction" value="{{ filters.direction|default('DESC') }}">
 
         <button type="submit" class="btn btn--primary">Filtrer</button>
-        <a href="{{ path('app_sommeil_index') }}" class="btn btn--secondary">Réinitialiser</a>
+        <a href="{{ path('app_sommeil_list') }}" class="btn btn--secondary">Réinitialiser</a>
         <a href="{{ path('app_sommeil_export_csv', app.request.query.all) }}" class="btn btn--secondary">Exporter Excel</a>
         <a href="{{ path('app_sommeil_export_pdf', app.request.query.all) }}" target="_blank" class="btn btn--secondary">Exporter PDF</a>
     </form>
@@ -102,18 +80,70 @@
             <a href="{{ path('app_sommeil_new') }}" class="btn btn--primary">Ajouter une nuit</a>
         </div>
     {% else %}
+        {% set currentSort = filters.sort|default('date_nuit') %}
+        {% set currentDirection = filters.direction|default('DESC') %}
+
         <div class="table-wrapper">
-            <table class="table">
+            <table class="sl-table">
                 <thead>
                 <tr>
-                    <th>Date</th>
+                    <th>
+                        {% set nextDirection = (currentSort == 'date_nuit' and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
+                        <a href="{{ path('app_sommeil_list', app.request.query.all|merge({sort: 'date_nuit', direction: nextDirection})) }}"
+                           class="sort-link {{ currentSort == 'date_nuit' ? 'active' : '' }}">
+                            Date
+                            {% if currentSort == 'date_nuit' %}
+                                {{ currentDirection == 'ASC' ? '↑' : '↓' }}
+                            {% else %}
+                                ⇅
+                            {% endif %}
+                        </a>
+                    </th>
+
                     <th>Coucher</th>
                     <th>Réveil</th>
-                    <th>Durée</th>
-                    <th>Qualité</th>
+
+                    <th>
+                        {% set nextDirection = (currentSort == 'duree' and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
+                        <a href="{{ path('app_sommeil_list', app.request.query.all|merge({sort: 'duree', direction: nextDirection})) }}"
+                           class="sort-link {{ currentSort == 'duree' ? 'active' : '' }}">
+                            Durée
+                            {% if currentSort == 'duree' %}
+                                {{ currentDirection == 'ASC' ? '↑' : '↓' }}
+                            {% else %}
+                                ⇅
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th>
+                        {% set nextDirection = (currentSort == 'qualite' and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
+                        <a href="{{ path('app_sommeil_list', app.request.query.all|merge({sort: 'qualite', direction: nextDirection})) }}"
+                           class="sort-link {{ currentSort == 'qualite' ? 'active' : '' }}">
+                            Qualité
+                            {% if currentSort == 'qualite' %}
+                                {{ currentDirection == 'ASC' ? '↑' : '↓' }}
+                            {% else %}
+                                ⇅
+                            {% endif %}
+                        </a>
+                    </th>
+
                     <th>Humeur réveil</th>
                     <th>Badges</th>
-                    <th>Actions</th>
+
+                    <th>
+                        {% set nextDirection = (currentSort == 'interruptions' and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
+                        <a href="{{ path('app_sommeil_list', app.request.query.all|merge({sort: 'interruptions', direction: nextDirection})) }}"
+                           class="sort-link {{ currentSort == 'interruptions' ? 'active' : '' }}">
+                            Actions
+                            {% if currentSort == 'interruptions' %}
+                                {{ currentDirection == 'ASC' ? '↑' : '↓' }}
+                            {% else %}
+                                ⇅
+                            {% endif %}
+                        </a>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
@@ -122,8 +152,11 @@
                         <td>
                             <strong>{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '—' }}</strong>
                         </td>
+
                         <td>{{ sommeil.heureCoucher ?? '—' }}</td>
+
                         <td>{{ sommeil.heureReveil ?? '—' }}</td>
+
                         <td>
                             {% if sommeil.dureeSommeil %}
                                 {{ sommeil.dureeSommeil }}h
@@ -131,6 +164,7 @@
                                 —
                             {% endif %}
                         </td>
+
                         <td>
                             {% set qClass = {
                                 'Excellente':'primary',
@@ -146,6 +180,7 @@
                                 —
                             {% endif %}
                         </td>
+
                         <td>{{ sommeil.humeurReveil ?? '—' }}</td>
 
                         <td>

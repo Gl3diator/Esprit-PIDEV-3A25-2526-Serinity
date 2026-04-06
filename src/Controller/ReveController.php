@@ -6,6 +6,8 @@ use App\Entity\Reves;
 use App\Form\ReveType;
 use App\Repository\RevesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -123,17 +125,16 @@ final class ReveController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="reves.csv"');
 
         $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, ['Date', 'Titre', 'Type', 'Intensité', 'Anxiété', 'Récurrent', 'Couleur']);
+        fputcsv($handle, ['Date', 'Titre', 'Type', 'Intensité', 'Récurrent', 'Couleur']);
 
         foreach ($rows as $r) {
             fputcsv($handle, [
-                method_exists($r, 'getDateReve') && $r->getDateReve() ? $r->getDateReve()->format('Y-m-d') : '',
+                method_exists($r, 'getCreatedAt') && $r->getCreatedAt() ? $r->getCreatedAt()->format('Y-m-d') : '',
                 method_exists($r, 'getTitre') ? $r->getTitre() : '',
                 method_exists($r, 'getTypeReve') ? $r->getTypeReve() : '',
                 method_exists($r, 'getIntensite') ? $r->getIntensite() : '',
-                method_exists($r, 'getNiveauAnxiete') ? $r->getNiveauAnxiete() : '',
-                method_exists($r, 'isRecurrent') ? ($r->isRecurrent() ? 'Oui' : 'Non') : '',
-                method_exists($r, 'getCouleur') ? $r->getCouleur() : '',
+                method_exists($r, 'getRecurrent') ? ($r->getRecurrent() ? 'Oui' : 'Non') : '',
+                method_exists($r, 'getCouleur') ? ($r->getCouleur() ? 'Oui' : 'Non') : '',
             ]);
         }
 
@@ -159,8 +160,28 @@ final class ReveController extends AbstractController
             'direction' => $request->query->get('direction', 'DESC'),
         ];
 
-        return $this->render('reve/export_pdf.html.twig', [
-            'reves' => $revesRepository->findFrontFiltered($filters),
+        $reves = $revesRepository->findFrontFiltered($filters);
+
+        $html = $this->renderView('reve/export_pdf.html.twig', [
+            'reves' => $reves,
         ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reves.pdf"',
+            ]
+        );
     }
 }

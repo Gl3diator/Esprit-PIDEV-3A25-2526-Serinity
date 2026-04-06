@@ -3,37 +3,26 @@
 
 {% block body %}
 
-    <header class="page-header">
-        <div class="page-header__left">
-            <h1 class="page-header__title">💤 Mes rêves</h1>
-            <p class="page-header__subtitle">
-                {{ reves|length }} rêve{{ reves|length > 1 ? 's' : '' }} enregistré{{ reves|length > 1 ? 's' : '' }}
-            </p>
+    <header class="sl-header">
+        <div class="sl-header-left">
+            <h1 class="sl-title">
+                <span class="title-icon">💤</span>
+                Mes rêves
+            </h1>
         </div>
-        <div style="display:flex;gap:var(--space-3);">
-            <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">← Retour</a>
-            <a href="{{ path('app_reve_new') }}" class="btn btn--primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Ajouter un rêve
-            </a>
+
+        <div style="display:flex;gap:12px;">
+            <a href="{{ path('app_sommeil_index') }}" class="sl-btn sl-btn-outline">← Retour</a>
+            <a href="{{ path('app_reve_new') }}" class="sl-btn sl-btn-primary">+ Ajouter un rêve</a>
         </div>
     </header>
 
-    {# =========================
-       BANNIÈRE ATTENTION
-       ========================= #}
     {% if stats.attention %}
         <div class="alert alert-warning mb-3">
             <strong>Attention :</strong> plusieurs cauchemars ont été détectés.
         </div>
     {% endif %}
 
-    {# =========================
-       BLOC STATISTIQUES
-       ========================= #}
     <div class="stats-grid mb-4">
         <div class="stat-card">
             <h4>Total rêves</h4>
@@ -49,9 +38,6 @@
         </div>
     </div>
 
-    {# =========================
-       FORMULAIRE FILTRES
-       ========================= #}
     <form method="get" class="filters-bar mb-4">
         <input
                 type="text"
@@ -88,14 +74,10 @@
         <select name="sort">
             <option value="date" {{ filters.sort|default('date') == 'date' ? 'selected' : '' }}>Date</option>
             <option value="intensite" {{ filters.sort|default('') == 'intensite' ? 'selected' : '' }}>Intensité</option>
-            <option value="anxiete" {{ filters.sort|default('') == 'anxiete' ? 'selected' : '' }}>Anxiété</option>
             <option value="titre" {{ filters.sort|default('') == 'titre' ? 'selected' : '' }}>Titre</option>
         </select>
 
-        <select name="direction">
-            <option value="DESC" {{ filters.direction|default('DESC') == 'DESC' ? 'selected' : '' }}>Décroissant</option>
-            <option value="ASC" {{ filters.direction|default('') == 'ASC' ? 'selected' : '' }}>Croissant</option>
-        </select>
+
 
         <button type="submit" class="btn btn--primary">Filtrer</button>
         <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">Réinitialiser</a>
@@ -112,14 +94,41 @@
         </div>
     {% else %}
         <div class="table-wrapper">
-            <table class="table">
+            <table class="sl-table">
                 <thead>
                 <tr>
-                    <th>Titre</th>
-                    <th>Nuit associée</th>
-                    <th>Type</th>
-                    <th>Humeur</th>
-                    <th>Intensité</th>
+                    {% set currentSort = filters.sort %}
+                    {% set currentDirection = filters.direction %}
+
+                    {% macro sort_link(label, field, filters, currentSort, currentDirection) %}
+                        {% import _self as macros %}
+
+                        {% set direction = (currentSort == field and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
+
+                        <a href="{{ path(app.request.attributes.get('_route'), filters|merge({
+                            sort: field,
+                            direction: direction
+                        })) }}"
+                           class="sort-link {{ currentSort == field ? 'active' : '' }}">
+                            {{ label }}
+
+                            {% if currentSort == field %}
+                                {% if currentDirection == 'ASC' %}
+                                    ↑
+                                {% else %}
+                                    ↓
+                                {% endif %}
+                            {% else %}
+                                ⇅
+                            {% endif %}
+                        </a>
+                    {% endmacro %}
+
+                    <th>{{ _self.sort_link('Titre', 'titre', filters, currentSort, currentDirection) }}</th>
+                    <th>{{ _self.sort_link('Date', 'date', filters, currentSort, currentDirection) }}</th>
+                    <th>{{ _self.sort_link('Type', 'type', filters, currentSort, currentDirection) }}</th>
+                    <th>{{ _self.sort_link('Humeur', 'humeur', filters, currentSort, currentDirection) }}</th>
+                    <th>{{ _self.sort_link('Intensité', 'intensite', filters, currentSort, currentDirection) }}</th>
                     <th>Couleur</th>
                     <th>Récurrent</th>
                     <th>Actions</th>
@@ -171,7 +180,7 @@
                             {% if reve.couleur %}
                                 <span class="badge badge--info">🎨 {{ reve.couleur }}</span>
                             {% else %}
-                                <span style="color:var(--text-faint);font-size:0.85rem;">N&B</span>
+                                <span style="color:var(--text-faint);font-size:0.85rem;">N&amp;B</span>
                             {% endif %}
                         </td>
 
