@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Reves
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]  // ✅ AUTO_INCREMENT
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
@@ -45,13 +45,15 @@ class Reves
     private ?string $humeur = null;
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Le type de rêve est obligatoire.')]
     #[Assert\Choice(
-        choices: ['Normal', 'Lucide', 'Cauchemar', 'Prémonitoire'],
+        choices: ['Normal', 'Lucide', 'Cauchemar'],
         message: 'Type de rêve invalide.'
     )]
     private ?string $type_reve = null;
 
     #[ORM\Column(type: "integer", nullable: true)]
+    #[Assert\NotNull(message: "L'intensité est obligatoire.")]
     #[Assert\Range(
         min: 1,
         max: 10,
@@ -60,7 +62,7 @@ class Reves
     private ?int $intensite = null;
 
     #[ORM\Column(type: "boolean")]
-    private bool $couleur = false;  // ✅ valeur par défaut
+    private bool $couleur = false;
 
     #[ORM\Column(type: "string", length: 200, nullable: true)]
     #[Assert\Length(
@@ -73,7 +75,7 @@ class Reves
     private ?string $symboles = null;
 
     #[ORM\Column(type: "boolean")]
-    private bool $recurrent = false;  // ✅ valeur par défaut
+    private bool $recurrent = false;
 
     #[ORM\Column(type: "datetime")]
     private ?\DateTimeInterface $created_at = null;

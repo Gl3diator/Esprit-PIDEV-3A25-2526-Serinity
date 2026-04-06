@@ -18,18 +18,18 @@ class SommeilType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            // ✅ date_nuit → dateNuit
             ->add('dateNuit', DateType::class, [
                 'label'  => 'Date de la nuit',
                 'widget' => 'single_text',
-                'attr'   => ['class' => 'form-control']
+                'attr'   => [
+                    'class' => 'form-control',
+                    'max'   => (new \DateTime())->format('Y-m-d'),  // ✅ dates futures grisées
+                ]
             ])
-            // ✅ heure_coucher → heureCoucher
             ->add('heureCoucher', TextType::class, [
                 'label' => 'Heure de coucher',
                 'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: 22:30']
             ])
-            // ✅ heure_reveil → heureReveil
             ->add('heureReveil', TextType::class, [
                 'label' => 'Heure de réveil',
                 'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: 07:00']
@@ -49,28 +49,26 @@ class SommeilType extends AbstractType
                 'required' => false,
                 'attr'     => ['class' => 'form-control', 'rows' => 3]
             ])
-            // ✅ duree_sommeil → dureeSommeil
             ->add('dureeSommeil', NumberType::class, [
                 'label'    => 'Durée (heures)',
                 'required' => false,
                 'scale'    => 2,
-                'attr'     => ['class' => 'form-control', 'step' => '0.5']
+                'attr'     => ['class' => 'form-control', 'step' => '0.5', 'min' => '0.5', 'max' => '24']
             ])
             ->add('interruptions', IntegerType::class, [
                 'label'    => "Nombre d'interruptions",
                 'required' => false,
                 'attr'     => ['class' => 'form-control', 'min' => 0]
             ])
-            // ✅ humeur_reveil → humeurReveil
             ->add('humeurReveil', ChoiceType::class, [
                 'label'    => 'Humeur au réveil',
                 'required' => false,
                 'choices'  => [
-                    '😌 Reposé'  => '😌 Reposé',
-                    '😄 Joyeux'  => '😄 Joyeux',
-                    '😐 Neutre'  => '😐 Neutre',
-                    '😴 Fatigué' => '😴 Fatigué',
-                    '⚡ Énergisé'   => '⚡ Énergisé',
+                    '😌 Reposé'   => '😌 Reposé',
+                    '😄 Joyeux'   => '😄 Joyeux',
+                    '😐 Neutre'   => '😐 Neutre',
+                    '😴 Fatigué'  => '😴 Fatigué',
+                    '⚡ Énergisé' => '⚡ Énergisé',
                 ],
                 'attr' => ['class' => 'form-control']
             ])
@@ -88,9 +86,8 @@ class SommeilType extends AbstractType
                 'label'    => 'Température (°C)',
                 'required' => false,
                 'scale'    => 1,
-                'attr'     => ['class' => 'form-control', 'step' => '0.1']
+                'attr'     => ['class' => 'form-control', 'step' => '0.1', 'min' => '10', 'max' => '40']
             ])
-            // ✅ bruit_niveau → bruitNiveau
             ->add('bruitNiveau', ChoiceType::class, [
                 'label'    => 'Niveau de bruit',
                 'required' => false,
