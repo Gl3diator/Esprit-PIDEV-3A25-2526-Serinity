@@ -1,119 +1,147 @@
 {% extends 'base.html.twig' %}
-{% block title %}Nuits de sommeil — Sleep Tracker{% endblock %}
+
+{% block title %}Sommeil — Serinity Sleep{% endblock %}
+{% block meta_description %}Gérez votre suivi du sommeil et votre journal des rêves depuis cet espace dédié.{% endblock %}
 
 {% block body %}
 
-    <header class="page-header">
-        <div class="page-header__left">
-            <h1 class="page-header__title">🌙 Nuits de sommeil</h1>
-            <p class="page-header__subtitle">{{ sommeils|length }} nuit{{ sommeils|length > 1 ? 's' : '' }} enregistrée{{ sommeils|length > 1 ? 's' : '' }}</p>
-        </div>
-        <a href="{{ path('app_sommeil_new') }}" class="btn btn--primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Ajouter une nuit
-        </a>
-    </header>
+    <section class="sn-module-hub" aria-labelledby="hub-title">
 
-    {% if sommeils is empty %}
-        <div class="empty-state">
-            <div class="empty-state__icon">🌙</div>
-            <h3>Aucune nuit enregistrée</h3>
-            <p>Commencez à suivre votre sommeil en ajoutant votre première nuit.</p>
-            <a href="{{ path('app_sommeil_new') }}" class="btn btn--primary">Ajouter une nuit</a>
-        </div>
-    {% else %}
-        <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Coucher → Réveil</th>
-                    <th>Durée</th>
-                    <th>Qualité</th>
-                    <th>Humeur réveil</th>
-                    <th>Interruptions</th>
-                    <th>Rêves</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for sommeil in sommeils %}
-                    <tr>
-                        <td><strong>{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '—' }}</strong></td>
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">
-                            {{ sommeil.heureCoucher ?? '—' }} → {{ sommeil.heureReveil ?? '—' }}
-                        </td>
-                        <td>
-                            {% if sommeil.dureeSommeil %}
-                                <span class="badge badge--info">{{ sommeil.dureeSommeil }}h</span>
-                            {% else %}—{% endif %}
-                        </td>
-                        <td>
-                            {% if sommeil.qualite %}
-                                {% set qClass = {'Excellente':'success','Bonne':'info','Moyenne':'warning','Mauvaise':'danger'} %}
-                                <span class="badge badge--{{ qClass[sommeil.qualite] ?? 'muted' }}">{{ sommeil.qualite }}</span>
-                            {% else %}—{% endif %}
-                        </td>
-                        <td>{{ sommeil.humeurReveil ?? '—' }}</td>
-                        <td style="text-align:center;">
-                            {% if sommeil.interruptions is not null %}
-                                <span class="badge badge--{{ sommeil.interruptions == 0 ? 'success' : 'warning' }}">{{ sommeil.interruptions }}</span>
-                            {% else %}—{% endif %}
-                        </td>
-                        <td>
-                            {% if sommeil.revess is defined and sommeil.revess|length > 0 %}
-                                <span class="badge badge--primary">{{ sommeil.revess|length }}</span>
-                            {% else %}
-                                <span style="color:var(--text-faint);font-size:0.85rem;">aucun</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="actions">
-                                <a href="{{ path('app_sommeil_show', {id: sommeil.id}) }}" class="btn btn--secondary btn--sm" title="Voir">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </a>
-                                <a href="{{ path('app_sommeil_edit', {id: sommeil.id}) }}" class="btn btn--secondary btn--sm" title="Modifier">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                </a>
-                                <button type="button" class="btn btn--danger btn--sm"
-                                        onclick="openDeleteModal('{{ path('app_sommeil_delete', {id: sommeil.id}) }}', 'nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : sommeil.id }}')"
-                                        title="Supprimer">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
+        {# ── Décoration fond nucleo ── #}
+        <span class="sn-hub-nucleo" style="top:8%;left:3%;"
+              aria-hidden="true">
+        <i class="ni ni-moon-stars"></i>
+    </span>
+        <span class="sn-hub-nucleo" style="bottom:10%;right:4%;font-size:7rem;opacity:0.05;"
+              aria-hidden="true">
+        <i class="ni ni-cloud"></i>
+    </span>
+        <span class="sn-hub-nucleo" style="top:30%;right:8%;font-size:5rem;opacity:0.04;"
+              aria-hidden="true">
+        <i class="ni ni-favourite-28"></i>
+    </span>
 
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal">
-            <h2 class="modal__title">Supprimer cette nuit ?</h2>
-            <p class="modal__body" id="deleteModalBody">Les rêves associés seront également supprimés.</p>
-            <div class="modal__actions">
-                <button type="button" class="btn btn--secondary" onclick="closeDeleteModal()">Annuler</button>
-                <form id="deleteForm" method="post">
-                    <input type="hidden" name="_token" value="">
-                    <button type="submit" class="btn btn--danger">Supprimer</button>
-                </form>
+        {# ── Orbes ── #}
+        <div class="sn-hub-orb sn-hub-orb-1" aria-hidden="true"></div>
+        <div class="sn-hub-orb sn-hub-orb-2" aria-hidden="true"></div>
+
+        <div class="sn-hub-content">
+
+            {# Badge module #}
+            <div class="sn-hub-badge sn-animate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                Module Sommeil
             </div>
+
+            {# Icône centrale #}
+            <div class="sn-hub-icon sn-animate sn-animate-delay-1" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </div>
+
+            <h1 class="sn-hub-title sn-animate sn-animate-delay-1" id="hub-title">
+                Votre espace <span class="highlight">Sommeil</span>
+            </h1>
+
+            <p class="sn-hub-desc sn-animate sn-animate-delay-2">
+                Suivez la qualité de vos nuits et explorez l'univers de vos rêves.
+                Choisissez ce que vous souhaitez gérer aujourd'hui.
+            </p>
+
+            {# ── 2 grandes cartes d'action ── #}
+            <div class="sn-hub-actions sn-animate sn-animate-delay-3" role="list">
+
+                {# ── Gérer Sommeil ── #}
+                <a href="{{ path('app_sommeil_new') }}"
+                   class="sn-hub-card"
+                   role="listitem"
+                   aria-label="Accéder à la gestion du sommeil">
+
+                    {# Décoration nucleo sur la carte #}
+                    <span style="position:absolute;bottom:-10px;right:-10px;font-size:7rem;
+                             opacity:0.04;color:var(--sn-teal);pointer-events:none;"
+                          aria-hidden="true">
+                    <i class="ni ni-night-time"></i>
+                </span>
+
+                    <div class="sn-hub-card-icon icon-manage-sommeil">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="sn-hub-card-title">Gérer Sommeil</h2>
+
+                    <p class="sn-hub-card-desc">
+                        Enregistrez une nouvelle nuit, consultez vos entrées,
+                        analysez vos cycles et suivez votre évolution.
+                    </p>
+
+                    <span class="sn-hub-card-btn btn-sommeil" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    Accéder
+                </span>
+
+                </a>
+
+                {# ── Gérer Rêves ── #}
+                <a href="{{ path('app_reve_index') }}"
+                   class="sn-hub-card"
+                   role="listitem"
+                   aria-label="Accéder au journal des rêves">
+
+                    {# Décoration nucleo sur la carte #}
+                    <span style="position:absolute;bottom:-10px;right:-10px;font-size:7rem;
+                             opacity:0.04;color:var(--sn-lavender);pointer-events:none;"
+                          aria-hidden="true">
+                    <i class="ni ni-favourite-28"></i>
+                </span>
+
+                    <div class="sn-hub-card-icon icon-manage-reves">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="sn-hub-card-title">Gérer Rêves</h2>
+
+                    <p class="sn-hub-card-desc">
+                        Notez vos rêves, catégorisez-les, découvrez les récurrences
+                        et analysez les émotions et symboles.
+                    </p>
+
+                    <span class="sn-hub-card-btn btn-reves" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    Accéder
+                </span>
+
+                </a>
+
+            </div>
+
+            {# Lien retour accueil #}
+            <p style="margin-top:var(--sn-sp-10);font-size:0.85rem;color:var(--sn-text-faint);">
+                <a href="{{ path('app_home') }}"
+                   style="color:var(--sn-teal);font-weight:600;display:inline-flex;align-items:center;gap:0.35rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Retour à l'accueil
+                </a>
+            </p>
+
         </div>
-    </div>
+    </section>
 
-{% endblock %}
-
-{% block javascripts %}
-    <script>
-        function openDeleteModal(url, label) {
-            document.getElementById('deleteForm').action = url;
-            document.getElementById('deleteForm').querySelector('[name="_token"]').value = '{{ csrf_token("delete") }}';
-            document.getElementById('deleteModalBody').textContent = 'Supprimer la ' + label + ' ? Action irréversible.';
-            document.getElementById('deleteModal').classList.add('open');
-        }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
-        document.getElementById('deleteModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeleteModal(); });
-    </script>
 {% endblock %}

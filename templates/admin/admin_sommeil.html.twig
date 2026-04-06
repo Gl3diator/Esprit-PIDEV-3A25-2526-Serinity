@@ -1,0 +1,309 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin Sommeil — Serinity{% endblock %}
+{% block breadcrumb %}Sommeil & Rêves{% endblock %}
+
+{% block body %}
+
+    <div class="adm-page-header">
+        <div>
+            <h1 class="adm-page-title">
+            <span class="adm-title-icon mod-sommeil-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </span>
+                Gestion Sommeil & Rêves
+            </h1>
+            <p class="adm-page-subtitle">Visualisez, ajoutez, modifiez et supprimez les entrées sommeil et rêves.</p>
+        </div>
+    </div>
+
+    {# ══ KPIs sommeil ══════════════════════════════ #}
+    <div class="adm-kpi-grid adm-kpi-small">
+        <div class="adm-kpi-card kpi-sommeil">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ sommeils|length }}</span>
+                <span class="adm-kpi-label">Entrées Sommeil</span>
+            </div>
+        </div>
+        <div class="adm-kpi-card kpi-reves">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ reves|length }}</span>
+                <span class="adm-kpi-label">Rêves enregistrés</span>
+            </div>
+        </div>
+        <div class="adm-kpi-card kpi-avg">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">7.2h</span>
+                <span class="adm-kpi-label">Durée moyenne</span>
+            </div>
+        </div>
+        <div class="adm-kpi-card kpi-quality">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">87%</span>
+                <span class="adm-kpi-label">Qualité moy.</span>
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════
+   TABLE SOMMEIL
+══════════════════════════════════════════════ #}
+    <div class="adm-table-card">
+        <div class="adm-table-header">
+            <div class="adm-table-header-left">
+                <span class="adm-table-dot dot-sommeil" aria-hidden="true"></span>
+                <h2 class="adm-table-title">Entrées Sommeil</h2>
+                <span class="adm-table-count">{{ sommeils|length }} entrée(s)</span>
+            </div>
+            <div class="adm-table-header-right">
+                <div class="adm-search-mini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="search" placeholder="Rechercher..." aria-label="Rechercher une entrée sommeil">
+                </div>
+                <a href="{{ path('app_sommeil_new') }}" class="adm-btn adm-btn-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Ajouter
+                </a>
+            </div>
+        </div>
+
+        <div class="adm-table-wrap">
+            <table class="adm-table" aria-label="Tableau des entrées sommeil">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Durée</th>
+                    <th scope="col">Qualité</th>
+                    <th scope="col">Heure coucher</th>
+                    <th scope="col">Heure lever</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="adm-col-actions">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if sommeils is defined and sommeils|length > 0 %}
+                    {% for s in sommeils %}
+                        <tr>
+                            <td class="adm-td-id">{{ s.id }}</td>
+                            <td class="adm-td-user">
+                                <div class="adm-user-cell">
+                                    <span class="adm-user-avatar-sm">{{ s.user.prenom|first|upper ?? 'U' }}</span>
+                                    <span>{{ s.user.prenom ?? 'Utilisateur' }} {{ s.user.nom ?? '' }}</span>
+                                </div>
+                            </td>
+                            <td>{{ s.dateSommeil|date("d/m/Y") ?? '-' }}</td>
+                            <td>
+                                <span class="adm-badge-neutral">{{ s.duree ?? 0 }}h</span>
+                            </td>
+                            <td>
+                                {% set q = s.qualite ?? 0 %}
+                                <div class="adm-quality-bar">
+                                    <div class="adm-quality-fill" style="width:{{ q }}%"
+                                         aria-valuenow="{{ q }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="adm-quality-val">{{ q }}%</span>
+                            </td>
+                            <td>{{ s.heureCoucher|date("H:i") ?? '-' }}</td>
+                            <td>{{ s.heureLever|date("H:i") ?? '-' }}</td>
+                            <td>
+                        <span class="adm-status-badge {{ q >= 70 ? 'status-good' : (q >= 40 ? 'status-warn' : 'status-bad') }}">
+                            {{ q >= 70 ? 'Bon' : (q >= 40 ? 'Moyen' : 'Mauvais') }}
+                        </span>
+                            </td>
+                            <td class="adm-col-actions">
+                                <div class="adm-actions-group">
+                                    <a href="{{ path('app_sommeil_show', {'id': s.id}) }}"
+                                       class="adm-btn adm-btn-sm adm-btn-blue" title="Voir" aria-label="Voir entrée {{ s.id }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ path('app_sommeil_edit', {'id': s.id}) }}"
+                                       class="adm-btn adm-btn-sm adm-btn-yellow" title="Modifier" aria-label="Modifier entrée {{ s.id }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </a>
+                                    <form method="post" action="{{ path('app_sommeil_delete', {'id': s.id}) }}"
+                                          onsubmit="return confirm('Supprimer cette entrée ?');" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ s.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="adm-btn adm-btn-sm adm-btn-red"
+                                                title="Supprimer" aria-label="Supprimer entrée {{ s.id }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6l-1 14H6L5 6"/>
+                                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                                <path d="M9 6V4h6v2"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="adm-empty-row">
+                            <div class="adm-empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" aria-hidden="true">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                </svg>
+                                <p>Aucune entrée sommeil.</p>
+                                <a href="{{ path('app_sommeil_new') }}" class="adm-btn adm-btn-green">Ajouter la première</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════════════
+   TABLE RÊVES
+══════════════════════════════════════════════ #}
+    <div class="adm-table-card" style="margin-top: 2rem;">
+        <div class="adm-table-header">
+            <div class="adm-table-header-left">
+                <span class="adm-table-dot dot-reves" aria-hidden="true"></span>
+                <h2 class="adm-table-title">Journal des Rêves</h2>
+                <span class="adm-table-count">{{ reves|length }} rêve(s)</span>
+            </div>
+            <div class="adm-table-header-right">
+                <div class="adm-search-mini">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="search" placeholder="Rechercher..." aria-label="Rechercher un rêve">
+                </div>
+                <a href="{{ path('app_reve_new') }}" class="adm-btn adm-btn-green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Ajouter
+                </a>
+            </div>
+        </div>
+
+        <div class="adm-table-wrap">
+            <table class="adm-table" aria-label="Tableau des rêves">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Titre / Description</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Émotion</th>
+                    <th scope="col" class="adm-col-actions">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if reves is defined and reves|length > 0 %}
+                    {% for r in reves %}
+                        <tr>
+                            <td class="adm-td-id">{{ r.id }}</td>
+                            <td class="adm-td-user">
+                                <div class="adm-user-cell">
+                                    <span class="adm-user-avatar-sm reve-avatar">{{ r.user.prenom|first|upper ?? 'U' }}</span>
+                                    <span>{{ r.user.prenom ?? 'Utilisateur' }} {{ r.user.nom ?? '' }}</span>
+                                </div>
+                            </td>
+                            <td>{{ r.dateReve|date("d/m/Y") ?? '-' }}</td>
+                            <td class="adm-td-desc">
+                                <span class="adm-td-title">{{ r.titre ?? 'Sans titre' }}</span>
+                                <span class="adm-td-excerpt">{{ r.description|slice(0,60) ?? '' }}{% if r.description|length > 60 %}…{% endif %}</span>
+                            </td>
+                            <td>
+                                <span class="adm-badge-type">{{ r.type ?? 'Inconnu' }}</span>
+                            </td>
+                            <td>
+                                {% set emotion = r.emotion ?? 'neutre' %}
+                                <span class="adm-emotion-tag emotion-{{ emotion|lower }}">{{ emotion }}</span>
+                            </td>
+                            <td class="adm-col-actions">
+                                <div class="adm-actions-group">
+                                    <a href="{{ path('app_reve_show', {'id': r.id}) }}"
+                                       class="adm-btn adm-btn-sm adm-btn-blue" title="Voir" aria-label="Voir rêve {{ r.id }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ path('app_reve_edit', {'id': r.id}) }}"
+                                       class="adm-btn adm-btn-sm adm-btn-yellow" title="Modifier" aria-label="Modifier rêve {{ r.id }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </a>
+                                    <form method="post" action="{{ path('app_reve_delete', {'id': r.id}) }}"
+                                          onsubmit="return confirm('Supprimer ce rêve ?');" style="display:inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ r.id) }}">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="adm-btn adm-btn-sm adm-btn-red"
+                                                title="Supprimer" aria-label="Supprimer rêve {{ r.id }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6l-1 14H6L5 6"/>
+                                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                                <path d="M9 6V4h6v2"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="adm-empty-row">
+                            <div class="adm-empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" aria-hidden="true">
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                </svg>
+                                <p>Aucun rêve enregistré.</p>
+                                <a href="{{ path('app_reve_new') }}" class="adm-btn adm-btn-green">Ajouter le premier</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}
