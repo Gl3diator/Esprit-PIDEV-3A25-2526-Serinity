@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Serinity{% endblock %}
+
+{% block body %}
+    <main>
+        <section class="section section-shaped section-lg my-0 pb-250 serinity-landing-hero">
+            <div class="shape shape-style-1 serinity-landing-shape">
+                <span class="span-150"></span>
+                <span class="span-50"></span>
+                <span class="span-50"></span>
+                <span class="span-75"></span>
+                <span class="span-100"></span>
+                <span class="span-75"></span>
+                <span class="span-50"></span>
+                <span class="span-100"></span>
+                <span class="span-50"></span>
+                <span class="span-100"></span>
+            </div>
+
+            <div class="container shape-container d-flex align-items-center py-lg">
+                <div class="col px-0">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-lg-6 text-white">
+                            <div class="d-flex align-items-center mb-4">
+                                <img
+                                    src="{{ asset('argon/img/serinity-logo.png') }}"
+                                    alt="Serinity logo"
+                                    class="serinity-landing-logo mr-3"
+                                >
+                                <div>
+                                    <h1 class="display-3 text-white mb-0">Serinity</h1>
+                                    <h2 class="text-white font-weight-light mb-0">Mood Control</h2>
+                                </div>
+                            </div>
+
+                            <p class="lead text-white mb-4">
+                                Track your mood, understand your emotions, and keep a personal journal in one calm space.
+                            </p>
+
+                            <div class="btn-wrapper mt-4">
+                                <a href="{{ path('app_mood_entry_index') }}" class="btn serinity-btn-teal btn-icon mb-3 mb-sm-0">
+                                    <span class="btn-inner--icon"><i class="ni ni-satisfied"></i></span>
+                                    <span class="btn-inner--text">Open mood entries</span>
+                                </a>
+
+                                <a href="{{ path('app_journal_entry_index') }}" class="btn serinity-btn-soft btn-icon mb-3 mb-sm-0">
+                                    <span class="btn-inner--icon"><i class="ni ni-single-copy-04"></i></span>
+                                    <span class="btn-inner--text">Open journal</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5 mt-4 mt-lg-0">
+                            <div class="card shadow border-0 serinity-feature-card">
+                                <div class="card-body py-5">
+                                    <div class="icon icon-shape serinity-icon-teal rounded-circle mb-4">
+                                        <i class="ni ni-chart-bar-32"></i>
+                                    </div>
+
+                                    <h4 class="serinity-text-teal">Why use Serinity?</h4>
+
+                                    <p class="description mt-3">
+                                        Record mood moments, review emotional influences, and write reflections that help you understand your day better.
+                                    </p>
+
+                                    <div>
+                                        <span class="badge badge-pill badge-primary">Mood tracking</span>
+                                        <span class="badge badge-pill badge-info">Journal</span>
+                                        <span class="badge badge-pill badge-success">Reflection</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-lg pt-lg-0 mt--200 serinity-section-surface">
+            <div class="container">
+                <div class="row row-grid">
+                    <div class="col-lg-4">
+                        <div class="card card-lift--hover shadow border-0 serinity-feature-card">
+                            <div class="card-body py-5">
+                                <div class="icon icon-shape serinity-icon-teal rounded-circle mb-4">
+                                    <i class="ni ni-satisfied"></i>
+                                </div>
+                                <h5 class="serinity-text-teal text-uppercase">Mood entries</h5>
+                                <p class="description mt-3">
+                                    Save mood moments and daily mood states with selected emotions and influences.
+                                </p>
+                                <a href="{{ path('app_mood_entry_index') }}" class="btn serinity-btn-teal mt-4">Open</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card card-lift--hover shadow border-0 serinity-feature-card">
+                            <div class="card-body py-5">
+                                <div class="icon icon-shape serinity-icon-soft rounded-circle mb-4">
+                                    <i class="ni ni-single-copy-04"></i>
+                                </div>
+                                <h5 class="serinity-text-teal text-uppercase">Journal</h5>
+                                <p class="description mt-3">
+                                    Write personal reflections and keep a history of your thoughts and feelings.
+                                </p>
+                                <a href="{{ path('app_journal_entry_index') }}" class="btn serinity-btn-soft mt-4">Open</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card card-lift--hover shadow border-0 serinity-feature-card">
+                            <div class="card-body py-5">
+                                <div class="icon icon-shape serinity-icon-teal rounded-circle mb-4">
+                                    <i class="ni ni-bulb-61"></i>
+                                </div>
+                                <h5 class="serinity-text-teal text-uppercase">Self-awareness</h5>
+                                <p class="description mt-3">
+                                    Use your saved entries to notice patterns and better understand what affects your mood.
+                                </p>
+                                <a href="{{ path('app_mood_entry_summary') }}" class="btn serinity-btn-teal mt-4">Start</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-lg serinity-cta-section">
+            <div class="container text-center">
+                <h2 class="mb-4">Start with one small entry today.</h2>
+                <a href="{{ path('app_mood_entry_new') }}" class="btn serinity-btn-teal btn-lg">
+                    Create a mood entry
+                </a>
+            </div>
+        </section>
+    <footer class="serinity-landing-footer">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-12 text-center">
+                        <p class="mb-0">© 2026 Serinity. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+    </main>
+{% endblock %}

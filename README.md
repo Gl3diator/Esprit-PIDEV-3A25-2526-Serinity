@@ -1,364 +1,183 @@
-# Serinity Web
+<!-- PROJECT SHIELDS -->
 
-Symfony web recreation of the original JavaFX desktop forum module from serinity-desktop.
+[![Contributors](https://img.shields.io/badge/CONTRIBUTORS-01-blue?style=plastic)](https://github.com/ZouariOmar/AgriGO/graphs/contributors)
+[![Forks](https://img.shields.io/badge/FORKS-00-blue?style=plastic)](https://github.com/ZouariOmar/AgriGO/network/members)
+[![Stargazers](https://img.shields.io/badge/STARS-01-blue?style=plastic)](https://github.com/ZouariOmar/AgriGO/stargazers)
+[![Issues](https://img.shields.io/badge/ISSUES-00-blue?style=plastic)](https://github.com/ZouariOmar/AgriGO/issues)
+[![GPL3.0 License](https://img.shields.io/badge/LICENSE-GPL3.0-blue?style=plastic)](LICENSE)
 
-## Why This Structure Was Chosen
+<!-- PROJECT HEADER -->
+<div align="center">
+  <br />
+  <a href="">
+    <img src="res/img/logo/serinity-logo-without-bg.png" alt="serinity-web" width="300">
+  </a>
+  <h6>A desktop & web application dedicated to psychotherapy and personal development</h6>
+  <br />
+  <br />
+</div>
 
-This project follows a layered Symfony architecture to keep responsibilities separated and make the forum module maintainable as it grows.
+<!-- PROJECT LINKS -->
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#about-the-project">About the Project</a> •
+  <a href="#key-features">Key Features</a> •
+  <a href="#how-to-use">How to Use</a> •
+  <a href="#download">Download</a> •
+  <a href="#emailware">Emailware</a> •
+  <a href="#license">License</a> •
+  <a href="#contact">Contact</a>
+</p>
 
-1. Domain and persistence are explicit.
-Entity classes model forum data and relations, while repositories handle query logic.
-2. Business rules stay outside controllers.
-Services concentrate moderation, interactions, notifications, and thread/reply lifecycle logic.
-3. Controllers stay thin.
-HTTP input/output and routing are in controllers, while reusable behavior is delegated to services.
-4. Configuration is declarative.
-YAML files centralize framework, Doctrine, routes, and environment-specific behavior.
-5. Reverse-engineering support exists for restart scenarios.
-Custom commands can regenerate entities/repositories from a DB schema when rebuilding from scratch.
+<!-- PROJECT TAGS -->
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54"/>
+  <img src="https://img.shields.io/badge/bash_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Symfony-000000?style=for-the-badge&logo=symfony&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Composer-885630?style=for-the-badge&logo=composer&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white"/>
+  <img src="https://img.shields.io/badge/css-%23663399.svg?style=for-the-badge&logo=css&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Twig-35495E?style=for-the-badge&logo=twig&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Doctrine-%23326CE5?style=for-the-badge&logo=doctrine&logoColor=white"/>
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Cross--Platform-3DDC84?style=for-the-badge&logo=java&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Artificial%20Intelligence-000000?style=for-the-badge&logo=openai&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Machine%20Learning-102230?style=for-the-badge&logo=scikitlearn&logoColor=F7931E"/>
+  <img src="https://img.shields.io/badge/MVC%20Architecture-34495E?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Open%20Source-3DA639?style=for-the-badge&logo=opensourceinitiative&logoColor=white"/>
+</p>
 
-## Scope Rebuilt From Desktop Version
+<p align="center">
+  <a href="doc/" target="_blank">
+    <img src="https://www.zippyops.com/userfiles/media/default/web-application-testing.png" alt="serinity-web.gif">
+  </a>
+</p>
 
-- Forum threads with full CRUD
-- Categories (parent/child) with admin management
-- Nested replies on thread detail
-- Interactions: upvote, downvote, follow
-- Notifications with read/unread handling
-- Forum statistics dashboard
-- Search and category filtering
-- Optional translation and summarization integrations
+## Overview
 
-## Tech Stack
+Serinity is a **desktop & web application** dedicated to **psychotherapy and personal development**, designed for both **individual users** and **mental health professionals**.
+The platform integrates **Artificial Intelligence** to provide personalized emotional analysis, recommendations, and professional therapeutic tools.
 
-- PHP 8.2+
-- Symfony 6.4 (Flex skeleton + selected components)
-- Doctrine ORM + Doctrine Migrations
-- MySQL / MariaDB
-- Twig + Bootstrap 5
-- Symfony Forms + Validator
-- Doctrine Fixtures
+## About the Project
 
-## What Each File Type Does
+- **Theme:** Psychotherapy & Personal Development
+- **Platforms:** Desktop & Web
+- **Goal:** Improve mental well-being through intelligent tracking, analysis, and guidance
+- **Approach:** Modular architecture with AI integration
 
-### Entity Files (src/Entity)
+## Key Features
 
-Purpose:
-- Map PHP objects to DB tables using Doctrine attributes.
-- Define fields, validation constraints, and relations.
+### User Management
 
-Example responsibilities:
-- Column mapping: title, content, timestamps, flags
-- Relationships: Category -> ForumThread, ForumThread -> Reply
-- Validation: not blank, max length, format
+- Authentication & authorization
+- Role-based access (Client, Therapist, Admin)
+- Secure sessions & audit logs
 
-### Repository Files (src/Repository)
+### Sleep Tracking
 
-Purpose:
-- Encapsulate custom DB queries.
-- Keep query-builder logic out of controllers/services.
+- Sleep cycle analysis
+- Dream logging & emotional impact
 
-Example responsibilities:
-- Feed filtering (status/type/category/search)
-- Loading followed threads
-- Optimized joins for rendering pages
+### Mood & Journal
 
-### Service Files (src/Service)
+- Daily mood tracking
+- Guided emotional questions
+- Personal journal with NLP analysis
 
-Purpose:
-- Hold business rules and use-case orchestration.
-- Coordinate repositories, external APIs, and persistence.
+### Support Network (Forum)
 
-Example responsibilities:
-- Thread create/update/delete rules
-- Toxicity moderation checks
-- Notification dispatch and profile lookups
-- Image upload workflow
+- Community posts & comments
+- Secure peer support environment
 
-### Controller Files (src/Controller)
+### Exercises & Resources
 
-Purpose:
-- Expose HTTP endpoints and route handlers.
-- Validate request flow, invoke services, return Twig responses/redirects.
+- Guided relaxation & meditation exercises
+- Multimedia resources (audio, video, text)
+- Favorites & progress tracking
 
-Example responsibilities:
-- Forum feed page
-- Thread detail page with reply posting
-- Admin backoffice pages
+### Appointments & Consultations
 
-### Form Files (src/Form)
+- Therapist availability management
+- Online consultations
+- Smart appointment recommendations
 
-Purpose:
-- Define form fields, validation mapping, and data binding.
+### Artificial Intelligence Integration
 
-Example responsibilities:
-- Thread form (title/content/type/category)
-- Reply form (content + parent reply id)
-- Category form (name/slug/description/parent)
+- Facial recognition for authentication
+- NLP-based emotion detection from journals
+- AI-assisted self-assessment
+- Session summarization & topic extraction
+- Intelligent appointment scheduling
 
-### Enum Files (src/Enum)
+## How to Use
 
-Purpose:
-- Centralize allowed values and avoid magic strings.
-
-Example responsibilities:
-- Thread status: open, locked, archived
-- Thread type: discussion, question, announcement
-- Notification type variants
-
-### Twig Templates (templates)
-
-Purpose:
-- Render UI views.
-- Present read-only view logic and forms.
-
-Example responsibilities:
-- Shared layout in base.html.twig
-- Feed/detail/admin pages
-- Notification lists
-
-### Migration Files (migrations)
-
-Purpose:
-- Versioned schema evolution.
-- Deterministic DB setup for all environments.
-
-### Command Files (src/Command)
-
-Purpose:
-- Provide CLI automation.
-- Regenerate code from schema and bootstrap repeated tasks.
-
-Current project commands:
-- app:generate:entities (reverse-engineers entities from DB schema)
-- app:generate:repositories (creates repositories for entities)
-
-## YAML Configuration Files Explained
-
-### config/routes.yaml
-
-- Declares controller route loading.
-- Uses attribute routing from src/Controller namespace.
-
-### config/services.yaml
-
-- Defines service container defaults (autowire + autoconfigure).
-- Registers App namespace services.
-- Holds app parameters such as upload directory and API key binding.
-
-### config/packages/*.yaml
-
-Each file configures one Symfony/Doctrine subsystem:
-
-- framework.yaml: core framework behavior (sessions, http, cache basics)
-- doctrine.yaml: DB connection + ORM mapping
-- doctrine_migrations.yaml: migration paths and migration behavior
-- twig.yaml: template paths and Twig options
-- validator.yaml: validation system configuration
-- messenger.yaml: async message transport setup (if used)
-- monolog.yaml: logging channels/handlers
-- mailer.yaml and notifier.yaml: communication channels
-- translation.yaml: locale/translation configuration
-- web_profiler.yaml and debug.yaml: dev tooling
-
-## Reproducible Commands Used To Build This Project
-
-The following sequence recreates the current structure and dependencies.
-
-### 1) Create project
+### 1. Clone the Repository and Navigate to the Project
 
 ```bash
-composer create-project symfony/skeleton serinity-web
-cd serinity-web
+git clone https://github.com/zouari-oss/serinity-web
+cd serinity-web/project
 ```
 
-### 2) Install core Symfony + Doctrine + UI dependencies
+### 2. Install Dependencies (Composer)
+
+Make sure you have Composer installed, then run:
 
 ```bash
-composer require \
-	doctrine/orm doctrine/doctrine-bundle doctrine/doctrine-migrations-bundle \
-	symfony/framework-bundle symfony/runtime symfony/console symfony/dotenv \
-	symfony/twig-bundle twig/twig twig/extra-bundle \
-	symfony/form symfony/validator symfony/translation symfony/yaml \
-	symfony/asset symfony/asset-mapper symfony/stimulus-bundle symfony/ux-turbo \
-	symfony/http-client symfony/mailer symfony/notifier symfony/serializer \
-	symfony/monolog-bundle symfony/security-csrf symfony/process \
-	symfony/property-access symfony/property-info symfony/intl \
-	symfony/doctrine-messenger symfony/expression-language
+composer install
 ```
 
-### 3) Install dev tooling
+### 3. Configure Environment Variables
+
+Update your `.env` file (or `.env.local`) with your database configuration:
 
 ```bash
-composer require --dev \
-	symfony/maker-bundle doctrine/doctrine-fixtures-bundle phpunit/phpunit \
-	symfony/debug-bundle symfony/web-profiler-bundle symfony/browser-kit \
-	symfony/css-selector symfony/stopwatch
+DATABASE_URL="mysql://user:password@127.0.0.1:3306/db_name"
 ```
 
-### 4) Configure environment
-
-Set these in .env / .env.local:
-
-- DATABASE_URL
-- APP_SECRET
-- API_TRANSLATE_KEY (optional)
-
-Example:
-
-```env
-DATABASE_URL="mysql://root:@127.0.0.1:3306/serinity_web?serverVersion=mariadb-10.4.0"
-```
-
-### 5) Build database and baseline data
+### 4. Create Database & Run Migrations
 
 ```bash
-php bin/console doctrine:database:create --if-not-exists
-php bin/console doctrine:migrations:migrate --no-interaction
-php bin/console doctrine:fixtures:load --no-interaction
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate
 ```
 
-### 6) (Optional) Regenerate from schema for fresh restarts
+> [!IMPORTANT]
+> MariaDB must already be installed on your system
 
-```bash
-php bin/console app:generate:entities --dry-run
-php bin/console app:generate:entities --overwrite
-php bin/console app:generate:repositories --dry-run
-php bin/console app:generate:repositories --overwrite
-```
-
-### 7) Run app and validations
+### 5. Start the Symfony Server
 
 ```bash
 symfony server:start
-php bin/console about
-php bin/console doctrine:schema:validate
-php bin/console lint:twig templates
-php bin/console lint:container
 ```
 
-## Code Walkthrough (Real Project Snippets)
+Or using PHP:
 
-## Contributor Onboarding Flow
-
-Use this flow when you need to understand where a feature lives or where to implement a change.
-
-```mermaid
-flowchart LR
-	A[HTTP Request] --> B[Route Attribute]
-	B --> C[Controller Action]
-	C --> D[Service Method]
-	D --> E[Repository Query]
-	E --> F[Entity Mapping]
-	D --> G[External Integration]
-	C --> H[Twig Template Response]
-	F --> I[(MySQL / MariaDB)]
+```bash
+php -S 127.0.0.1:8000 -t public
 ```
 
-### How To Trace Any Feature Quickly
+### 6. Access the Application
 
-1. Start from route name in controller attributes to locate the entry point.
-2. Read the controller action and identify which service methods are called.
-3. Open the service and locate business rules, side effects, and transaction boundaries.
-4. Follow repository calls to understand filtering, joins, and ordering.
-5. Confirm entity fields/relations used by that query path.
-6. Finish at the Twig template to verify what data is actually rendered.
+Open your browser and go to:
 
-### Fast Example Path (Forum Feed)
+<http://127.0.0.1:8000>
 
-1. Entry route: app_forum_feed in src/Controller/ForumController.php.
-2. Service call: ThreadService::feed() in src/Service/ThreadService.php.
-3. Query implementation: ForumThreadRepository::findFeed() in src/Repository/ForumThreadRepository.php.
-4. Display layer: templates/forum/feed.html.twig.
+## Download
 
-### 1) Entity relation mapping (Category)
+You can [download](https://github.com/zouari-oss/serinity-web/releases) the latest installable version of serinity-web for Windows, macOS and Linux.
 
-From src/Entity/Category.php:
+## Emailware
 
-```php
-#[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
-#[ORM\JoinColumn(onDelete: 'SET NULL')]
-private ?Category $parent = null;
+serinity-web is an emailware. Meaning, if you liked using this app or it has helped you in any way, would like you send as an email at <zouariomar20@gmail.com> or <ghaithbensalah@proton.me> about anything you'd want to say about this software. I'd really appreciate it!
 
-#[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-private Collection $children;
-```
+## License
 
-Why it matters:
-- Models parent-child category trees.
-- Prevents cascading category deletion damage by setting child parent to null.
+This repository is licensed under the **GPL3.0 License**. You are free to use, modify, and distribute the content. See the [LICENSE](LICENSE) file for details.
 
-### 2) Repository query composition (Forum feed)
+## Contact
 
-From src/Repository/ForumThreadRepository.php:
+For questions or suggestions, feel free to reach out the [AUTHORS](AUTHORS)
 
-```php
-$qb = $this->createQueryBuilder('t')
-		->leftJoin('t.category', 'c')
-		->addSelect('c')
-		->orderBy('t.isPinned', 'DESC')
-		->addOrderBy('t.createdAt', 'DESC');
-```
-
-Why it matters:
-- Eager-loads category to reduce additional queries in Twig rendering.
-- Applies deterministic sort order with pinned-first logic.
-
-### 3) Service-level business rules (Thread save)
-
-From src/Service/ThreadService.php:
-
-```php
-if ($this->moderationService->isToxic($thread->getTitle() ?? '') || $this->moderationService->isToxic($thread->getContent() ?? '')) {
-		throw new \RuntimeException('Thread contains inappropriate content and cannot be published.');
-}
-
-$thread->setUpdatedAt(new \DateTimeImmutable());
-$this->entityManager->persist($thread);
-$this->entityManager->flush();
-```
-
-Why it matters:
-- Keeps moderation policy outside controllers.
-- Guarantees updates and persistence happen through one consistent use-case path.
-
-### 4) Controller orchestration (Forum detail)
-
-From src/Controller/ForumController.php:
-
-```php
-if ($form->isSubmitted() && $form->isValid()) {
-		if ($thread->getStatus() === ThreadStatus::LOCKED) {
-				throw $this->createAccessDeniedException('Cannot add replies to a locked thread.');
-		}
-
-		$reply->setThread($thread);
-		$reply->setAuthorId($currentUser->getId());
-		$replyService->add($reply, $currentUser);
-}
-```
-
-Why it matters:
-- Controller validates request flow and access.
-- Business write operation is delegated to ReplyService.
-
-## Default Fixture Users
-
-- admin@serinity.local / admin123 (ROLE_ADMIN)
-- alice@serinity.local / alice123 (ROLE_USER)
-- bob@serinity.local / bob123 (ROLE_USER)
-
-## Current User Fallback (Forum-only Local Mode)
-
-You can change fallback user in src/Service/CurrentUserService.php by editing FALLBACK_USER_ID.
-
-## Optional Integrations
-
-- Translation: set API_TRANSLATE_KEY to enable external translation calls
-- Summarization: run local Python service on http://localhost:5000/summarize
-- Moderation: toxic content checks run during thread/reply operations
-
-## Notes
-
-- Uploaded images are stored under public/uploads.
-- PDF export service exists as scaffold and can be extended with a concrete PDF library.
-- Security rules can be hardened further in config/packages/security.yaml.
+**Happy Coding!**

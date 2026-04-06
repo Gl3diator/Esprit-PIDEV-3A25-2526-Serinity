@@ -1,0 +1,55 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Influence management{% endblock %}
+
+{% block admin_content %}
+    <div class="card shadow">
+        <div class="card-header border-0">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="mb-0">Influence management</h3>
+                    <p class="text-sm text-muted mb-0 mt-1">
+                        Manage the influence list used in mood entries.
+                    </p>
+                </div>
+                <div class="col text-right">
+                    <a href="{{ path('app_admin_influence_new') }}" class="btn btn-sm btn-primary">
+                        Create new
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col" class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for influence in influences %}
+                    <tr>
+                        <td>{{ influence.id }}</td>
+                        <td>{{ influence.name }}</td>
+                        <td class="text-right">
+                            <a href="{{ path('app_admin_influence_show', {'id': influence.id}) }}" class="btn btn-sm btn-info">
+                                Show
+                            </a>
+                            <a href="{{ path('app_admin_influence_edit', {'id': influence.id}) }}" class="btn btn-sm btn-secondary">
+                                Edit
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No records found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

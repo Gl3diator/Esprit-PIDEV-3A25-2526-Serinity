@@ -1,0 +1,73 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Mood entry details{% endblock %}
+{% block front_title %}Mood entry details{% endblock %}
+{% block front_subtitle %}Review the selected mood, emotions, and influences.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Mood details</h4>
+    <p class="mb-0">A focused view of one mood entry.</p>
+{% endblock %}
+
+{% block front_content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card serinity-surface-card shadow-sm mb-4">
+                <div class="card-header border-0 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Mood entry details</h3>
+                        </div>
+                        <div class="col text-right">
+                            <a href="{{ path('app_mood_entry_index') }}" class="btn btn-sm btn-outline-primary">
+                                Back to list
+                            </a>
+                            <a href="{{ path('app_mood_entry_edit', {'id': mood_entry.id}) }}" class="btn btn-sm btn-primary">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-2">Type</h5>
+                        <span class="badge badge-pill badge-info serinity-badge-pill">
+                            {{ mood_entry.momentType }}
+                        </span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-2">Mood level</h5>
+                        <span class="badge badge-pill badge-primary serinity-badge-pill">
+                            {{ mood_entry.moodLevel }}/5
+                        </span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-2">Emotions</h5>
+                        {% for emotion in mood_entry.emotions %}
+                            <span class="badge badge-secondary mr-1 mb-1 serinity-card-tag">{{ emotion.name }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-0">
+                        <h5 class="text-muted mb-2">Influences</h5>
+                        {% for influence in mood_entry.influences %}
+                            <span class="badge badge-default mr-1 mb-1 serinity-card-tag">{{ influence.name }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card serinity-surface-card shadow-sm">
+                <div class="card-body">
+                    {{ include('mood_entry/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
