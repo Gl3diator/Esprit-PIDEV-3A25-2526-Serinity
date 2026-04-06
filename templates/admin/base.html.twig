@@ -48,8 +48,8 @@
         <div class="adm-nav-separator">Modules</div>
 
         {# Utilisateurs #}
-        <a href="{{ path('app_admin_users') }}"
-           class="adm-nav-item mod-users {{ app.request.get('_route') starts with 'app_admin_users' ? 'active' : '' }}">
+        <a href="#"
+           class="adm-nav-item mod-users">
             <span class="adm-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -63,7 +63,7 @@
         </a>
 
         {# Sommeil #}
-        <a href="{{ path('app_admin_sommeil') }}"
+        <a href="{{ path('app_admin_sommeil_index') }}"
            class="adm-nav-item mod-sommeil {{ app.request.get('_route') starts with 'app_admin_sommeil' ? 'active' : '' }}">
             <span class="adm-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -74,8 +74,8 @@
         </a>
 
         {# Exercice #}
-        <a href="{{ path('app_admin_exercice') }}"
-           class="adm-nav-item mod-exercice {{ app.request.get('_route') starts with 'app_admin_exercice' ? 'active' : '' }}">
+        <a href="#"
+           class="adm-nav-item mod-users">
             <span class="adm-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
@@ -86,22 +86,23 @@
         </a>
 
         {# Humeur #}
-        <a href="{{ path('app_admin_humeur') }}"
-           class="adm-nav-item mod-humeur {{ app.request.get('_route') starts with 'app_admin_humeur' ? 'active' : '' }}">
-            <span class="adm-nav-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                    <line x1="9" y1="9" x2="9.01" y2="9"/>
-                    <line x1="15" y1="9" x2="15.01" y2="9"/>
-                </svg>
-            </span>
+        <a href="#"
+           class="adm-nav-item mod-humeur disabled-link"
+           title="Bientôt disponible">
+    <span class="adm-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="18" height="18">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+    </span>
             <span class="adm-nav-label">Humeur</span>
         </a>
 
         {# Consultation #}
-        <a href="{{ path('app_admin_consultation') }}"
-           class="adm-nav-item mod-consult {{ app.request.get('_route') starts with 'app_admin_consultation' ? 'active' : '' }}">
+        <a href="#"
+           class="adm-nav-item mod-users">
             <span class="adm-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.82 12 19.79 19.79 0 0 1 1.72 3.36 2 2 0 0 1 3.69 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.69a16 16 0 0 0 6.29 6.29l1.01-1.01a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -111,8 +112,8 @@
         </a>
 
         {# Forum #}
-        <a href="{{ path('app_admin_forum') }}"
-           class="adm-nav-item mod-forum {{ app.request.get('_route') starts with 'app_admin_forum' ? 'active' : '' }}">
+        <a href="#"
+           class="adm-nav-item mod-users">
             <span class="adm-nav-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>

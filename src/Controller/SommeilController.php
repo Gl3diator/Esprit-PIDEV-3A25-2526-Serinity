@@ -17,8 +17,16 @@ final class SommeilController extends AbstractController
     public function index(EntityManagerInterface $em): Response
     {
         $sommeils = $em->getRepository(Sommeil::class)->findAll();
-
         return $this->render('sommeil/index.html.twig', [
+            'sommeils' => $sommeils,
+        ]);
+    }
+
+    #[Route('/list', name: 'app_sommeil_list', methods: ['GET'])]
+    public function list(EntityManagerInterface $em): Response
+    {
+        $sommeils = $em->getRepository(Sommeil::class)->findAll();
+        return $this->render('sommeil/list.html.twig', [
             'sommeils' => $sommeils,
         ]);
     }
@@ -33,12 +41,12 @@ final class SommeilController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $sommeil->setCreatedAt(new \DateTime());
             $sommeil->setUpdatedAt(new \DateTime());
-            $sommeil->setUserId(1); // ✅ temporaire
+            $sommeil->setUserId(1);
             $em->persist($sommeil);
             $em->flush();
 
             $this->addFlash('success', 'Nuit de sommeil ajoutée avec succès !');
-            return $this->redirectToRoute('app_sommeil_index');
+            return $this->redirectToRoute('app_sommeil_list');
         }
 
         return $this->render('sommeil/new.html.twig', [
@@ -65,7 +73,7 @@ final class SommeilController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Nuit de sommeil modifiée avec succès !');
-            return $this->redirectToRoute('app_sommeil_index');
+            return $this->redirectToRoute('app_sommeil_list');
         }
 
         return $this->render('sommeil/edit.html.twig', [
@@ -83,6 +91,6 @@ final class SommeilController extends AbstractController
             $this->addFlash('success', 'Nuit de sommeil supprimée.');
         }
 
-        return $this->redirectToRoute('app_sommeil_index');
+        return $this->redirectToRoute('app_sommeil_list');
     }
 }
