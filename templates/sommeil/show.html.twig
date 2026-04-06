@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }} — Sleep Tracker{% endblock %}
+
+{% block body %}
+
+    <nav class="breadcrumb">
+        <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '#' ~ sommeil.id }}</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">🌙 Nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }}</h1>
+            {% if sommeil.qualite %}<p class="page-header__subtitle">Qualité : {{ sommeil.qualite }}</p>{% endif %}
+        </div>
+        <div style="display:flex;gap:var(--space-3);">
+            <a href="{{ path('app_sommeil_edit', {id: sommeil.id}) }}" class="btn btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Modifier
+            </a>
+            <button type="button" class="btn btn--danger" onclick="document.getElementById('deleteModal').classList.add('open')">Supprimer</button>
+        </div>
+    </header>
+
+    <div class="card" style="margin-bottom:var(--space-5);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-bottom:var(--space-4);">⏰ Horaires</div>
+        <div class="detail-grid">
+            <div class="detail-item"><div class="detail-item__label">Date</div><div class="detail-item__value">{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Coucher</div><div class="detail-item__value">{{ sommeil.heureCoucher ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Réveil</div><div class="detail-item__value">{{ sommeil.heureReveil ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Durée</div><div class="detail-item__value">{% if sommeil.dureeSommeil %}{{ sommeil.dureeSommeil }}h{% else %}—{% endif %}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Interruptions</div><div class="detail-item__value">{{ sommeil.interruptions ?? '—' }}</div></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-5);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-bottom:var(--space-4);">⭐ Qualité & ressenti</div>
+        <div class="detail-grid">
+            <div class="detail-item"><div class="detail-item__label">Qualité</div><div class="detail-item__value">{{ sommeil.qualite ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Humeur réveil</div><div class="detail-item__value">{{ sommeil.humeurReveil ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Environnement</div><div class="detail-item__value">{{ sommeil.environnement ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Température</div><div class="detail-item__value">{% if sommeil.temperature %}{{ sommeil.temperature }}°C{% else %}—{% endif %}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Bruit</div><div class="detail-item__value">{{ sommeil.bruitNiveau ?? '—' }}</div></div>
+            {% if sommeil.commentaire %}
+                <div class="detail-item detail-item--full">
+                    <div class="detail-item__label">Commentaire</div>
+                    <div class="detail-item__value detail-item__value--text">{{ sommeil.commentaire }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+        <h2 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;">💤 Rêves de cette nuit</h2>
+        <a href="{{ path('app_reve_new') }}" class="btn btn--primary btn--sm">+ Ajouter un rêve</a>
+    </div>
+
+    {% if sommeil.revess is defined and sommeil.revess|length > 0 %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead><tr><th>Titre</th><th>Type</th><th>Humeur</th><th>Intensité</th><th>Actions</th></tr></thead>
+                <tbody>
+                {% for reve in sommeil.revess %}
+                    <tr>
+                        <td><strong>{{ reve.titre }}</strong></td>
+                        <td><span class="badge badge--muted">{{ reve.typeReve }}</span></td>
+                        <td>{{ reve.humeur ?? '—' }}</td>
+                        <td>
+                            <div class="intensity-bar">
+                                {% for i in 1..10 %}
+                                    <div class="intensity-dot {% if i <= reve.intensite %}filled{% endif %}"></div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a href="{{ path('app_reve_show', {id: reve.id}) }}" class="btn btn--secondary btn--sm">Voir</a>
+                                <a href="{{ path('app_reve_edit', {id: reve.id}) }}" class="btn btn--secondary btn--sm">Modifier</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card" style="text-align:center;padding:var(--space-10);color:var(--text-muted);">
+            <p>Aucun rêve enregistré pour cette nuit.</p>
+        </div>
+    {% endif %}
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h2 class="modal__title">Supprimer cette nuit ?</h2>
+            <p class="modal__body">Les rêves associés seront également supprimés.</p>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Annuler</button>
+                <form method="post" action="{{ path('app_sommeil_delete', {id: sommeil.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sommeil.id) }}">
+                    <button type="submit" class="btn btn--danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

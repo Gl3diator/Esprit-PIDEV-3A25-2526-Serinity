@@ -10,13 +10,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Reves
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]  // ✅ AUTO_INCREMENT
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Sommeil::class, inversedBy: "revess")]
-    #[ORM\JoinColumn(name: 'sommeil_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'sommeil_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
     #[Assert\NotNull(message: 'Veuillez associer une nuit de sommeil.')]
-    private Sommeil $sommeil_id;
+    private ?Sommeil $sommeil_id = null;
 
     #[ORM\Column(type: "string", length: 200)]
     #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
@@ -26,7 +27,7 @@ class Reves
         minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le titre ne doit pas dépasser {{ limit }} caractères.'
     )]
-    private string $titre;
+    private ?string $titre = null;
 
     #[ORM\Column(type: "text")]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
@@ -34,178 +35,175 @@ class Reves
         min: 10,
         minMessage: 'La description doit contenir au moins {{ limit }} caractères.'
     )]
-    private string $description;
+    private ?string $description = null;
 
-    #[ORM\Column(type: "string", length: 50)]
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
     #[Assert\Choice(
         choices: ['😄 Joyeux', '😢 Triste', '😨 Effrayé', '😌 Serein', '😐 Neutre'],
         message: 'Choisissez une humeur valide.'
     )]
-    private string $humeur;
+    private ?string $humeur = null;
 
-    #[ORM\Column(type: "string", length: 50)]
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
     #[Assert\Choice(
         choices: ['Normal', 'Lucide', 'Cauchemar', 'Prémonitoire'],
         message: 'Type de rêve invalide.'
     )]
-    private string $type_reve;
+    private ?string $type_reve = null;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", nullable: true)]
     #[Assert\Range(
         min: 1,
         max: 10,
         notInRangeMessage: "L'intensité doit être entre {{ min }} et {{ max }}."
     )]
-    private int $intensite;
+    private ?int $intensite = null;
 
     #[ORM\Column(type: "boolean")]
-    private bool $couleur;
+    private bool $couleur = false;  // ✅ valeur par défaut
 
-    #[ORM\Column(type: "string", length: 200)]
+    #[ORM\Column(type: "string", length: 200, nullable: true)]
     #[Assert\Length(
         max: 200,
         maxMessage: 'Les émotions ne doivent pas dépasser {{ limit }} caractères.'
     )]
-    private string $emotions;
+    private ?string $emotions = null;
 
-    #[ORM\Column(type: "text")]
-    private string $symboles;
+    #[ORM\Column(type: "text", nullable: true)]
+    private ?string $symboles = null;
 
     #[ORM\Column(type: "boolean")]
-    private bool $recurrent;
+    private bool $recurrent = false;  // ✅ valeur par défaut
 
     #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $created_at;
+    private ?\DateTimeInterface $created_at = null;
 
     #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $updated_at;
+    private ?\DateTimeInterface $updated_at = null;
 
-    public function getId()
+    // ─── GETTERS / SETTERS ────────────────────────────────────
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
-
-    public function getSommeil_id()
+    public function getSommeilId(): ?Sommeil
     {
         return $this->sommeil_id;
     }
 
-    public function setSommeil_id($value)
+    public function setSommeilId(?Sommeil $value): void
     {
         $this->sommeil_id = $value;
     }
 
-    public function getTitre()
+    public function getTitre(): ?string
     {
         return $this->titre;
     }
 
-    public function setTitre($value)
+    public function setTitre(string $value): void
     {
         $this->titre = $value;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription($value)
+    public function setDescription(string $value): void
     {
         $this->description = $value;
     }
 
-    public function getHumeur()
+    public function getHumeur(): ?string
     {
         return $this->humeur;
     }
 
-    public function setHumeur($value)
+    public function setHumeur(?string $value): void
     {
         $this->humeur = $value;
     }
 
-    public function getType_reve()
+    public function getTypeReve(): ?string
     {
         return $this->type_reve;
     }
 
-    public function setType_reve($value)
+    public function setTypeReve(?string $value): void
     {
         $this->type_reve = $value;
     }
 
-    public function getIntensite()
+    public function getIntensite(): ?int
     {
         return $this->intensite;
     }
 
-    public function setIntensite($value)
+    public function setIntensite(?int $value): void
     {
         $this->intensite = $value;
     }
 
-    public function getCouleur()
+    public function getCouleur(): bool
     {
         return $this->couleur;
     }
 
-    public function setCouleur($value)
+    public function setCouleur(bool $value): void
     {
         $this->couleur = $value;
     }
 
-    public function getEmotions()
+    public function getEmotions(): ?string
     {
         return $this->emotions;
     }
 
-    public function setEmotions($value)
+    public function setEmotions(?string $value): void
     {
         $this->emotions = $value;
     }
 
-    public function getSymboles()
+    public function getSymboles(): ?string
     {
         return $this->symboles;
     }
 
-    public function setSymboles($value)
+    public function setSymboles(?string $value): void
     {
         $this->symboles = $value;
     }
 
-    public function getRecurrent()
+    public function getRecurrent(): bool
     {
         return $this->recurrent;
     }
 
-    public function setRecurrent($value)
+    public function setRecurrent(bool $value): void
     {
         $this->recurrent = $value;
     }
 
-    public function getCreated_at()
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreated_at($value)
+    public function setCreatedAt(\DateTimeInterface $value): void
     {
         $this->created_at = $value;
     }
 
-    public function getUpdated_at()
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updated_at;
     }
 
-    public function setUpdated_at($value)
+    public function setUpdatedAt(\DateTimeInterface $value): void
     {
         $this->updated_at = $value;
     }

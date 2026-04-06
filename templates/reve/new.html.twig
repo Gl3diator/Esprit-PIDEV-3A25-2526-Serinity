@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau rêve — Sleep Tracker{% endblock %}
+
+{% block body %}
+
+    <nav class="breadcrumb">
+        <a href="{{ path('app_reve_index') }}">Rêves</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">Nouveau rêve</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">💭 Nouveau rêve</h1>
+            <p class="page-header__subtitle">Décrivez votre rêve avec le plus de détails possible</p>
+        </div>
+    </header>
+
+    <div class="card">
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+        <div class="form-section">
+            <div class="form-section__title">🌙 Général</div>
+            <div class="form-grid">
+                <div class="form-group form-group--full">
+                    {{ form_label(form.sommeilId, 'Nuit associée', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.sommeilId, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.sommeilId) }}
+                </div>
+                <div class="form-group form-group--full">
+                    {{ form_label(form.titre, 'Titre du rêve', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.titre, {attr: {class: 'form-control', placeholder: 'Ex: Vol au-dessus des nuages...'}}) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+                <div class="form-group form-group--full">
+                    {{ form_label(form.description, 'Description', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.description, {attr: {class: 'form-control', rows: '5', placeholder: 'Décrivez votre rêve en détail...'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🏷️ Classification</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form_label(form.typeReve, 'Type de rêve', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.typeReve, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.typeReve) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.humeur, 'Humeur', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.humeur, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.humeur) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.intensite, 'Intensité (1-10)', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.intensite, {attr: {class: 'form-control', min: '1', max: '10', id: 'intensite_input'}}) }}
+                    {{ form_errors(form.intensite) }}
+                    <div class="intensity-bar" id="intensite_preview" style="margin-top:var(--space-2);">
+                        {% for i in 1..10 %}<div class="intensity-dot" data-val="{{ i }}"></div>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.emotions, 'Émotions ressenties', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.emotions, {attr: {class: 'form-control', placeholder: 'joie, peur, nostalgie...'}}) }}
+                    {{ form_errors(form.emotions) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🔍 Détails & symboles</div>
+            <div class="form-grid">
+                <div class="form-group form-group--full">
+                    {{ form_label(form.symboles, 'Symboles / Éléments marquants', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.symboles, {attr: {class: 'form-control', rows: '3', placeholder: "eau, forêt, maison d'enfance..."}}) }}
+                    {{ form_errors(form.symboles) }}
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form_widget(form.couleur) }}
+                        {{ form_label(form.couleur, 'Rêve en couleur ?') }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form_widget(form.recurrent) }}
+                        {{ form_label(form.recurrent, 'Rêve récurrent ?') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                Enregistrer le rêve
+            </button>
+            <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (function(){
+            const input = document.getElementById('intensite_input');
+            const dots  = document.querySelectorAll('#intensite_preview .intensity-dot');
+            function update(val) {
+                dots.forEach(d => d.classList.toggle('filled', parseInt(d.dataset.val) <= parseInt(val)));
+            }
+            if (input) { input.addEventListener('input', () => update(input.value)); update(input.value || 0); }
+        })();
+    </script>
+{% endblock %}

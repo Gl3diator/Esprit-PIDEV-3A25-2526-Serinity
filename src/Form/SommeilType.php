@@ -18,16 +18,19 @@ class SommeilType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('date_nuit', DateType::class, [
+            // ✅ date_nuit → dateNuit
+            ->add('dateNuit', DateType::class, [
                 'label'  => 'Date de la nuit',
                 'widget' => 'single_text',
                 'attr'   => ['class' => 'form-control']
             ])
-            ->add('heure_coucher', TextType::class, [
+            // ✅ heure_coucher → heureCoucher
+            ->add('heureCoucher', TextType::class, [
                 'label' => 'Heure de coucher',
                 'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: 22:30']
             ])
-            ->add('heure_reveil', TextType::class, [
+            // ✅ heure_reveil → heureReveil
+            ->add('heureReveil', TextType::class, [
                 'label' => 'Heure de réveil',
                 'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: 07:00']
             ])
@@ -46,7 +49,8 @@ class SommeilType extends AbstractType
                 'required' => false,
                 'attr'     => ['class' => 'form-control', 'rows' => 3]
             ])
-            ->add('duree_sommeil', NumberType::class, [
+            // ✅ duree_sommeil → dureeSommeil
+            ->add('dureeSommeil', NumberType::class, [
                 'label'    => 'Durée (heures)',
                 'required' => false,
                 'scale'    => 2,
@@ -57,7 +61,8 @@ class SommeilType extends AbstractType
                 'required' => false,
                 'attr'     => ['class' => 'form-control', 'min' => 0]
             ])
-            ->add('humeur_reveil', ChoiceType::class, [
+            // ✅ humeur_reveil → humeurReveil
+            ->add('humeurReveil', ChoiceType::class, [
                 'label'    => 'Humeur au réveil',
                 'required' => false,
                 'choices'  => [
@@ -65,7 +70,7 @@ class SommeilType extends AbstractType
                     '😄 Joyeux'  => '😄 Joyeux',
                     '😐 Neutre'  => '😐 Neutre',
                     '😴 Fatigué' => '😴 Fatigué',
-                    'Énergisé'   => 'Énergisé',
+                    '⚡ Énergisé'   => '⚡ Énergisé',
                 ],
                 'attr' => ['class' => 'form-control']
             ])
@@ -85,7 +90,8 @@ class SommeilType extends AbstractType
                 'scale'    => 1,
                 'attr'     => ['class' => 'form-control', 'step' => '0.1']
             ])
-            ->add('bruit_niveau', ChoiceType::class, [
+            // ✅ bruit_niveau → bruitNiveau
+            ->add('bruitNiveau', ChoiceType::class, [
                 'label'    => 'Niveau de bruit',
                 'required' => false,
                 'choices'  => [

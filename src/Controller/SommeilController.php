@@ -13,7 +13,6 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
 {
-    // ─── LIST ────────────────────────────────────────────────
     #[Route('/', name: 'app_sommeil_index', methods: ['GET'])]
     public function index(EntityManagerInterface $em): Response
     {
@@ -24,7 +23,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    // ─── CREATE ──────────────────────────────────────────────
     #[Route('/new', name: 'app_sommeil_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -35,6 +33,7 @@ final class SommeilController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $sommeil->setCreatedAt(new \DateTime());
             $sommeil->setUpdatedAt(new \DateTime());
+            $sommeil->setUserId(1); // ✅ temporaire
             $em->persist($sommeil);
             $em->flush();
 
@@ -47,7 +46,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    // ─── SHOW ────────────────────────────────────────────────
     #[Route('/{id}', name: 'app_sommeil_show', methods: ['GET'])]
     public function show(Sommeil $sommeil): Response
     {
@@ -56,7 +54,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    // ─── EDIT ────────────────────────────────────────────────
     #[Route('/{id}/edit', name: 'app_sommeil_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Sommeil $sommeil, EntityManagerInterface $em): Response
     {
@@ -77,7 +74,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    // ─── DELETE ──────────────────────────────────────────────
     #[Route('/{id}/delete', name: 'app_sommeil_delete', methods: ['POST'])]
     public function delete(Request $request, Sommeil $sommeil, EntityManagerInterface $em): Response
     {

@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier — {{ reve.titre }} — Sleep Tracker{% endblock %}
+
+{% block body %}
+
+    <nav class="breadcrumb">
+        <a href="{{ path('app_reve_index') }}">Rêves</a>
+        <span class="breadcrumb__sep">›</span>
+        <a href="{{ path('app_reve_show', {id: reve.id}) }}">{{ reve.titre }}</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">Modifier</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">✏️ Modifier le rêve</h1>
+            <p class="page-header__subtitle">{{ reve.titre }}</p>
+        </div>
+    </header>
+
+    <div class="card">
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+        <div class="form-section">
+            <div class="form-section__title">🌙 Général</div>
+            <div class="form-grid">
+                <div class="form-group form-group--full">
+                    {{ form_label(form.sommeilId, 'Nuit associée', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.sommeilId, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.sommeilId) }}
+                </div>
+                <div class="form-group form-group--full">
+                    {{ form_label(form.titre, 'Titre', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.titre, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+                <div class="form-group form-group--full">
+                    {{ form_label(form.description, 'Description', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.description, {attr: {class: 'form-control', rows: '5'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🏷️ Classification</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form_label(form.typeReve, 'Type', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.typeReve, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.typeReve) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.humeur, 'Humeur', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.humeur, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.humeur) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.intensite, 'Intensité (1-10)', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.intensite, {attr: {class: 'form-control', min: '1', max: '10', id: 'intensite_input'}}) }}
+                    {{ form_errors(form.intensite) }}
+                    <div class="intensity-bar" id="intensite_preview" style="margin-top:var(--space-2);">
+                        {% for i in 1..10 %}
+                            <div class="intensity-dot {% if i <= reve.intensite %}filled{% endif %}" data-val="{{ i }}"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.emotions, 'Émotions', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.emotions, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.emotions) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🔍 Détails</div>
+            <div class="form-grid">
+                <div class="form-group form-group--full">
+                    {{ form_label(form.symboles, 'Symboles', {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.symboles, {attr: {class: 'form-control', rows: '3'}}) }}
+                    {{ form_errors(form.symboles) }}
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form_widget(form.couleur) }}
+                        {{ form_label(form.couleur, 'Rêve en couleur ?') }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form_widget(form.recurrent) }}
+                        {{ form_label(form.recurrent, 'Rêve récurrent ?') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                Sauvegarder
+            </button>
+            <a href="{{ path('app_reve_show', {id: reve.id}) }}" class="btn btn--secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (function(){
+            const input = document.getElementById('intensite_input');
+            const dots  = document.querySelectorAll('#intensite_preview .intensity-dot');
+            if (input) input.addEventListener('input', () => {
+                dots.forEach(d => d.classList.toggle('filled', parseInt(d.dataset.val) <= parseInt(input.value)));
+            });
+        })();
+    </script>
+{% endblock %}

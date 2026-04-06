@@ -19,11 +19,17 @@ class ReveType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('sommeil_id', EntityType::class, [
-                'label'        => 'Nuit associée',
-                'class'        => Sommeil::class,
-                'choice_label' => 'date_nuit',
-                'attr'         => ['class' => 'form-control']
+            ->add('sommeilId', EntityType::class, [
+                'label' => 'Nuit associée',
+                'class' => Sommeil::class,
+                // ✅ callback — date_nuit est un DateTime, pas un string
+                'choice_label' => function (Sommeil $sommeil): string {
+                    return $sommeil->getDateNuit()?->format('d/m/Y')
+                        . ' — ' . $sommeil->getHeureCoucher()
+                        . ' → '  . $sommeil->getHeureReveil()
+                        . ' (' . ($sommeil->getQualite() ?? '?') . ')';
+                },
+                'attr' => ['class' => 'form-control']
             ])
             ->add('titre', TextType::class, [
                 'label' => 'Titre du rêve',
@@ -45,7 +51,7 @@ class ReveType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('type_reve', ChoiceType::class, [
+            ->add('typeReve', ChoiceType::class, [
                 'label'    => 'Type de rêve',
                 'required' => false,
                 'choices'  => [

@@ -12,20 +12,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Sommeil
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]  // ✅ AUTO_INCREMENT
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: "date")]
     #[Assert\NotBlank(message: 'La date de nuit est obligatoire.')]
-    private \DateTimeInterface $date_nuit;
+    private ?\DateTimeInterface $date_nuit = null;
 
     #[ORM\Column(type: "string")]
     #[Assert\NotBlank(message: "L'heure de coucher est obligatoire.")]
-    private string $heure_coucher;
+    private ?string $heure_coucher = null;
 
     #[ORM\Column(type: "string")]
     #[Assert\NotBlank(message: "L'heure de réveil est obligatoire.")]
-    private string $heure_reveil;
+    private ?string $heure_reveil = null;
 
     #[ORM\Column(type: "string", length: 50)]
     #[Assert\NotBlank(message: 'La qualité est obligatoire.')]
@@ -33,45 +34,45 @@ class Sommeil
         choices: ['Excellente', 'Bonne', 'Moyenne', 'Mauvaise'],
         message: 'Choisissez une qualité valide.'
     )]
-    private string $qualite;
+    private ?string $qualite = null;
 
-    #[ORM\Column(type: "text")]
+    #[ORM\Column(type: "text", nullable: true)]
     #[Assert\Length(max: 1000, maxMessage: 'Le commentaire ne doit pas dépasser {{ limit }} caractères.')]
-    private string $commentaire;
+    private ?string $commentaire = null;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: "float", nullable: true)]
     #[Assert\Positive(message: 'La durée doit être un nombre positif.')]
-    private float $duree_sommeil;
+    private ?float $duree_sommeil = null;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", nullable: true)]
     #[Assert\PositiveOrZero(message: 'Les interruptions ne peuvent pas être négatives.')]
-    private int $interruptions;
+    private ?int $interruptions = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $humeur_reveil;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $humeur_reveil = null;
 
-    #[ORM\Column(type: "string", length: 100)]
-    private string $environnement;
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
+    private ?string $environnement = null;
 
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: "float", nullable: true)]
     #[Assert\Range(
         min: 10,
         max: 40,
         notInRangeMessage: 'La température doit être entre {{ min }}°C et {{ max }}°C.'
     )]
-    private float $temperature;
+    private ?float $temperature = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $bruit_niveau;
-
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $created_at;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $bruit_niveau = null;
 
     #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $updated_at;
+    private ?\DateTimeInterface $created_at = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $user_id;
+    #[ORM\Column(type: "datetime")]
+    private ?\DateTimeInterface $updated_at = null;
+
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $user_id = null;
 
     #[ORM\OneToMany(mappedBy: "sommeil_id", targetEntity: Reves::class)]
     private Collection $revess;
@@ -81,155 +82,154 @@ class Sommeil
         $this->revess = new ArrayCollection();
     }
 
-    public function getId()
+    // ─── GETTERS / SETTERS ────────────────────────────────────
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId($value)
-    {
-        $this->id = $value;
-    }
-
-    public function getDate_nuit()
+    public function getDateNuit(): ?\DateTimeInterface
     {
         return $this->date_nuit;
     }
 
-    public function setDate_nuit($value)
+    public function setDateNuit(\DateTimeInterface $value): void
     {
         $this->date_nuit = $value;
     }
 
-    public function getHeure_coucher()
+    public function getHeureCoucher(): ?string
     {
         return $this->heure_coucher;
     }
 
-    public function setHeure_coucher($value)
+    public function setHeureCoucher(string $value): void
     {
         $this->heure_coucher = $value;
     }
 
-    public function getHeure_reveil()
+    public function getHeureReveil(): ?string
     {
         return $this->heure_reveil;
     }
 
-    public function setHeure_reveil($value)
+    public function setHeureReveil(string $value): void
     {
         $this->heure_reveil = $value;
     }
 
-    public function getQualite()
+    public function getQualite(): ?string
     {
         return $this->qualite;
     }
 
-    public function setQualite($value)
+    public function setQualite(string $value): void
     {
         $this->qualite = $value;
     }
 
-    public function getCommentaire()
+    public function getCommentaire(): ?string
     {
         return $this->commentaire;
     }
 
-    public function setCommentaire($value)
+    public function setCommentaire(?string $value): void
     {
         $this->commentaire = $value;
     }
 
-    public function getDuree_sommeil()
+    public function getDureeSommeil(): ?float
     {
         return $this->duree_sommeil;
     }
 
-    public function setDuree_sommeil($value)
+    public function setDureeSommeil(?float $value): void
     {
         $this->duree_sommeil = $value;
     }
 
-    public function getInterruptions()
+    public function getInterruptions(): ?int
     {
         return $this->interruptions;
     }
 
-    public function setInterruptions($value)
+    public function setInterruptions(?int $value): void
     {
         $this->interruptions = $value;
     }
 
-    public function getHumeur_reveil()
+    public function getHumeurReveil(): ?string
     {
         return $this->humeur_reveil;
     }
 
-    public function setHumeur_reveil($value)
+    public function setHumeurReveil(?string $value): void
     {
         $this->humeur_reveil = $value;
     }
 
-    public function getEnvironnement()
+    public function getEnvironnement(): ?string
     {
         return $this->environnement;
     }
 
-    public function setEnvironnement($value)
+    public function setEnvironnement(?string $value): void
     {
         $this->environnement = $value;
     }
 
-    public function getTemperature()
+    public function getTemperature(): ?float
     {
         return $this->temperature;
     }
 
-    public function setTemperature($value)
+    public function setTemperature(?float $value): void
     {
         $this->temperature = $value;
     }
 
-    public function getBruit_niveau()
+    public function getBruitNiveau(): ?string
     {
         return $this->bruit_niveau;
     }
 
-    public function setBruit_niveau($value)
+    public function setBruitNiveau(?string $value): void
     {
         $this->bruit_niveau = $value;
     }
 
-    public function getCreated_at()
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreated_at($value)
+    public function setCreatedAt(\DateTimeInterface $value): void
     {
         $this->created_at = $value;
     }
 
-    public function getUpdated_at()
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updated_at;
     }
 
-    public function setUpdated_at($value)
+    public function setUpdatedAt(\DateTimeInterface $value): void
     {
         $this->updated_at = $value;
     }
 
-    public function getUser_id()
+    public function getUserId(): ?int
     {
         return $this->user_id;
     }
 
-    public function setUser_id($value)
+    public function setUserId(?int $value): void
     {
         $this->user_id = $value;
     }
+
+    // ─── RELATION revess ──────────────────────────────────────
 
     public function getRevess(): Collection
     {
@@ -240,7 +240,7 @@ class Sommeil
     {
         if (!$this->revess->contains($reves)) {
             $this->revess[] = $reves;
-            $reves->setSommeil_id($this);
+            $reves->setSommeilId($this);
         }
         return $this;
     }
@@ -248,8 +248,8 @@ class Sommeil
     public function removeReves(Reves $reves): self
     {
         if ($this->revess->removeElement($reves)) {
-            if ($reves->getSommeil_id() === $this) {
-                $reves->setSommeil_id(null);
+            if ($reves->getSommeilId() === $this) {
+                $reves->setSommeilId(null);
             }
         }
         return $this;

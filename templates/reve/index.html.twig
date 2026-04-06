@@ -1,20 +1,126 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Hello ReveController!{% endblock %}
+{% block title %}Mes rêves — Sleep Tracker{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">💤 Mes rêves</h1>
+            <p class="page-header__subtitle">{{ reves|length }} rêve{{ reves|length > 1 ? 's' : '' }} enregistré{{ reves|length > 1 ? 's' : '' }}</p>
+        </div>
+        <a href="{{ path('app_reve_new') }}" class="btn btn--primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un rêve
+        </a>
+    </header>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/xampp/htdocs/serinity_sleep/src/Controller/ReveController.php</code></li>
-        <li>Your template at <code>C:/xampp/htdocs/serinity_sleep/templates/reve/index.html.twig</code></li>
-    </ul>
-</div>
+    {% if reves is empty %}
+        <div class="empty-state">
+            <div class="empty-state__icon">💭</div>
+            <h3>Aucun rêve enregistré</h3>
+            <p>Commencez à noter vos rêves pour mieux les analyser.</p>
+            <a href="{{ path('app_reve_new') }}" class="btn btn--primary">Ajouter un rêve</a>
+        </div>
+    {% else %}
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Nuit associée</th>
+                    <th>Type</th>
+                    <th>Humeur</th>
+                    <th>Intensité</th>
+                    <th>Couleur</th>
+                    <th>Récurrent</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for reve in reves %}
+                    <tr>
+                        <td>
+                            <strong>{{ reve.titre }}</strong>
+                            {% if reve.recurrent %}
+                                <span class="badge badge--warning" style="margin-left:6px;font-size:0.7rem;">↻</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:0.85rem;">
+                            {# ✅ sommeil_id → sommeilId  |  date_nuit → dateNuit #}
+                            {% if reve.sommeilId is not null %}
+                                <a href="{{ path('app_sommeil_show', {id: reve.sommeilId.id}) }}">
+                                    {{ reve.sommeilId.dateNuit ? reve.sommeilId.dateNuit|date('d/m/Y') : '—' }}
+                                </a>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {# ✅ type_reve → typeReve #}
+                            {% set typeClass = {'Normal':'muted','Lucide':'primary','Cauchemar':'danger','Prémonitoire':'warning'} %}
+                            <span class="badge badge--{{ typeClass[reve.typeReve] ?? 'muted' }}">{{ reve.typeReve }}</span>
+                        </td>
+                        <td>{{ reve.humeur ?? '—' }}</td>
+                        <td>
+                            <div class="intensity-bar">
+                                {% for i in 1..10 %}
+                                    <div class="intensity-dot {% if i <= reve.intensite %}filled{% endif %}"></div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if reve.couleur %}<span class="badge badge--info">🎨</span>
+                            {% else %}<span style="color:var(--text-faint);font-size:0.85rem;">N&B</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if reve.recurrent %}<span class="badge badge--warning">Oui</span>
+                            {% else %}<span style="color:var(--text-faint);font-size:0.85rem;">Non</span>{% endif %}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a href="{{ path('app_reve_show', {id: reve.id}) }}" class="btn btn--secondary btn--sm" title="Voir">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </a>
+                                <a href="{{ path('app_reve_edit', {id: reve.id}) }}" class="btn btn--secondary btn--sm" title="Modifier">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
+                                <button type="button" class="btn btn--danger btn--sm"
+                                        onclick="openDeleteModal('{{ path('app_reve_delete', {id: reve.id}) }}', '{{ reve.titre|escape('js') }}')"
+                                        title="Supprimer">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h2 class="modal__title">Supprimer ce rêve ?</h2>
+            <p class="modal__body" id="deleteModalBody">Cette action est irréversible.</p>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--secondary" onclick="closeDeleteModal()">Annuler</button>
+                <form id="deleteForm" method="post">
+                    <input type="hidden" name="_token" value="">
+                    <button type="submit" class="btn btn--danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function openDeleteModal(url, label) {
+            document.getElementById('deleteForm').action = url;
+            document.getElementById('deleteForm').querySelector('[name="_token"]').value = '{{ csrf_token("delete") }}';
+            document.getElementById('deleteModalBody').textContent = 'Supprimer "' + label + '" ? Action irréversible.';
+            document.getElementById('deleteModal').classList.add('open');
+        }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
+        document.getElementById('deleteModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeleteModal(); });
+    </script>
 {% endblock %}
