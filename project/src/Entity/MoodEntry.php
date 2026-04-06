@@ -4,76 +4,50 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\MoodEntryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: MoodEntryRepository::class)]
 #[ORM\Table(name: 'mood_entry')]
 #[ORM\Index(name: 'idx_mood_entry_user_date', columns: ['user_id', 'entry_date'])]
 class MoodEntry
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'bigint')]
+    #[ORM\Column(type: Types::BIGINT)]
     private ?string $id = null;
 
-    #[ORM\Column(type: 'string', length: 36, name: 'user_id')]
-    private string $userId;
+    #[ORM\Column(name: 'entry_date', type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $entryDate;
 
-    #[Assert\NotNull(message: 'Entry date is required.')]
-    #[ORM\Column(type: 'datetime', name: 'entry_date')]
-    private \DateTimeInterface $entryDate;
-
-    #[Assert\NotBlank(message: 'Type is required.')]
-    #[Assert\Choice(
-        choices: ['MOMENT', 'DAY'],
-        message: 'Type must be either MOMENT or DAY.'
-    )]
-    #[ORM\Column(type: 'string', columnDefinition: "ENUM('MOMENT','DAY')", name: 'moment_type')]
+    #[ORM\Column(name: 'moment_type', type: Types::STRING, length: 16)]
     private string $momentType;
 
-    #[Assert\NotNull(message: 'Mood level is required.')]
-    #[Assert\Range(
-        min: 1,
-        max: 5,
-        notInRangeMessage: 'Mood level must be between {{ min }} and {{ max }}.'
-    )]
-    #[ORM\Column(type: 'smallint', name: 'mood_level')]
+    #[ORM\Column(name: 'mood_level', type: Types::SMALLINT)]
     private int $moodLevel;
 
-    #[ORM\Column(type: 'datetime', name: 'updated_at')]
-    private \DateTimeInterface $updatedAt;
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $updatedAt;
 
-    /**
-     * @var Collection<int, Emotion>
-     */
-    #[Assert\Count(
-        min: 1,
-        max: 5,
-        minMessage: 'Select at least one emotion.',
-        maxMessage: 'You can select at most {{ limit }} emotions.'
-    )]
-    #[ORM\ManyToMany(targetEntity: Emotion::class, inversedBy: 'moodEntries')]
+    #[ORM\ManyToOne(inversedBy: 'moodEntries')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private User $user;
+
+    /** @var Collection<int, MoodEmotion> */
+    #[ORM\ManyToMany(targetEntity: MoodEmotion::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_emotion')]
-    #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'emotion_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'emotion_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Collection $emotions;
 
-    /**
-     * @var Collection<int, Influence>
-     */
-    #[Assert\Count(
-        min: 1,
-        max: 5,
-        minMessage: 'Select at least one influence.',
-        maxMessage: 'You can select at most {{ limit }} influences.'
-    )]
-    #[ORM\ManyToMany(targetEntity: Influence::class, inversedBy: 'moodEntries')]
+    /** @var Collection<int, MoodInfluence> */
+    #[ORM\ManyToMany(targetEntity: MoodInfluence::class, inversedBy: 'moodEntries')]
     #[ORM\JoinTable(name: 'mood_entry_influence')]
-    #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'influence_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'mood_entry_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'influence_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Collection $influences;
 
     public function __construct()
@@ -87,24 +61,12 @@ class MoodEntry
         return $this->id;
     }
 
-    public function getUserId(): string
-    {
-        return $this->userId;
-    }
-
-    public function setUserId(string $userId): static
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    public function getEntryDate(): \DateTimeInterface
+    public function getEntryDate(): \DateTimeImmutable
     {
         return $this->entryDate;
     }
 
-    public function setEntryDate(\DateTimeInterface $entryDate): static
+    public function setEntryDate(\DateTimeImmutable $entryDate): self
     {
         $this->entryDate = $entryDate;
 
@@ -116,7 +78,7 @@ class MoodEntry
         return $this->momentType;
     }
 
-    public function setMomentType(string $momentType): static
+    public function setMomentType(string $momentType): self
     {
         $this->momentType = $momentType;
 
@@ -128,73 +90,77 @@ class MoodEntry
         return $this->moodLevel;
     }
 
-    public function setMoodLevel(int $moodLevel): static
+    public function setMoodLevel(int $moodLevel): self
     {
         $this->moodLevel = $moodLevel;
 
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface
+    public function getUpdatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, Emotion>
-     */
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /** @return Collection<int, MoodEmotion> */
     public function getEmotions(): Collection
     {
         return $this->emotions;
     }
 
-    public function addEmotion(Emotion $emotion): static
+    public function addEmotion(MoodEmotion $emotion): self
     {
         if (!$this->emotions->contains($emotion)) {
             $this->emotions->add($emotion);
-            $emotion->addMoodEntry($this);
         }
 
         return $this;
     }
 
-    public function removeEmotion(Emotion $emotion): static
+    public function removeEmotion(MoodEmotion $emotion): self
     {
         $this->emotions->removeElement($emotion);
-        $emotion->removeMoodEntry($this);
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, Influence>
-     */
+    /** @return Collection<int, MoodInfluence> */
     public function getInfluences(): Collection
     {
         return $this->influences;
     }
 
-    public function addInfluence(Influence $influence): static
+    public function addInfluence(MoodInfluence $influence): self
     {
         if (!$this->influences->contains($influence)) {
             $this->influences->add($influence);
-            $influence->addMoodEntry($this);
         }
 
         return $this;
     }
 
-    public function removeInfluence(Influence $influence): static
+    public function removeInfluence(MoodInfluence $influence): self
     {
         $this->influences->removeElement($influence);
-        $influence->removeMoodEntry($this);
 
         return $this;
     }
