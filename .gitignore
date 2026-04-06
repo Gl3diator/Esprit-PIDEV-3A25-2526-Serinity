@@ -45,3 +45,5 @@ Thumbs.db
 *.tmp
 *.log
 *.sql.gz
+
+README.md
