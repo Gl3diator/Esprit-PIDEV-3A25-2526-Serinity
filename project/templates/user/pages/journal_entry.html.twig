@@ -4,8 +4,7 @@
 {% block content %}
 <div class="ac-app-layout">
     {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
-    <div class="ac-main" data-controller="journal-editor">
-        {% include 'access_control/components/_topbar.html.twig' with { title: 'Journal entries', subtitle: 'Capture your daily reflections', username: userName } %}
+    <div class="ac-main journal-page-container" data-controller="journal-editor">
         <div data-controller="flash-toast">
             {% for message in app.flashes('success') %}
                 <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
@@ -15,103 +14,183 @@
             {% endfor %}
         </div>
 
-        <section class="ac-cards">
-            <article class="ac-stat-card">
-                <h3>Current streak</h3>
-                <p>{{ current_streak }}</p>
+        {# Dashboard Header #}
+        <div class="journal-dashboard-header">
+            <div class="journal-header-content">
+                <div class="journal-header-title-section">
+                    <h1 class="journal-page-title">Journal Entries</h1>
+                    <p class="journal-page-subtitle">Capture your thoughts, track your journey, and reflect on your growth</p>
+                </div>
+                <div class="journal-header-user">
+                    <div class="journal-user-avatar">{{ userName|first|upper }}</div>
+                    <span class="journal-user-name">{{ userName }}</span>
+                </div>
+            </div>
+        </div>
+
+        {# Stats Cards #}
+        <section class="journal-stats-grid">
+            <article class="journal-stat-card">
+                <div class="journal-stat-icon">
+                    <span class="material-symbols-outlined">local_fire_department</span>
+                </div>
+                <div class="journal-stat-content">
+                    <h3 class="journal-stat-label">Current streak</h3>
+                    <p class="journal-stat-value">{{ current_streak }} <span class="journal-stat-unit">days</span></p>
+                </div>
             </article>
-            <article class="ac-stat-card">
-                <h3>Longest streak</h3>
-                <p>{{ longest_streak }}</p>
+            <article class="journal-stat-card">
+                <div class="journal-stat-icon journal-stat-icon-accent">
+                    <span class="material-symbols-outlined">workspace_premium</span>
+                </div>
+                <div class="journal-stat-content">
+                    <h3 class="journal-stat-label">Longest streak</h3>
+                    <p class="journal-stat-value">{{ longest_streak }} <span class="journal-stat-unit">days</span></p>
+                </div>
             </article>
-            <article class="ac-stat-card">
-                <h3>Best day volume</h3>
-                <p>{{ max_entries_one_day }}</p>
+            <article class="journal-stat-card">
+                <div class="journal-stat-icon">
+                    <span class="material-symbols-outlined">edit_note</span>
+                </div>
+                <div class="journal-stat-content">
+                    <h3 class="journal-stat-label">Best day volume</h3>
+                    <p class="journal-stat-value">{{ max_entries_one_day }} <span class="journal-stat-unit">entries</span></p>
+                </div>
             </article>
         </section>
 
-        <section class="ac-card">
-            <div class="ac-row-between">
-                <h3>New journal entry</h3>
+        {# New Entry Form #}
+        <section class="journal-card journal-form-card">
+            <div class="journal-card-header">
+                <div>
+                    <h3 class="journal-card-title">New journal entry</h3>
+                    <p class="journal-card-subtitle">Write about your thoughts, feelings, or experiences</p>
+                </div>
             </div>
-            <form class="ac-form ac-grid-two" method="post" action="{{ path('user_ui_journal_entry_new') }}">
-                <label class="ac-col-span-2">
-                    <span class="ac-label">Title</span>
-                    <input class="ac-input" name="title" type="text" maxlength="255" required>
-                </label>
-                <label class="ac-col-span-2">
-                    <span class="ac-label">Content</span>
-                    <textarea class="ac-input" name="content" rows="5" minlength="10" required></textarea>
-                </label>
-                <div class="ac-row-end ac-col-span-2">
-                    <button class="ac-btn" type="submit">Save entry</button>
+
+            <form class="journal-form" method="post" action="{{ path('user_ui_journal_entry_new') }}">
+                <div class="journal-form-section journal-form-section-full">
+                    <label class="journal-form-label">
+                        <span class="journal-label-text">
+                            <span class="material-symbols-outlined journal-label-icon">title</span>
+                            Title
+                        </span>
+                        <input class="journal-input" name="title" type="text" maxlength="255" placeholder="Give your entry a meaningful title..." required>
+                    </label>
+                </div>
+                <div class="journal-form-section journal-form-section-full">
+                    <label class="journal-form-label">
+                        <span class="journal-label-text">
+                            <span class="material-symbols-outlined journal-label-icon">description</span>
+                            Content
+                        </span>
+                        <textarea class="journal-textarea" name="content" rows="6" minlength="10" placeholder="Write your thoughts here..." required></textarea>
+                    </label>
+                </div>
+                <div class="journal-form-actions">
+                    <button class="journal-btn journal-btn-primary" type="submit">
+                        <span class="material-symbols-outlined">save</span>
+                        Save entry
+                    </button>
                 </div>
             </form>
         </section>
 
-        <section class="ac-card">
-            <div class="ac-row-between">
-                <h3>History</h3>
-                <form method="get" class="ac-journal-search">
-                    <input class="ac-input" type="search" name="q" value="{{ search }}" placeholder="Search title or content">
+        {# History Section #}
+        <section class="journal-card journal-history-card">
+            <div class="journal-card-header journal-history-header">
+                <h3 class="journal-card-title">History</h3>
+                <form method="get" class="journal-search-form">
+                    <div class="journal-search-wrapper">
+                        <span class="material-symbols-outlined journal-search-icon">search</span>
+                        <input class="journal-input journal-search-input" type="search" name="q" value="{{ search }}" placeholder="Search titles or content...">
+                    </div>
                 </form>
             </div>
 
             {% if grouped_entries is empty %}
-                <p class="ac-muted">No journal entries yet.</p>
+                <div class="journal-empty-state">
+                    <span class="material-symbols-outlined">book</span>
+                    <p>No journal entries yet. Start writing above!</p>
+                </div>
             {% else %}
-                {% for group in grouped_entries %}
-                    <article class="ac-journal-group">
-                        <h4>{{ group.label }}</h4>
-                        <div class="ac-journal-list">
-                            {% for journal_entry in group.entries %}
-                                <div class="ac-journal-card">
-                                    <div class="ac-row-between">
-                                        <h5>{{ journal_entry.title }}</h5>
-                                        <small>{{ journal_entry.createdAt|date('H:i') }}</small>
+                <div class="journal-timeline">
+                    {% for group in grouped_entries %}
+                        <article class="journal-group">
+                            <h4 class="journal-group-title">{{ group.label }}</h4>
+                            <div class="journal-list">
+                                {% for journal_entry in group.entries %}
+                                    <div class="journal-entry-card">
+                                        <div class="journal-entry-header">
+                                            <h5 class="journal-entry-title">{{ journal_entry.title }}</h5>
+                                            <time class="journal-entry-time">{{ journal_entry.createdAt|date('H:i') }}</time>
+                                        </div>
+                                        <p class="journal-entry-content">{{ journal_entry.content|length > 220 ? journal_entry.content|slice(0, 220) ~ '...' : journal_entry.content }}</p>
+                                        <div class="journal-entry-actions">
+                                            <button
+                                                class="journal-btn-ghost journal-btn-icon"
+                                                type="button"
+                                                data-action="journal-editor#open"
+                                                data-edit-url="{{ path('user_ui_journal_entry_edit', {'id': journal_entry.id}) }}"
+                                                data-entry-title="{{ journal_entry.title|e('html_attr') }}"
+                                                data-entry-content="{{ journal_entry.content|e('html_attr') }}"
+                                                data-csrf="{{ csrf_token('journal_edit_' ~ journal_entry.id) }}"
+                                            >
+                                                <span class="material-symbols-outlined">edit</span>
+                                                Edit
+                                            </button>
+                                            <form method="post" action="{{ path('user_ui_journal_entry_delete', {'id': journal_entry.id}) }}" style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('journal_delete_' ~ journal_entry.id) }}">
+                                                <button class="journal-btn-ghost journal-btn-icon journal-btn-danger" type="submit">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <p>{{ journal_entry.content|length > 220 ? journal_entry.content|slice(0, 220) ~ '...' : journal_entry.content }}</p>
-                                    <div class="ac-journal-actions">
-                                        <button
-                                            class="ac-ghost-btn"
-                                            type="button"
-                                            data-action="journal-editor#open"
-                                            data-edit-url="{{ path('user_ui_journal_entry_edit', {'id': journal_entry.id}) }}"
-                                            data-entry-title="{{ journal_entry.title|e('html_attr') }}"
-                                            data-entry-content="{{ journal_entry.content|e('html_attr') }}"
-                                            data-csrf="{{ csrf_token('journal_edit_' ~ journal_entry.id) }}"
-                                        >Edit</button>
-                                        <form method="post" action="{{ path('user_ui_journal_entry_delete', {'id': journal_entry.id}) }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('journal_delete_' ~ journal_entry.id) }}">
-                                            <button class="ac-ghost-btn" type="submit">Delete</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </article>
-                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
             {% endif %}
         </section>
 
-        <div class="ac-modal" data-journal-editor-target="modal" data-action="click->journal-editor#closeOnBackdrop" hidden>
-            <div class="ac-modal-content">
-                <div class="ac-row-between">
-                    <h3>Edit journal entry</h3>
-                    <button type="button" class="ac-ghost-btn" data-action="journal-editor#close">Close</button>
+        {# Edit Modal #}
+        <div class="journal-modal" data-journal-editor-target="modal" data-action="click->journal-editor#closeOnBackdrop" hidden>
+            <div class="journal-modal-content">
+                <div class="journal-modal-header">
+                    <h3 class="journal-modal-title">Edit journal entry</h3>
+                    <button type="button" class="journal-btn-ghost journal-btn-icon" data-action="journal-editor#close">
+                        <span class="material-symbols-outlined">close</span>
+                        Close
+                    </button>
                 </div>
-                <form class="ac-form" method="post" data-journal-editor-target="form">
+                <form class="journal-form" method="post" data-journal-editor-target="form">
                     <input type="hidden" name="_token" data-journal-editor-target="token">
-                    <label>
-                        <span class="ac-label">Title</span>
-                        <input class="ac-input" type="text" name="title" maxlength="255" required data-journal-editor-target="title">
-                    </label>
-                    <label>
-                        <span class="ac-label">Content</span>
-                        <textarea class="ac-input" name="content" rows="6" minlength="10" required data-journal-editor-target="content"></textarea>
-                    </label>
-                    <div class="ac-row-end">
-                        <button class="ac-btn" type="submit">Save changes</button>
+                    <div class="journal-form-section journal-form-section-full">
+                        <label class="journal-form-label">
+                            <span class="journal-label-text">
+                                <span class="material-symbols-outlined journal-label-icon">title</span>
+                                Title
+                            </span>
+                            <input class="journal-input" type="text" name="title" maxlength="255" required data-journal-editor-target="title">
+                        </label>
+                    </div>
+                    <div class="journal-form-section journal-form-section-full">
+                        <label class="journal-form-label">
+                            <span class="journal-label-text">
+                                <span class="material-symbols-outlined journal-label-icon">description</span>
+                                Content
+                            </span>
+                            <textarea class="journal-textarea" name="content" rows="8" minlength="10" required data-journal-editor-target="content"></textarea>
+                        </label>
+                    </div>
+                    <div class="journal-form-actions">
+                        <button class="journal-btn journal-btn-primary" type="submit">
+                            <span class="material-symbols-outlined">save</span>
+                            Save changes
+                        </button>
                     </div>
                 </form>
             </div>
