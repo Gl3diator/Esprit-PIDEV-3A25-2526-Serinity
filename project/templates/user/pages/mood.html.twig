@@ -5,131 +5,237 @@
 <div class="ac-app-layout">
     {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
     <div
-        class="ac-main"
+        class="ac-main mood-page-container"
         data-controller="user-mood"
         data-user-mood-create-url-value="{{ path('api_user_mood_create') }}"
+        data-user-mood-update-url-template-value="{{ path('api_user_mood_update', { id: '__ID__' }) }}"
+        data-user-mood-delete-url-template-value="{{ path('api_user_mood_delete', { id: '__ID__' }) }}"
         data-user-mood-history-url-value="{{ path('api_user_mood_history') }}"
         data-user-mood-summary-url-value="{{ path('api_user_mood_summary') }}"
     >
-        {% include 'access_control/components/_topbar.html.twig' with { title: 'Mood', subtitle: 'Track your day and moments', username: userName } %}
+        {# Dashboard Header #}
+        <div class="mood-dashboard-header">
+            <div class="mood-header-content">
+                <div class="mood-header-title-section">
+                    <h1 class="mood-page-title">Mood Tracking</h1>
+                    <p class="mood-page-subtitle">Monitor your emotional wellbeing and daily moments</p>
+                </div>
+                <div class="mood-header-user">
+                    <div class="mood-user-avatar">{{ userName|first|upper }}</div>
+                    <span class="mood-user-name">{{ userName }}</span>
+                </div>
+            </div>
+        </div>
 
-        <section class="ac-cards">
-            <article class="ac-stat-card">
-                <h3>Entries (7 days)</h3>
-                <p data-user-mood-target="weeklyCount">0</p>
+        {# Stats Cards #}
+        <section class="mood-stats-grid">
+            <article class="mood-stat-card">
+                <div class="mood-stat-icon">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                </div>
+                <div class="mood-stat-content">
+                    <h3 class="mood-stat-label">Entries (7 days)</h3>
+                    <p class="mood-stat-value" data-user-mood-target="weeklyCount">0</p>
+                </div>
             </article>
-            <article class="ac-stat-card">
-                <h3>Average mood</h3>
-                <p data-user-mood-target="weeklyAverage">--</p>
+            <article class="mood-stat-card">
+                <div class="mood-stat-icon mood-stat-icon-accent">
+                    <span class="material-symbols-outlined">monitoring</span>
+                </div>
+                <div class="mood-stat-content">
+                    <h3 class="mood-stat-label">Average mood</h3>
+                    <p class="mood-stat-value" data-user-mood-target="weeklyAverage">--</p>
+                </div>
             </article>
-            <article class="ac-stat-card">
-                <h3>Most used type</h3>
-                <p data-user-mood-target="mostUsedType">No data</p>
+            <article class="mood-stat-card">
+                <div class="mood-stat-icon">
+                    <span class="material-symbols-outlined">category</span>
+                </div>
+                <div class="mood-stat-content">
+                    <h3 class="mood-stat-label">Most used type</h3>
+                    <p class="mood-stat-value" data-user-mood-target="mostUsedType">No data</p>
+                </div>
             </article>
-            <article class="ac-stat-card">
-                <h3>Range</h3>
-                <p data-user-mood-target="summaryRange">--</p>
+            <article class="mood-stat-card">
+                <div class="mood-stat-icon mood-stat-icon-accent">
+                    <span class="material-symbols-outlined">date_range</span>
+                </div>
+                <div class="mood-stat-content">
+                    <h3 class="mood-stat-label">Range</h3>
+                    <p class="mood-stat-value" data-user-mood-target="summaryRange">--</p>
+                </div>
             </article>
         </section>
 
-        <section class="ac-card ac-grid-two">
-            <div class="ac-col-span-2 ac-row-between">
-                <h3>Mood highlights</h3>
+        {# New Mood Entry Form #}
+        <section class="mood-card mood-form-card">
+            <div class="mood-card-header">
+                <div>
+                    <h3 class="mood-card-title" data-user-mood-target="formHeading">New mood entry</h3>
+                    <p class="mood-card-subtitle" data-user-mood-target="formHelper">Track how you're feeling right now or summarize your day</p>
+                </div>
+                <button
+                    class="mood-btn-ghost"
+                    data-user-mood-target="cancelEditButton"
+                    data-action="user-mood#cancelEdit"
+                    type="button"
+                    hidden
+                >
+                    <span class="material-symbols-outlined">close</span>
+                    Cancel
+                </button>
             </div>
-            <article class="ac-mood-highlight">
-                <span class="material-symbols-outlined">sentiment_satisfied</span>
-                <div>
-                    <strong>Top emotion</strong>
-                    <p data-user-mood-target="topEmotion">No data</p>
-                </div>
-            </article>
-            <article class="ac-mood-highlight">
-                <span class="material-symbols-outlined">tactic</span>
-                <div>
-                    <strong>Top influence</strong>
-                    <p data-user-mood-target="topInfluence">No data</p>
-                </div>
-            </article>
-        </section>
 
-        <section class="ac-card">
-            <div class="ac-row-between">
-                <h3>New mood entry</h3>
-                <span class="ac-mood-form-meta">1 = very low, 5 = very high</span>
-            </div>
-            <form class="ac-form ac-grid-two" data-user-mood-target="form" data-action="submit->user-mood#submitEntry">
-                <label>
-                    <span class="ac-label">Moment / day</span>
-                    <select class="ac-input" name="momentType" required>
-                        <option value="MOMENT">Moment</option>
-                        <option value="DAY">Day</option>
-                    </select>
-                </label>
-                <label class="ac-col-span-2">
-                    <span class="ac-label">Mood level</span>
-                    <input class="ac-input" name="moodLevel" type="range" min="1" max="5" step="1" value="3" data-action="input->user-mood#updateMoodLevelLabel">
-                    <div class="ac-mood-level-scale">
-                        <span>1</span>
-                        <strong data-user-mood-target="moodLevelValue">3</strong>
-                        <span>5</span>
+            <form class="mood-form" data-user-mood-target="form" data-action="submit->user-mood#submitEntry">
+                {# Entry Type Section #}
+                <div class="mood-form-section">
+                    <label class="mood-form-label">
+                        <span class="mood-label-text">
+                            <span class="material-symbols-outlined mood-label-icon">schedule</span>
+                            Entry type
+                        </span>
+                        <select class="mood-input mood-select" name="momentType" required>
+                            <option value="MOMENT">Moment (current feeling)</option>
+                            <option value="DAY">Day (overall summary)</option>
+                        </select>
+                    </label>
+                </div>
+
+                {# Mood Level Section #}
+                <div class="mood-form-section mood-form-section-full">
+                    <div class="mood-label-text">
+                        <span class="material-symbols-outlined mood-label-icon">mood</span>
+                        Mood level
                     </div>
-                </label>
+                    <div class="mood-slider-container">
+                        <input
+                            class="mood-slider"
+                            name="moodLevel"
+                            type="range"
+                            min="1"
+                            max="5"
+                            step="1"
+                            value="3"
+                            data-action="input->user-mood#updateMoodLevelLabel"
+                        >
+                        <div class="mood-slider-labels">
+                            <span class="mood-slider-label">1<br><small>Very low</small></span>
+                            <span class="mood-slider-label">2<br><small>Low</small></span>
+                            <span class="mood-slider-label mood-slider-label-current" data-user-mood-target="moodLevelValue">3<br><small>Neutral</small></span>
+                            <span class="mood-slider-label">4<br><small>Good</small></span>
+                            <span class="mood-slider-label">5<br><small>Great</small></span>
+                        </div>
+                    </div>
+                </div>
 
-                <fieldset class="ac-col-span-2 ac-mood-option-grid">
-                    <legend class="ac-label">Emotions (choose at least 1)</legend>
-                    {% for emotion in emotionOptions %}
-                        <label class="ac-check">
-                            <input type="checkbox" name="emotionKeys" value="{{ emotion.key }}">
-                            {{ emotion.label }}
-                        </label>
-                    {% endfor %}
+                {# Emotions Section #}
+                <fieldset class="mood-form-section mood-form-section-full mood-chip-section">
+                    <legend class="mood-label-text">
+                        <span class="material-symbols-outlined mood-label-icon">sentiment_satisfied</span>
+                        Emotions <span class="mood-label-hint">(choose at least 1)</span>
+                    </legend>
+                    <div class="mood-chip-grid">
+                        {% for emotion in emotionOptions %}
+                            <label class="mood-chip">
+                                <input type="checkbox" name="emotionKeys" value="{{ emotion.key }}" class="mood-chip-input">
+                                <span class="mood-chip-label">{{ emotion.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
                 </fieldset>
 
-                <fieldset class="ac-col-span-2 ac-mood-option-grid">
-                    <legend class="ac-label">Influences (choose at least 1)</legend>
-                    {% for influence in influenceOptions %}
-                        <label class="ac-check">
-                            <input type="checkbox" name="influenceKeys" value="{{ influence.key }}">
-                            {{ influence.label }}
-                        </label>
-                    {% endfor %}
+                {# Influences Section #}
+                <fieldset class="mood-form-section mood-form-section-full mood-chip-section">
+                    <legend class="mood-label-text">
+                        <span class="material-symbols-outlined mood-label-icon">tactic</span>
+                        Influences <span class="mood-label-hint">(choose at least 1)</span>
+                    </legend>
+                    <div class="mood-chip-grid">
+                        {% for influence in influenceOptions %}
+                            <label class="mood-chip">
+                                <input type="checkbox" name="influenceKeys" value="{{ influence.key }}" class="mood-chip-input">
+                                <span class="mood-chip-label">{{ influence.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
                 </fieldset>
 
-                <label class="ac-col-span-2">
-                    <span class="ac-label">Note (optional)</span>
-                    <textarea class="ac-input" name="note" rows="3" maxlength="1000" placeholder="What happened today?"></textarea>
-                </label>
-
-                <div class="ac-row-end ac-col-span-2">
-                    <button class="ac-btn" data-user-mood-target="submitButton" type="submit">Save entry</button>
+                {# Submit Button #}
+                <div class="mood-form-actions">
+                    <button class="mood-btn mood-btn-primary" data-user-mood-target="submitButton" type="submit">
+                        <span class="material-symbols-outlined">save</span>
+                        Save entry
+                    </button>
                 </div>
             </form>
         </section>
 
-        <section class="ac-card">
-            <div class="ac-row-between ac-mood-history-head">
-                <h3>History</h3>
-                <form class="ac-mood-history-filters" data-action="submit->user-mood#applyFilters">
-                    <input class="ac-input" data-user-mood-target="filterSearch" type="search" placeholder="Search note">
-                    <select class="ac-input" data-user-mood-target="filterMomentType">
+        {# Mood Highlights #}
+        <section class="mood-highlights-grid">
+            <article class="mood-highlight-card">
+                <div class="mood-highlight-icon">
+                    <span class="material-symbols-outlined">sentiment_satisfied</span>
+                </div>
+                <div class="mood-highlight-content">
+                    <h4 class="mood-highlight-label">Top emotion</h4>
+                    <p class="mood-highlight-value" data-user-mood-target="topEmotion">No data</p>
+                </div>
+            </article>
+            <article class="mood-highlight-card">
+                <div class="mood-highlight-icon mood-highlight-icon-accent">
+                    <span class="material-symbols-outlined">tactic</span>
+                </div>
+                <div class="mood-highlight-content">
+                    <h4 class="mood-highlight-label">Top influence</h4>
+                    <p class="mood-highlight-value" data-user-mood-target="topInfluence">No data</p>
+                </div>
+            </article>
+        </section>
+
+        {# History Section #}
+        <section class="mood-card mood-history-card">
+            <div class="mood-card-header mood-history-header">
+                <h3 class="mood-card-title">History</h3>
+                <form class="mood-filters-form" data-action="submit->user-mood#applyFilters">
+                    <input
+                        class="mood-input mood-input-search"
+                        data-user-mood-target="filterSearch"
+                        type="search"
+                        placeholder="Search emotions, influences..."
+                    >
+                    <select class="mood-input mood-select" data-user-mood-target="filterMomentType">
                         <option value="">All types</option>
                         <option value="MOMENT">Moment</option>
                         <option value="DAY">Day</option>
                     </select>
-                    <input class="ac-input" data-user-mood-target="filterFromDate" type="date">
-                    <button class="ac-ghost-btn" type="submit">Apply</button>
+                    <input class="mood-input mood-input-date" data-user-mood-target="filterFromDate" type="date" placeholder="From date">
+                    <button class="mood-btn-ghost mood-btn-filter" type="submit">
+                        <span class="material-symbols-outlined">filter_list</span>
+                        Apply
+                    </button>
                 </form>
             </div>
-            <div class="ac-row-between ac-mood-history-meta">
-                <p data-user-mood-target="historyMeta">Loading history...</p>
-                <div class="ac-row-end">
-                    <button class="ac-ghost-btn" data-user-mood-target="prevPageButton" data-action="user-mood#prevPage" type="button">Previous</button>
-                    <span data-user-mood-target="pageLabel">Page 1</span>
-                    <button class="ac-ghost-btn" data-user-mood-target="nextPageButton" data-action="user-mood#nextPage" type="button">Next</button>
+
+            <div class="mood-history-meta">
+                <p class="mood-history-info" data-user-mood-target="historyMeta">Loading history...</p>
+                <div class="mood-pagination">
+                    <button class="mood-pagination-btn" data-user-mood-target="prevPageButton" data-action="user-mood#prevPage" type="button">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                        Previous
+                    </button>
+                    <span class="mood-pagination-label" data-user-mood-target="pageLabel">Page 1</span>
+                    <button class="mood-pagination-btn" data-user-mood-target="nextPageButton" data-action="user-mood#nextPage" type="button">
+                        Next
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
             </div>
-            <div class="ac-mood-history-list" data-user-mood-target="historyList"></div>
-            <p class="ac-mood-history-empty" data-user-mood-target="historyEmpty" hidden>No mood entries yet.</p>
+
+            <div class="mood-history-list" data-user-mood-target="historyList"></div>
+            <p class="mood-history-empty" data-user-mood-target="historyEmpty" hidden>
+                <span class="material-symbols-outlined">sentiment_neutral</span>
+                No mood entries yet. Start tracking above!
+            </p>
         </section>
     </div>
 </div>
