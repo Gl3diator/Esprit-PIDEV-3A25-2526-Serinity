@@ -51,6 +51,54 @@ final class UserMoodController extends AbstractApiController
         return $this->json($result->toArray(), $result->success ? 201 : 400);
     }
 
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
+    public function update(string $id, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $guard = $this->guard();
+        if ($guard instanceof JsonResponse) {
+            return $guard;
+        }
+
+        $dto = new MoodCreateRequest();
+        try {
+            $this->hydrate($request, $dto);
+        } catch (\JsonException) {
+            return $this->json(['success' => false, 'message' => 'Malformed JSON payload.'], 400);
+        }
+        $dto->momentType = $this->normalizeMomentType($dto->momentType) ?? '';
+
+        if (($errors = $this->validateDto($validator, $dto)) !== null) {
+            return $errors;
+        }
+
+        $result = $this->userMoodService->update($guard, $id, $dto);
+        $statusCode = match (true) {
+            $result->success => 200,
+            $result->message === 'Mood entry not found.' => 404,
+            default => 400,
+        };
+
+        return $this->json($result->toArray(), $statusCode);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(string $id): JsonResponse
+    {
+        $guard = $this->guard();
+        if ($guard instanceof JsonResponse) {
+            return $guard;
+        }
+
+        $result = $this->userMoodService->delete($guard, $id);
+        $statusCode = match (true) {
+            $result->success => 200,
+            $result->message === 'Mood entry not found.' => 404,
+            default => 400,
+        };
+
+        return $this->json($result->toArray(), $statusCode);
+    }
+
     #[Route('/history', name: 'history', methods: ['GET'])]
     public function history(Request $request, ValidatorInterface $validator): JsonResponse
     {

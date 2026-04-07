@@ -4,6 +4,9 @@ export default class extends Controller {
     static targets = [
         'form',
         'submitButton',
+        'cancelEditButton',
+        'formHeading',
+        'formHelper',
         'moodLevelValue',
         'weeklyCount',
         'weeklyAverage',
@@ -24,6 +27,8 @@ export default class extends Controller {
 
     static values = {
         createUrl: String,
+        updateUrlTemplate: String,
+        deleteUrlTemplate: String,
         historyUrl: String,
         summaryUrl: String,
     };
@@ -32,6 +37,8 @@ export default class extends Controller {
         this.page = 1;
         this.limit = 10;
         this.loadingHistory = false;
+        this.editingEntryId = null;
+
         this.loadSummary();
         this.loadHistory();
     }
@@ -52,31 +59,32 @@ export default class extends Controller {
             moodLevel: Number(this.formTarget.elements.moodLevel.value),
             emotionKeys: this.selectedValues('emotionKeys'),
             influenceKeys: this.selectedValues('influenceKeys'),
-            note: this.formTarget.elements.note.value,
         };
+
+        const isEditing = this.editingEntryId !== null;
+        const url = isEditing ? this.buildEntryUrl(this.updateUrlTemplateValue, this.editingEntryId) : this.createUrlValue;
+        const method = isEditing ? 'PUT' : 'POST';
 
         this.setSubmitState(true);
 
         try {
-            const response = await fetch(this.createUrlValue, {
-                method: 'POST',
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
             const body = await this.readJson(response);
 
             if (!response.ok || !body?.success) {
-                throw new Error(body?.message || 'Failed to create mood entry.');
+                throw new Error(body?.message || (isEditing ? 'Failed to update mood entry.' : 'Failed to create mood entry.'));
             }
 
-            this.showToast(body.message || 'Mood entry created successfully.', 'success');
-            this.formTarget.reset();
-            this.formTarget.elements.moodLevel.value = '3';
-            this.moodLevelValueTarget.textContent = '3';
+            this.showToast(body.message || (isEditing ? 'Mood entry updated successfully.' : 'Mood entry created successfully.'), 'success');
+            this.resetFormState();
             this.page = 1;
             await Promise.all([this.loadSummary(), this.loadHistory()]);
         } catch (error) {
-            this.showToast(error.message || 'Failed to create mood entry.', 'error');
+            this.showToast(error.message || (isEditing ? 'Failed to update mood entry.' : 'Failed to create mood entry.'), 'error');
         } finally {
             this.setSubmitState(false);
         }
@@ -104,6 +112,58 @@ export default class extends Controller {
 
         this.page += 1;
         this.loadHistory();
+    }
+
+    startEdit(entry) {
+        this.editingEntryId = String(entry.id);
+        this.formTarget.elements.momentType.value = entry.momentType || 'MOMENT';
+        this.formTarget.elements.moodLevel.value = String(entry.moodLevel ?? 3);
+        this.moodLevelValueTarget.textContent = String(entry.moodLevel ?? 3);
+
+        this.toggleCheckboxGroup('emotionKeys', entry.emotions || []);
+        this.toggleCheckboxGroup('influenceKeys', entry.influences || []);
+
+        this.formHeadingTarget.textContent = 'Edit mood entry';
+        this.formHelperTarget.textContent = `Editing entry from ${this.formatEntryDate(entry.entryDate)}`;
+        this.cancelEditButtonTarget.hidden = false;
+        this.submitButtonTarget.textContent = 'Update entry';
+
+        this.formTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    cancelEdit() {
+        this.resetFormState();
+    }
+
+    async deleteEntryById(entryId) {
+        if (!window.confirm('Delete this mood entry?')) {
+            return;
+        }
+
+        if (this.editingEntryId === String(entryId)) {
+            this.resetFormState();
+        }
+
+        try {
+            const response = await fetch(this.buildEntryUrl(this.deleteUrlTemplateValue, entryId), {
+                method: 'DELETE',
+            });
+            const body = await this.readJson(response);
+
+            if (!response.ok || !body?.success) {
+                throw new Error(body?.message || 'Failed to delete mood entry.');
+            }
+
+            this.showToast(body.message || 'Mood entry deleted successfully.', 'success');
+
+            if (this.page > 1 && this.historyListTarget.childElementCount <= 1) {
+                this.page -= 1;
+            }
+
+            await Promise.all([this.loadSummary(), this.loadHistory()]);
+        } catch (error) {
+            this.showToast(error.message || 'Failed to delete mood entry.', 'error');
+        }
     }
 
     async loadSummary() {
@@ -160,6 +220,7 @@ export default class extends Controller {
             if (this.page > 1) {
                 this.page -= 1;
             }
+
             this.historyMetaTarget.textContent = 'Failed to load history.';
             this.showToast(error.message || 'Failed to load mood history.', 'error');
         } finally {
@@ -209,27 +270,48 @@ export default class extends Controller {
                 const rowHead = document.createElement('div');
                 rowHead.className = 'ac-row-between';
 
+                const rowLeft = document.createElement('div');
+
                 const typeBadge = document.createElement('span');
                 typeBadge.className = `ac-badge ac-badge-${entry.momentType === 'DAY' ? 'primary' : 'secondary'}`;
                 typeBadge.textContent = entry.momentType || 'MOMENT';
+
+                const timeMeta = document.createElement('p');
+                timeMeta.className = 'ac-muted';
+                timeMeta.textContent = this.formatEntryDate(entry.entryDate);
+
+                rowLeft.appendChild(typeBadge);
+                rowLeft.appendChild(timeMeta);
+
+                const rowRight = document.createElement('div');
+                rowRight.className = 'ac-row-end';
 
                 const level = document.createElement('strong');
                 level.className = 'ac-mood-level-pill';
                 level.textContent = `Level ${entry.moodLevel ?? '-'}/5`;
 
-                rowHead.appendChild(typeBadge);
-                rowHead.appendChild(level);
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.className = 'ac-ghost-btn';
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', () => this.startEdit(entry));
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'ac-ghost-btn';
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => this.deleteEntryById(entry.id));
+
+                rowRight.appendChild(level);
+                rowRight.appendChild(editButton);
+                rowRight.appendChild(deleteButton);
+
+                rowHead.appendChild(rowLeft);
+                rowHead.appendChild(rowRight);
 
                 row.appendChild(rowHead);
                 row.appendChild(this.buildTagList('Emotions', entry.emotions || []));
                 row.appendChild(this.buildTagList('Influences', entry.influences || []));
-
-                if (entry.note) {
-                    const note = document.createElement('p');
-                    note.className = 'ac-mood-note';
-                    note.textContent = entry.note;
-                    row.appendChild(note);
-                }
 
                 groupSection.appendChild(row);
             });
@@ -262,6 +344,14 @@ export default class extends Controller {
         return wrapper;
     }
 
+    toggleCheckboxGroup(name, items) {
+        const selectedKeys = new Set((items || []).map((item) => item.key));
+
+        this.formTarget.querySelectorAll(`input[name="${name}"]`).forEach((field) => {
+            field.checked = selectedKeys.has(field.value);
+        });
+    }
+
     selectedValues(name) {
         return Array.from(this.formTarget.querySelectorAll(`input[name="${name}"]:checked`))
             .map((field) => field.value);
@@ -269,7 +359,23 @@ export default class extends Controller {
 
     setSubmitState(isLoading) {
         this.submitButtonTarget.disabled = isLoading;
-        this.submitButtonTarget.textContent = isLoading ? 'Saving...' : 'Save entry';
+        this.submitButtonTarget.textContent = isLoading
+            ? (this.editingEntryId ? 'Updating...' : 'Saving...')
+            : (this.editingEntryId ? 'Update entry' : 'Save entry');
+
+        this.cancelEditButtonTarget.disabled = isLoading;
+    }
+
+    resetFormState() {
+        this.editingEntryId = null;
+        this.formTarget.reset();
+        this.formTarget.elements.moodLevel.value = '3';
+        this.moodLevelValueTarget.textContent = '3';
+        this.formHeadingTarget.textContent = 'New mood entry';
+        this.formHelperTarget.textContent = '1 = very low, 5 = very high';
+        this.submitButtonTarget.textContent = 'Save entry';
+        this.cancelEditButtonTarget.hidden = true;
+        this.cancelEditButtonTarget.disabled = false;
     }
 
     formatTop(item) {
@@ -278,6 +384,23 @@ export default class extends Controller {
         }
 
         return `${item.label} (${item.usageCount ?? 0})`;
+    }
+
+    formatEntryDate(value) {
+        if (!value) {
+            return '';
+        }
+
+        const date = new Date(value.replace(' ', 'T'));
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toLocaleString();
+    }
+
+    buildEntryUrl(template, entryId) {
+        return template.replace('__ID__', String(entryId));
     }
 
     async readJson(response) {
