@@ -35,10 +35,11 @@ export default class extends Controller {
 
     connect() {
         this.page = 1;
-        this.limit = 10;
+        this.limit = 20;
         this.loadingHistory = false;
         this.editingEntryId = null;
 
+        this.ensureHistoryCardStyles();
         this.loadSummary();
         this.loadHistory();
     }
@@ -257,67 +258,271 @@ export default class extends Controller {
 
         groups.forEach((group) => {
             const groupSection = document.createElement('article');
-            groupSection.className = 'ac-mood-history-group';
+            groupSection.className = 'ac-mood-history-group ac-mood-history-group--refined';
 
             const groupTitle = document.createElement('h4');
+            groupTitle.className = 'ac-mood-history-group-title';
             groupTitle.textContent = group.label || 'Unknown';
             groupSection.appendChild(groupTitle);
 
             (group.entries || []).forEach((entry) => {
-                const row = document.createElement('div');
-                row.className = 'ac-mood-entry-row';
+                const card = document.createElement('article');
+                card.className = 'ac-mood-entry-row ac-mood-entry-card ac-mood-entry-card--refined';
 
                 const rowHead = document.createElement('div');
-                rowHead.className = 'ac-row-between';
+                rowHead.className = 'ac-row-between ac-mood-entry-header ac-mood-entry-header--refined';
 
                 const rowLeft = document.createElement('div');
+                rowLeft.className = 'ac-mood-entry-left ac-mood-entry-left--refined';
 
                 const typeBadge = document.createElement('span');
-                typeBadge.className = `ac-badge ac-badge-${entry.momentType === 'DAY' ? 'primary' : 'secondary'}`;
+                typeBadge.className = `ac-badge ac-badge-${entry.momentType === 'DAY' ? 'primary' : 'secondary'} ac-mood-type-badge ac-mood-type-badge--${entry.momentType === 'DAY' ? 'day' : 'moment'}`;
                 typeBadge.textContent = entry.momentType || 'MOMENT';
 
                 const timeMeta = document.createElement('p');
-                timeMeta.className = 'ac-muted';
+                timeMeta.className = 'ac-muted ac-mood-entry-time';
                 timeMeta.textContent = this.formatEntryDate(entry.entryDate);
 
                 rowLeft.appendChild(typeBadge);
                 rowLeft.appendChild(timeMeta);
 
                 const rowRight = document.createElement('div');
-                rowRight.className = 'ac-row-end';
+                rowRight.className = 'ac-row-end ac-mood-entry-right ac-mood-entry-right--refined';
+
+                const levelContainer = document.createElement('div');
+                levelContainer.className = 'ac-mood-level-pill ac-mood-level-pill--refined';
 
                 const level = document.createElement('strong');
-                level.className = 'ac-mood-level-pill';
+                level.className = 'ac-mood-level-text';
                 level.textContent = `Level ${entry.moodLevel ?? '-'}/5`;
+
+                const levelTrack = document.createElement('div');
+                levelTrack.className = 'ac-mood-level-track';
+
+                const levelFill = document.createElement('span');
+                levelFill.className = 'ac-mood-level-fill';
+                levelFill.style.width = `${Math.max(0, Math.min(5, Number(entry.moodLevel) || 0)) * 20}%`;
+                levelTrack.appendChild(levelFill);
+                levelContainer.appendChild(level);
+                levelContainer.appendChild(levelTrack);
+
+                const actions = document.createElement('div');
+                actions.className = 'ac-mood-entry-actions';
 
                 const editButton = document.createElement('button');
                 editButton.type = 'button';
-                editButton.className = 'ac-ghost-btn';
+                editButton.className = 'ac-ghost-btn ac-mood-edit-btn ac-mood-action-btn';
                 editButton.textContent = 'Edit';
                 editButton.addEventListener('click', () => this.startEdit(entry));
 
                 const deleteButton = document.createElement('button');
                 deleteButton.type = 'button';
-                deleteButton.className = 'ac-ghost-btn';
+                deleteButton.className = 'ac-ghost-btn ac-mood-delete-btn ac-mood-action-btn';
                 deleteButton.textContent = 'Delete';
                 deleteButton.addEventListener('click', () => this.deleteEntryById(entry.id));
 
-                rowRight.appendChild(level);
-                rowRight.appendChild(editButton);
-                rowRight.appendChild(deleteButton);
+                actions.appendChild(editButton);
+                actions.appendChild(deleteButton);
+                rowRight.appendChild(levelContainer);
+                rowRight.appendChild(actions);
 
                 rowHead.appendChild(rowLeft);
                 rowHead.appendChild(rowRight);
 
-                row.appendChild(rowHead);
-                row.appendChild(this.buildTagList('Emotions', entry.emotions || []));
-                row.appendChild(this.buildTagList('Influences', entry.influences || []));
+                const emotionsSection = this.buildTagList('Emotions', entry.emotions || []);
+                const influencesSection = this.buildTagList('Influences', entry.influences || []);
 
-                groupSection.appendChild(row);
+                [emotionsSection, influencesSection].forEach((section) => {
+                    section.classList.add('ac-mood-tag-row--refined');
+
+                    const sectionLabel = section.querySelector('.ac-mood-tag-label');
+                    if (sectionLabel) {
+                        sectionLabel.classList.add('ac-mood-tag-label--refined');
+                    }
+
+                    const tags = section.querySelector('.ac-mood-tags');
+                    if (tags) {
+                        tags.classList.add('ac-mood-tags--refined');
+                    }
+
+                    section.querySelectorAll('.ac-badge').forEach((tag) => {
+                        tag.classList.add('ac-mood-tag-pill');
+                    });
+                });
+
+                card.appendChild(rowHead);
+                card.appendChild(emotionsSection);
+                card.appendChild(influencesSection);
+
+                groupSection.appendChild(card);
             });
 
             this.historyListTarget.appendChild(groupSection);
         });
+    }
+
+    ensureHistoryCardStyles() {
+        if (document.getElementById('ac-mood-history-refined-styles')) {
+            return;
+        }
+
+        const style = document.createElement('style');
+        style.id = 'ac-mood-history-refined-styles';
+        style.textContent = `
+            .ac-mood-history-group--refined {
+                background: #E6F2F1;
+                border-radius: 14px;
+                padding: 12px;
+                margin-bottom: 14px;
+            }
+            .ac-mood-history-group-title {
+                margin: 0 0 10px 0;
+                font-size: 1rem;
+                font-weight: 700;
+                color: #2F6F6D;
+            }
+            .ac-mood-entry-card--refined {
+                background: #fff;
+                border: 1px solid rgba(47, 111, 109, 0.12);
+                border-radius: 14px;
+                padding: 14px 16px;
+                margin-bottom: 10px;
+                box-shadow: 0 8px 18px rgba(47, 111, 109, 0.08);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .ac-mood-entry-card--refined:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 14px 28px rgba(47, 111, 109, 0.14);
+            }
+            .ac-mood-entry-header--refined {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+            .ac-mood-entry-left--refined {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .ac-mood-type-badge {
+                align-self: flex-start;
+                padding: 3px 9px;
+                border-radius: 999px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+                color: #fff;
+            }
+            .ac-mood-type-badge--day {
+                background: #2F6F6D;
+            }
+            .ac-mood-type-badge--moment {
+                background: #88BDBC;
+            }
+            .ac-mood-entry-time {
+                margin: 0;
+                font-size: 0.8rem;
+                color: rgba(47, 111, 109, 0.72);
+            }
+            .ac-mood-entry-right--refined {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-width: 208px;
+            }
+            .ac-mood-level-pill--refined {
+                width: 112px;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .ac-mood-level-text {
+                font-size: 0.78rem;
+                font-weight: 700;
+                color: #2F6F6D;
+                line-height: 1.1;
+            }
+            .ac-mood-level-track {
+                width: 100%;
+                height: 7px;
+                border-radius: 999px;
+                background: #E6F2F1;
+                overflow: hidden;
+            }
+            .ac-mood-level-fill {
+                display: block;
+                height: 100%;
+                background: #88BDBC;
+                border-radius: 999px;
+            }
+            .ac-mood-entry-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .ac-mood-action-btn {
+                padding: 4px 8px;
+                border-radius: 9px;
+                font-weight: 600;
+                font-size: 0.78rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .ac-mood-edit-btn {
+                border: 1px solid #2F6F6D;
+                background: #fff;
+                color: #2F6F6D;
+            }
+            .ac-mood-edit-btn:hover {
+                background: #E6F2F1;
+            }
+            .ac-mood-delete-btn {
+                border: 1px solid #F3C9C9;
+                background: #FFF8F8;
+                color: #A85B5B;
+            }
+            .ac-mood-delete-btn:hover {
+                background: #FDEDED;
+                border-color: #E9B8B8;
+            }
+            .ac-mood-tag-row--refined {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-top: 7px;
+            }
+            .ac-mood-tag-label--refined {
+                font-size: 0.74rem;
+                font-weight: 700;
+                color: rgba(47, 111, 109, 0.75);
+                flex: 0 0 auto;
+            }
+            .ac-mood-tags--refined {
+                display: inline-flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                align-items: center;
+            }
+            .ac-mood-tag-pill {
+                padding: 4px 8px;
+                border-radius: 999px;
+                background: #E6F2F1;
+                color: #2F6F6D;
+                border: 1px solid rgba(47, 111, 109, 0.12);
+                font-size: 0.72rem;
+                font-weight: 600;
+                line-height: 1.1;
+                transition: background 0.2s ease;
+            }
+            .ac-mood-tag-pill:hover {
+                background: #88BDBC;
+            }
+        `;
+
+        document.head.appendChild(style);
     }
 
     buildTagList(label, items) {
@@ -334,7 +539,7 @@ export default class extends Controller {
 
         items.forEach((item) => {
             const tag = document.createElement('span');
-            tag.className = 'ac-badge ac-badge-secondary';
+            tag.className = 'ac-badge ac-badge-secondary ac-mood-tag-pill';
             tag.textContent = item.label || item.key || '';
             tags.appendChild(tag);
         });
