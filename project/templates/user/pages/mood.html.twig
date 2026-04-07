@@ -8,6 +8,8 @@
         class="ac-main"
         data-controller="user-mood"
         data-user-mood-create-url-value="{{ path('api_user_mood_create') }}"
+        data-user-mood-update-url-template-value="{{ path('api_user_mood_update', { id: '__ID__' }) }}"
+        data-user-mood-delete-url-template-value="{{ path('api_user_mood_delete', { id: '__ID__' }) }}"
         data-user-mood-history-url-value="{{ path('api_user_mood_history') }}"
         data-user-mood-summary-url-value="{{ path('api_user_mood_summary') }}"
     >
@@ -32,31 +34,23 @@
             </article>
         </section>
 
-        <section class="ac-card ac-grid-two">
-            <div class="ac-col-span-2 ac-row-between">
-                <h3>Mood highlights</h3>
-            </div>
-            <article class="ac-mood-highlight">
-                <span class="material-symbols-outlined">sentiment_satisfied</span>
-                <div>
-                    <strong>Top emotion</strong>
-                    <p data-user-mood-target="topEmotion">No data</p>
-                </div>
-            </article>
-            <article class="ac-mood-highlight">
-                <span class="material-symbols-outlined">tactic</span>
-                <div>
-                    <strong>Top influence</strong>
-                    <p data-user-mood-target="topInfluence">No data</p>
-                </div>
-            </article>
-        </section>
-
         <section class="ac-card">
             <div class="ac-row-between">
-                <h3>New mood entry</h3>
-                <span class="ac-mood-form-meta">1 = very low, 5 = very high</span>
+                <div>
+                    <h3 data-user-mood-target="formHeading">New mood entry</h3>
+                    <p class="ac-muted" data-user-mood-target="formHelper">1 = very low, 5 = very high</p>
+                </div>
+                <button
+                    class="ac-ghost-btn"
+                    data-user-mood-target="cancelEditButton"
+                    data-action="user-mood#cancelEdit"
+                    type="button"
+                    hidden
+                >
+                    Cancel edit
+                </button>
             </div>
+
             <form class="ac-form ac-grid-two" data-user-mood-target="form" data-action="submit->user-mood#submitEntry">
                 <label>
                     <span class="ac-label">Moment / day</span>
@@ -65,9 +59,19 @@
                         <option value="DAY">Day</option>
                     </select>
                 </label>
+
                 <label class="ac-col-span-2">
                     <span class="ac-label">Mood level</span>
-                    <input class="ac-input" name="moodLevel" type="range" min="1" max="5" step="1" value="3" data-action="input->user-mood#updateMoodLevelLabel">
+                    <input
+                        class="ac-input"
+                        name="moodLevel"
+                        type="range"
+                        min="1"
+                        max="5"
+                        step="1"
+                        value="3"
+                        data-action="input->user-mood#updateMoodLevelLabel"
+                    >
                     <div class="ac-mood-level-scale">
                         <span>1</span>
                         <strong data-user-mood-target="moodLevelValue">3</strong>
@@ -95,22 +99,42 @@
                     {% endfor %}
                 </fieldset>
 
-                <label class="ac-col-span-2">
-                    <span class="ac-label">Note (optional)</span>
-                    <textarea class="ac-input" name="note" rows="3" maxlength="1000" placeholder="What happened today?"></textarea>
-                </label>
-
                 <div class="ac-row-end ac-col-span-2">
                     <button class="ac-btn" data-user-mood-target="submitButton" type="submit">Save entry</button>
                 </div>
             </form>
         </section>
 
+        <section class="ac-card ac-grid-two">
+            <div class="ac-col-span-2 ac-row-between">
+                <h3>Mood highlights</h3>
+            </div>
+            <article class="ac-mood-highlight">
+                <span class="material-symbols-outlined">sentiment_satisfied</span>
+                <div>
+                    <strong>Top emotion</strong>
+                    <p data-user-mood-target="topEmotion">No data</p>
+                </div>
+            </article>
+            <article class="ac-mood-highlight">
+                <span class="material-symbols-outlined">tactic</span>
+                <div>
+                    <strong>Top influence</strong>
+                    <p data-user-mood-target="topInfluence">No data</p>
+                </div>
+            </article>
+        </section>
+
         <section class="ac-card">
             <div class="ac-row-between ac-mood-history-head">
                 <h3>History</h3>
                 <form class="ac-mood-history-filters" data-action="submit->user-mood#applyFilters">
-                    <input class="ac-input" data-user-mood-target="filterSearch" type="search" placeholder="Search note">
+                    <input
+                        class="ac-input"
+                        data-user-mood-target="filterSearch"
+                        type="search"
+                        placeholder="Search emotion, influence or type"
+                    >
                     <select class="ac-input" data-user-mood-target="filterMomentType">
                         <option value="">All types</option>
                         <option value="MOMENT">Moment</option>
@@ -120,6 +144,7 @@
                     <button class="ac-ghost-btn" type="submit">Apply</button>
                 </form>
             </div>
+
             <div class="ac-row-between ac-mood-history-meta">
                 <p data-user-mood-target="historyMeta">Loading history...</p>
                 <div class="ac-row-end">
@@ -128,6 +153,7 @@
                     <button class="ac-ghost-btn" data-user-mood-target="nextPageButton" data-action="user-mood#nextPage" type="button">Next</button>
                 </div>
             </div>
+
             <div class="ac-mood-history-list" data-user-mood-target="historyList"></div>
             <p class="ac-mood-history-empty" data-user-mood-target="historyEmpty" hidden>No mood entries yet.</p>
         </section>
