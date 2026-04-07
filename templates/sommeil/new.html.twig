@@ -3,6 +3,20 @@
 
 {% block body %}
 
+    {% for message in app.flashes('error') %}
+        {% if loop.first %}
+        <script>
+            let errors = [];
+            {% endif %}
+
+            errors.push("{{ message|e('js') }}");
+
+            {% if loop.last %}
+            alert(errors.join("\n"));
+        </script>
+        {% endif %}
+    {% endfor %}
+
     <div class="sleep-create-page">
 
         <nav class="breadcrumb">
@@ -18,9 +32,35 @@
 
         <div class="sleep-card">
 
-            {{ form_start(form, {attr: {class: 'sleep-form'}}) }}
+            {{ form_start(form, {
+                attr: {
+                    class: 'sleep-form',
+                    novalidate: 'novalidate'
+                }
+            }) }}
 
-            <!-- Horaires -->
+            {% if form.vars.submitted and not form.vars.valid %}
+                <script>
+                    let errors = [];
+
+                    {% for field in form %}
+                    {% for error in field.vars.errors %}
+                    errors.push("{{ error.message|e('js') }}");
+                    {% endfor %}
+                    {% endfor %}
+
+                    {% for error in form.vars.errors %}
+                    errors.push("{{ error.message|e('js') }}");
+                    {% endfor %}
+
+                    if (errors.length > 0) {
+                        alert(errors.join("\n"));
+                    }
+                </script>
+            {% endif %}
+
+            {{ form_errors(form) }}
+
             <div class="form-section">
                 <h3>⏰ Horaires</h3>
                 <div class="form-grid">
@@ -28,27 +68,30 @@
                     <div>
                         {{ form_label(form.dateNuit) }}
                         {{ form_widget(form.dateNuit) }}
+                        {{ form_errors(form.dateNuit) }}
                     </div>
 
                     <div>
                         {{ form_label(form.heureCoucher) }}
                         {{ form_widget(form.heureCoucher) }}
+                        {{ form_errors(form.heureCoucher) }}
                     </div>
 
                     <div>
                         {{ form_label(form.heureReveil) }}
                         {{ form_widget(form.heureReveil) }}
+                        {{ form_errors(form.heureReveil) }}
                     </div>
 
                     <div>
                         {{ form_label(form.dureeSommeil) }}
                         {{ form_widget(form.dureeSommeil) }}
+                        {{ form_errors(form.dureeSommeil) }}
                     </div>
 
                 </div>
             </div>
 
-            <!-- Qualité -->
             <div class="form-section">
                 <h3>⭐ Qualité & ressenti</h3>
                 <div class="form-grid">
@@ -56,22 +99,24 @@
                     <div>
                         {{ form_label(form.qualite) }}
                         {{ form_widget(form.qualite) }}
+                        {{ form_errors(form.qualite) }}
                     </div>
 
                     <div>
                         {{ form_label(form.humeurReveil) }}
                         {{ form_widget(form.humeurReveil) }}
+                        {{ form_errors(form.humeurReveil) }}
                     </div>
 
                     <div>
                         {{ form_label(form.interruptions) }}
                         {{ form_widget(form.interruptions) }}
+                        {{ form_errors(form.interruptions) }}
                     </div>
 
                 </div>
             </div>
 
-            <!-- Environnement -->
             <div class="form-section">
                 <h3>🏠 Environnement</h3>
                 <div class="form-grid">
@@ -79,31 +124,33 @@
                     <div>
                         {{ form_label(form.environnement) }}
                         {{ form_widget(form.environnement) }}
+                        {{ form_errors(form.environnement) }}
                     </div>
 
                     <div>
                         {{ form_label(form.temperature) }}
                         {{ form_widget(form.temperature) }}
+                        {{ form_errors(form.temperature) }}
                     </div>
 
                     <div>
                         {{ form_label(form.bruitNiveau) }}
                         {{ form_widget(form.bruitNiveau) }}
+                        {{ form_errors(form.bruitNiveau) }}
                     </div>
 
                 </div>
             </div>
 
-            <!-- Notes -->
             <div class="form-section">
                 <h3>📝 Notes</h3>
 
                 {{ form_label(form.commentaire) }}
                 {{ form_widget(form.commentaire) }}
+                {{ form_errors(form.commentaire) }}
 
             </div>
 
-            <!-- Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn-primary">
                     ✔ Enregistrer

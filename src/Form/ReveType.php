@@ -22,67 +22,89 @@ class ReveType extends AbstractType
             ->add('sommeilId', EntityType::class, [
                 'label' => 'Nuit associée',
                 'class' => Sommeil::class,
-                // ✅ callback — date_nuit est un DateTime, pas un string
+                'required' => true,
+                'placeholder' => 'Choisir une nuit',
                 'choice_label' => function (Sommeil $sommeil): string {
-                    return $sommeil->getDateNuit()?->format('d/m/Y')
-                        . ' — ' . $sommeil->getHeureCoucher()
-                        . ' → '  . $sommeil->getHeureReveil()
+                    return ($sommeil->getDateNuit()?->format('d/m/Y') ?? 'Date inconnue')
+                        . ' — ' . ($sommeil->getHeureCoucher() ?? '?')
+                        . ' → ' . ($sommeil->getHeureReveil() ?? '?')
                         . ' (' . ($sommeil->getQualite() ?? '?') . ')';
                 },
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('titre', TextType::class, [
                 'label' => 'Titre du rêve',
-                'attr'  => ['class' => 'form-control', 'placeholder' => 'Ex: Vol au-dessus des nuages...']
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: Vol au-dessus des nuages...',
+                    'maxlength' => 200,
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'attr'  => ['class' => 'form-control', 'rows' => 4]
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 4,
+                ],
             ])
             ->add('humeur', ChoiceType::class, [
-                'label'    => 'Humeur',
+                'label' => 'Humeur',
                 'required' => false,
-                'choices'  => [
-                    '😄 Joyeux'  => '😄 Joyeux',
-                    '😢 Triste'  => '😢 Triste',
+                'placeholder' => 'Choisir une humeur',
+                'choices' => [
+                    '😄 Joyeux' => '😄 Joyeux',
+                    '😢 Triste' => '😢 Triste',
                     '😨 Effrayé' => '😨 Effrayé',
-                    '😌 Serein'  => '😌 Serein',
-                    '😐 Neutre'  => '😐 Neutre',
+                    '😌 Serein' => '😌 Serein',
+                    '😐 Neutre' => '😐 Neutre',
                 ],
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('typeReve', ChoiceType::class, [
-                'label'    => 'Type de rêve',
-                'required' => false,
-                'choices'  => [
-                    'Normal'       => 'Normal',
-                    'Lucide'       => 'Lucide',
-                    'Cauchemar'    => 'Cauchemar',
-                   
+                'label' => 'Type de rêve',
+                'required' => true,
+                'placeholder' => 'Choisir un type',
+                'choices' => [
+                    'Normal' => 'Normal',
+                    'Lucide' => 'Lucide',
+                    'Cauchemar' => 'Cauchemar',
                 ],
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('intensite', IntegerType::class, [
-                'label'    => 'Intensité (1-10)',
-                'required' => false,
-                'attr'     => ['class' => 'form-control', 'min' => 1, 'max' => 10]
+                'label' => 'Intensité (1-10)',
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 1,
+                    'max' => 10,
+                ],
             ])
             ->add('couleur', CheckboxType::class, [
-                'label'    => 'Rêve en couleur ?',
+                'label' => 'Rêve en couleur ?',
                 'required' => false,
             ])
             ->add('emotions', TextType::class, [
-                'label'    => 'Émotions ressenties',
+                'label' => 'Émotions ressenties',
                 'required' => false,
-                'attr'     => ['class' => 'form-control', 'placeholder' => 'Ex: joie, peur, surprise...']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: joie, peur, surprise...',
+                    'maxlength' => 200,
+                ],
             ])
             ->add('symboles', TextareaType::class, [
-                'label'    => 'Symboles',
+                'label' => 'Symboles',
                 'required' => false,
-                'attr'     => ['class' => 'form-control', 'rows' => 2]
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 2,
+                ],
             ])
             ->add('recurrent', CheckboxType::class, [
-                'label'    => 'Rêve récurrent ?',
+                'label' => 'Rêve récurrent ?',
                 'required' => false,
             ]);
     }

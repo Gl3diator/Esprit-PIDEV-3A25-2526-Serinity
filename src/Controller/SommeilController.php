@@ -6,12 +6,13 @@ use App\Entity\Sommeil;
 use App\Form\SommeilType;
 use App\Repository\SommeilRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
@@ -115,17 +116,23 @@ final class SommeilController extends AbstractController
         $form = $this->createForm(SommeilType::class, $sommeil);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $sommeil->setCreatedAt(new \DateTime());
-            $sommeil->setUpdatedAt(new \DateTime());
-            $sommeil->setUserId(1);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $sommeil->setCreatedAt(new \DateTime());
+                $sommeil->setUpdatedAt(new \DateTime());
+                $sommeil->setUserId(1);
 
-            $em->persist($sommeil);
-            $em->flush();
+                $em->persist($sommeil);
+                $em->flush();
 
-            $this->addFlash('success', 'Nuit de sommeil ajoutée avec succès !');
+                $this->addFlash('success', 'Nuit de sommeil ajoutée avec succès !');
 
-            return $this->redirectToRoute('app_sommeil_list');
+                return $this->redirectToRoute('app_sommeil_list');
+            }
+
+            foreach ($this->getFormErrors($form) as $error) {
+                $this->addFlash('error', $error);
+            }
         }
 
         return $this->render('sommeil/new.html.twig', [
@@ -147,13 +154,19 @@ final class SommeilController extends AbstractController
         $form = $this->createForm(SommeilType::class, $sommeil);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $sommeil->setUpdatedAt(new \DateTime());
-            $em->flush();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $sommeil->setUpdatedAt(new \DateTime());
+                $em->flush();
 
-            $this->addFlash('success', 'Nuit de sommeil modifiée avec succès !');
+                $this->addFlash('success', 'Nuit de sommeil modifiée avec succès !');
 
-            return $this->redirectToRoute('app_sommeil_list');
+                return $this->redirectToRoute('app_sommeil_list');
+            }
+
+            foreach ($this->getFormErrors($form) as $error) {
+                $this->addFlash('error', $error);
+            }
         }
 
         return $this->render('sommeil/edit.html.twig', [
@@ -204,9 +217,7 @@ final class SommeilController extends AbstractController
                 $s->getDureeSommeil(),
                 $s->getQualite(),
                 $s->getHumeurReveil(),
-                method_exists($s, 'isSommeilInsuffisant') && $s->isSommeilInsuffisant()
-                    ? 'Sommeil insuffisant'
-                    : 'Normal',
+                $s->isSommeilInsuffisant() ? 'Sommeil insuffisant' : 'Normal',
             ]);
         }
 
@@ -254,5 +265,20 @@ final class SommeilController extends AbstractController
                 'Content-Disposition' => 'attachment; filename="sommeils.pdf"',
             ]
         );
+    }
+
+    private function getFormErrors(FormInterface $form): array
+    {
+        $errors = [];
+
+        foreach ($form->getErrors(true) as $error) {
+            $message = $error->getMessage();
+
+            if (!in_array($message, $errors, true)) {
+                $errors[] = $message;
+            }
+        }
+
+        return $errors;
     }
 }

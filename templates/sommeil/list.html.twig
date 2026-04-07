@@ -305,45 +305,52 @@
                                 {{ stats.qualite_moyenne|default(0) }},
                                 {{ stats.qualite_mauvaise|default(0) }}
                             ],
-                            backgroundColor: ['#0f766e', '#14b8a6', '#99f6e4', '#ccfbf1'],
+                            backgroundColor: ['#1d4ed8', '#3b82f6', '#93c5fd', '#dbeafe'],
                             borderWidth: 0
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        cutoutPercentage: 65,
+                        cutoutPercentage: 70,
                         legend: {
                             position: 'bottom',
                             labels: {
                                 boxWidth: 10,
                                 padding: 12,
-                                fontColor: '#475569'
+                                fontColor: '#64748b'
                             }
                         }
                     }
                 });
             }
-            const sleepDurationBar = document.getElementById('frontSleepDurationChart');
-            if (sleepDurationBar && typeof Chart !== 'undefined') {
-                new Chart(sleepDurationBar, {
-                    type: 'bar',
+
+            const sleepDurationChart = document.getElementById('frontSleepDurationChart');
+            if (sleepDurationChart && typeof Chart !== 'undefined') {
+                new Chart(sleepDurationChart, {
+                    type: 'line',
                     data: {
                         labels: {{ stats.sleep_duration_labels|default([])|json_encode|raw }},
                         datasets: [{
                             data: {{ stats.sleep_duration_data|default([])|json_encode|raw }},
-                            backgroundColor: '#14b8a6',
-                            hoverBackgroundColor: '#0f766e',
-                            borderWidth: 0,
-                            borderRadius: 8,
-                            barPercentage: 0.58,
-                            categoryPercentage: 0.72
+                            backgroundColor: 'rgba(59, 130, 246, 0.28)',
+                            borderColor: '#4f46e5',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            lineTension: 0.42,
+                            fill: true
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         legend: { display: false },
+                        elements: {
+                            line: {
+                                tension: 0.42
+                            }
+                        },
                         scales: {
                             yAxes: [{
                                 ticks: {
@@ -351,7 +358,7 @@
                                     fontColor: '#64748b'
                                 },
                                 gridLines: {
-                                    color: 'rgba(148,163,184,0.18)',
+                                    color: 'rgba(148,163,184,0.14)',
                                     drawBorder: false
                                 }
                             }],
@@ -364,6 +371,12 @@
                                     drawBorder: false
                                 }
                             }]
+                        },
+                        tooltips: {
+                            backgroundColor: '#0f172a',
+                            titleFontColor: '#ffffff',
+                            bodyFontColor: '#e2e8f0',
+                            displayColors: false
                         }
                     }
                 });
@@ -377,7 +390,8 @@
                         labels: {{ stats.wake_mood_labels|default([])|json_encode|raw }},
                         datasets: [{
                             data: {{ stats.wake_mood_data|default([])|json_encode|raw }},
-                            backgroundColor: ['#cbd5e1', '#94a3b8', '#64748b', '#334155', '#0f172a'],
+                            backgroundColor: '#94a3b8',
+                            hoverBackgroundColor: '#64748b',
                             borderWidth: 0,
                             borderRadius: 8,
                             barPercentage: 0.58,

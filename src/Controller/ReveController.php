@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -32,6 +33,23 @@ final class ReveController extends AbstractController
         $reves = $revesRepository->findFrontFiltered($filters);
         $stats = $revesRepository->getFrontStats();
 
+        $dreamMoodCounts = [
+            '😄 Joyeux' => 0,
+            '😢 Triste' => 0,
+            '😨 Effrayé' => 0,
+            '😐 Neutre' => 0,
+        ];
+
+        foreach ($reves as $reve) {
+            $humeur = trim((string) ($reve->getHumeur() ?? ''));
+            if (array_key_exists($humeur, $dreamMoodCounts)) {
+                $dreamMoodCounts[$humeur]++;
+            }
+        }
+
+        $stats['dream_mood_labels'] = array_keys($dreamMoodCounts);
+        $stats['dream_mood_data'] = array_values($dreamMoodCounts);
+
         return $this->render('reve/index.html.twig', [
             'reves' => $reves,
             'filters' => $filters,
@@ -46,16 +64,22 @@ final class ReveController extends AbstractController
         $form = $this->createForm(ReveType::class, $reve);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $reve->setCreatedAt(new \DateTime());
-            $reve->setUpdatedAt(new \DateTime());
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $reve->setCreatedAt(new \DateTime());
+                $reve->setUpdatedAt(new \DateTime());
 
-            $em->persist($reve);
-            $em->flush();
+                $em->persist($reve);
+                $em->flush();
 
-            $this->addFlash('success', 'Rêve ajouté avec succès !');
+                $this->addFlash('success', 'Rêve ajouté avec succès !');
 
-            return $this->redirectToRoute('app_reve_index');
+                return $this->redirectToRoute('app_reve_index');
+            }
+
+            foreach ($this->getFormErrors($form) as $error) {
+                $this->addFlash('error', $error);
+            }
         }
 
         return $this->render('reve/new.html.twig', [
@@ -77,13 +101,19 @@ final class ReveController extends AbstractController
         $form = $this->createForm(ReveType::class, $reve);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $reve->setUpdatedAt(new \DateTime());
-            $em->flush();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $reve->setUpdatedAt(new \DateTime());
+                $em->flush();
 
-            $this->addFlash('success', 'Rêve modifié avec succès !');
+                $this->addFlash('success', 'Rêve modifié avec succès !');
 
-            return $this->redirectToRoute('app_reve_index');
+                return $this->redirectToRoute('app_reve_index');
+            }
+
+            foreach ($this->getFormErrors($form) as $error) {
+                $this->addFlash('error', $error);
+            }
         }
 
         return $this->render('reve/edit.html.twig', [
@@ -129,12 +159,12 @@ final class ReveController extends AbstractController
 
         foreach ($rows as $r) {
             fputcsv($handle, [
-                method_exists($r, 'getCreatedAt') && $r->getCreatedAt() ? $r->getCreatedAt()->format('Y-m-d') : '',
-                method_exists($r, 'getTitre') ? $r->getTitre() : '',
-                method_exists($r, 'getTypeReve') ? $r->getTypeReve() : '',
-                method_exists($r, 'getIntensite') ? $r->getIntensite() : '',
-                method_exists($r, 'getRecurrent') ? ($r->getRecurrent() ? 'Oui' : 'Non') : '',
-                method_exists($r, 'getCouleur') ? ($r->getCouleur() ? 'Oui' : 'Non') : '',
+                $r->getCreatedAt() ? $r->getCreatedAt()->format('Y-m-d') : '',
+                $r->getTitre(),
+                $r->getTypeReve(),
+                $r->getIntensite(),
+                $r->getRecurrent() ? 'Oui' : 'Non',
+                $r->getCouleur() ? 'Oui' : 'Non',
             ]);
         }
 
@@ -183,5 +213,20 @@ final class ReveController extends AbstractController
                 'Content-Disposition' => 'attachment; filename="reves.pdf"',
             ]
         );
+    }
+
+    private function getFormErrors(FormInterface $form): array
+    {
+        $errors = [];
+
+        foreach ($form->getErrors(true) as $error) {
+            $message = $error->getMessage();
+
+            if (!in_array($message, $errors, true)) {
+                $errors[] = $message;
+            }
+        }
+
+        return $errors;
     }
 }

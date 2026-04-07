@@ -12,12 +12,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Sommeil
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]  // ✅ AUTO_INCREMENT
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\Column(type: "date")]
     #[Assert\NotBlank(message: 'La date de nuit est obligatoire.')]
+    #[Assert\LessThanOrEqual(
+        value: 'today',
+        message: 'La date de nuit ne peut pas être dans le futur.'
+    )]
     private ?\DateTimeInterface $date_nuit = null;
 
     #[ORM\Column(type: "string")]
@@ -37,11 +41,19 @@ class Sommeil
     private ?string $qualite = null;
 
     #[ORM\Column(type: "text", nullable: true)]
-    #[Assert\Length(max: 1000, maxMessage: 'Le commentaire ne doit pas dépasser {{ limit }} caractères.')]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Le commentaire ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $commentaire = null;
 
     #[ORM\Column(type: "float", nullable: true)]
     #[Assert\Positive(message: 'La durée doit être un nombre positif.')]
+    #[Assert\Range(
+        min: 0.5,
+        max: 24,
+        notInRangeMessage: 'La durée du sommeil doit être entre {{ min }} et {{ max }} heures.'
+    )]
     private ?float $duree_sommeil = null;
 
     #[ORM\Column(type: "integer", nullable: true)]
@@ -49,9 +61,17 @@ class Sommeil
     private ?int $interruptions = null;
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: ['😌 Reposé', '😄 Joyeux', '😐 Neutre', '😴 Fatigué', '⚡ Énergisé'],
+        message: 'Choisissez une humeur valide.'
+    )]
     private ?string $humeur_reveil = null;
 
     #[ORM\Column(type: "string", length: 100, nullable: true)]
+    #[Assert\Choice(
+        choices: ['🏠 Normal', '🌿 Calme', '😊 Confortable'],
+        message: 'Choisissez un environnement valide.'
+    )]
     private ?string $environnement = null;
 
     #[ORM\Column(type: "float", nullable: true)]
@@ -63,6 +83,10 @@ class Sommeil
     private ?float $temperature = null;
 
     #[ORM\Column(type: "string", length: 50, nullable: true)]
+    #[Assert\Choice(
+        choices: ['🔇 Silencieux', '🔉 Léger', '🔉 Modéré', '🔊 Fort'],
+        message: 'Choisissez un niveau de bruit valide.'
+    )]
     private ?string $bruit_niveau = null;
 
     #[ORM\Column(type: "datetime")]
@@ -82,8 +106,6 @@ class Sommeil
         $this->revess = new ArrayCollection();
     }
 
-    // ─── GETTERS / SETTERS ────────────────────────────────────
-
     public function getId(): ?int
     {
         return $this->id;
@@ -94,9 +116,10 @@ class Sommeil
         return $this->date_nuit;
     }
 
-    public function setDateNuit(\DateTimeInterface $value): void
+    public function setDateNuit(?\DateTimeInterface $value): self
     {
         $this->date_nuit = $value;
+        return $this;
     }
 
     public function getHeureCoucher(): ?string
@@ -104,9 +127,10 @@ class Sommeil
         return $this->heure_coucher;
     }
 
-    public function setHeureCoucher(string $value): void
+    public function setHeureCoucher(?string $value): self
     {
         $this->heure_coucher = $value;
+        return $this;
     }
 
     public function getHeureReveil(): ?string
@@ -114,9 +138,10 @@ class Sommeil
         return $this->heure_reveil;
     }
 
-    public function setHeureReveil(string $value): void
+    public function setHeureReveil(?string $value): self
     {
         $this->heure_reveil = $value;
+        return $this;
     }
 
     public function getQualite(): ?string
@@ -124,9 +149,10 @@ class Sommeil
         return $this->qualite;
     }
 
-    public function setQualite(string $value): void
+    public function setQualite(?string $value): self
     {
         $this->qualite = $value;
+        return $this;
     }
 
     public function getCommentaire(): ?string
@@ -134,9 +160,10 @@ class Sommeil
         return $this->commentaire;
     }
 
-    public function setCommentaire(?string $value): void
+    public function setCommentaire(?string $value): self
     {
         $this->commentaire = $value;
+        return $this;
     }
 
     public function getDureeSommeil(): ?float
@@ -144,9 +171,10 @@ class Sommeil
         return $this->duree_sommeil;
     }
 
-    public function setDureeSommeil(?float $value): void
+    public function setDureeSommeil(?float $value): self
     {
         $this->duree_sommeil = $value;
+        return $this;
     }
 
     public function getInterruptions(): ?int
@@ -154,9 +182,10 @@ class Sommeil
         return $this->interruptions;
     }
 
-    public function setInterruptions(?int $value): void
+    public function setInterruptions(?int $value): self
     {
         $this->interruptions = $value;
+        return $this;
     }
 
     public function getHumeurReveil(): ?string
@@ -164,9 +193,10 @@ class Sommeil
         return $this->humeur_reveil;
     }
 
-    public function setHumeurReveil(?string $value): void
+    public function setHumeurReveil(?string $value): self
     {
         $this->humeur_reveil = $value;
+        return $this;
     }
 
     public function getEnvironnement(): ?string
@@ -174,9 +204,10 @@ class Sommeil
         return $this->environnement;
     }
 
-    public function setEnvironnement(?string $value): void
+    public function setEnvironnement(?string $value): self
     {
         $this->environnement = $value;
+        return $this;
     }
 
     public function getTemperature(): ?float
@@ -184,9 +215,10 @@ class Sommeil
         return $this->temperature;
     }
 
-    public function setTemperature(?float $value): void
+    public function setTemperature(?float $value): self
     {
         $this->temperature = $value;
+        return $this;
     }
 
     public function getBruitNiveau(): ?string
@@ -194,9 +226,10 @@ class Sommeil
         return $this->bruit_niveau;
     }
 
-    public function setBruitNiveau(?string $value): void
+    public function setBruitNiveau(?string $value): self
     {
         $this->bruit_niveau = $value;
+        return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -204,9 +237,10 @@ class Sommeil
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeInterface $value): void
+    public function setCreatedAt(\DateTimeInterface $value): self
     {
         $this->created_at = $value;
+        return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
@@ -214,9 +248,10 @@ class Sommeil
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $value): void
+    public function setUpdatedAt(\DateTimeInterface $value): self
     {
         $this->updated_at = $value;
+        return $this;
     }
 
     public function getUserId(): ?int
@@ -224,12 +259,11 @@ class Sommeil
         return $this->user_id;
     }
 
-    public function setUserId(?int $value): void
+    public function setUserId(?int $value): self
     {
         $this->user_id = $value;
+        return $this;
     }
-
-    // ─── RELATION revess ──────────────────────────────────────
 
     public function getRevess(): Collection
     {
@@ -242,6 +276,7 @@ class Sommeil
             $this->revess[] = $reves;
             $reves->setSommeilId($this);
         }
+
         return $this;
     }
 
@@ -252,6 +287,7 @@ class Sommeil
                 $reves->setSommeilId(null);
             }
         }
+
         return $this;
     }
 
@@ -262,10 +298,6 @@ class Sommeil
 
     public function getSleepStatusLabel(): ?string
     {
-        if ($this->isSommeilInsuffisant()) {
-            return 'Sommeil insuffisant';
-        }
-
-        return null;
+        return $this->isSommeilInsuffisant() ? 'Sommeil insuffisant' : null;
     }
 }

@@ -38,6 +38,15 @@
         </div>
     </div>
 
+    <div class="front-mini-charts mb-4">
+        <div class="front-mini-chart-card front-mini-chart-card--large">
+            <h3>Courbe de l’humeur des rêves</h3>
+            <div class="front-mini-chart-wrap front-mini-chart-wrap--large">
+                <canvas id="dreamMoodChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <form method="get" class="filters-bar mb-4">
         <input
                 type="text"
@@ -77,8 +86,6 @@
             <option value="titre" {{ filters.sort|default('') == 'titre' ? 'selected' : '' }}>Titre</option>
         </select>
 
-
-
         <button type="submit" class="btn btn--primary">Filtrer</button>
         <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">Réinitialiser</a>
         <a href="{{ path('app_reve_export_csv', app.request.query.all) }}" class="btn btn--secondary">Exporter Excel</a>
@@ -101,8 +108,6 @@
                     {% set currentDirection = filters.direction %}
 
                     {% macro sort_link(label, field, filters, currentSort, currentDirection) %}
-                        {% import _self as macros %}
-
                         {% set direction = (currentSort == field and currentDirection == 'ASC') ? 'DESC' : 'ASC' %}
 
                         <a href="{{ path(app.request.attributes.get('_route'), filters|merge({
@@ -111,13 +116,8 @@
                         })) }}"
                            class="sort-link {{ currentSort == field ? 'active' : '' }}">
                             {{ label }}
-
                             {% if currentSort == field %}
-                                {% if currentDirection == 'ASC' %}
-                                    ↑
-                                {% else %}
-                                    ↓
-                                {% endif %}
+                                {{ currentDirection == 'ASC' ? '↑' : '↓' }}
                             {% else %}
                                 ⇅
                             {% endif %}
@@ -178,7 +178,7 @@
 
                         <td>
                             {% if reve.couleur %}
-                                <span class="badge badge--info">🎨 {{ reve.couleur }}</span>
+                                <span class="badge badge--info">🎨 Oui</span>
                             {% else %}
                                 <span style="color:var(--text-faint);font-size:0.85rem;">N&amp;B</span>
                             {% endif %}
@@ -246,6 +246,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
     <script>
         function openDeleteModal(url, label) {
             document.getElementById('deleteForm').action = url;
@@ -261,5 +263,67 @@
         document.getElementById('deleteModal').addEventListener('click', e => {
             if (e.target === e.currentTarget) closeDeleteModal();
         });
+
+        (() => {
+            const dreamMoodChart = document.getElementById('dreamMoodChart');
+
+            if (dreamMoodChart && typeof Chart !== 'undefined') {
+                new Chart(dreamMoodChart, {
+                    type: 'line',
+                    data: {
+                        labels: {{ stats.dream_mood_labels|default([])|json_encode|raw }},
+                        datasets: [{
+                            label: 'Nombre de rêves',
+                            data: {{ stats.dream_mood_data|default([])|json_encode|raw }},
+                            backgroundColor: 'rgba(99, 102, 241, 0.18)',
+                            borderColor: '#6366f1',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#6366f1',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            lineTension: 0.42,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: false
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0,
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    color: 'rgba(148,163,184,0.18)',
+                                    drawBorder: false
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#64748b'
+                                },
+                                gridLines: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }]
+                        },
+                        tooltips: {
+                            backgroundColor: '#0f172a',
+                            titleFontColor: '#ffffff',
+                            bodyFontColor: '#e2e8f0',
+                            displayColors: false
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 {% endblock %}

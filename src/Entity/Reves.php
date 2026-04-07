@@ -72,6 +72,10 @@ class Reves
     private ?string $emotions = null;
 
     #[ORM\Column(type: "text", nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Les symboles ne doivent pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $symboles = null;
 
     #[ORM\Column(type: "boolean")]
@@ -83,8 +87,6 @@ class Reves
     #[ORM\Column(type: "datetime")]
     private ?\DateTimeInterface $updated_at = null;
 
-    // ─── GETTERS / SETTERS ────────────────────────────────────
-
     public function getId(): ?int
     {
         return $this->id;
@@ -95,9 +97,10 @@ class Reves
         return $this->sommeil_id;
     }
 
-    public function setSommeilId(?Sommeil $value): void
+    public function setSommeilId(?Sommeil $value): self
     {
         $this->sommeil_id = $value;
+        return $this;
     }
 
     public function getTitre(): ?string
@@ -105,9 +108,10 @@ class Reves
         return $this->titre;
     }
 
-    public function setTitre(string $value): void
+    public function setTitre(string $value): self
     {
         $this->titre = $value;
+        return $this;
     }
 
     public function getDescription(): ?string
@@ -115,9 +119,10 @@ class Reves
         return $this->description;
     }
 
-    public function setDescription(string $value): void
+    public function setDescription(string $value): self
     {
         $this->description = $value;
+        return $this;
     }
 
     public function getHumeur(): ?string
@@ -125,9 +130,10 @@ class Reves
         return $this->humeur;
     }
 
-    public function setHumeur(?string $value): void
+    public function setHumeur(?string $value): self
     {
         $this->humeur = $value;
+        return $this;
     }
 
     public function getTypeReve(): ?string
@@ -135,9 +141,10 @@ class Reves
         return $this->type_reve;
     }
 
-    public function setTypeReve(?string $value): void
+    public function setTypeReve(?string $value): self
     {
         $this->type_reve = $value;
+        return $this;
     }
 
     public function getIntensite(): ?int
@@ -145,9 +152,10 @@ class Reves
         return $this->intensite;
     }
 
-    public function setIntensite(?int $value): void
+    public function setIntensite(?int $value): self
     {
         $this->intensite = $value;
+        return $this;
     }
 
     public function getCouleur(): bool
@@ -155,9 +163,10 @@ class Reves
         return $this->couleur;
     }
 
-    public function setCouleur(bool $value): void
+    public function setCouleur(bool $value): self
     {
         $this->couleur = $value;
+        return $this;
     }
 
     public function getEmotions(): ?string
@@ -165,9 +174,10 @@ class Reves
         return $this->emotions;
     }
 
-    public function setEmotions(?string $value): void
+    public function setEmotions(?string $value): self
     {
         $this->emotions = $value;
+        return $this;
     }
 
     public function getSymboles(): ?string
@@ -175,9 +185,10 @@ class Reves
         return $this->symboles;
     }
 
-    public function setSymboles(?string $value): void
+    public function setSymboles(?string $value): self
     {
         $this->symboles = $value;
+        return $this;
     }
 
     public function getRecurrent(): bool
@@ -185,9 +196,10 @@ class Reves
         return $this->recurrent;
     }
 
-    public function setRecurrent(bool $value): void
+    public function setRecurrent(bool $value): self
     {
         $this->recurrent = $value;
+        return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -195,9 +207,10 @@ class Reves
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeInterface $value): void
+    public function setCreatedAt(\DateTimeInterface $value): self
     {
         $this->created_at = $value;
+        return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
@@ -205,8 +218,9 @@ class Reves
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $value): void
+    public function setUpdatedAt(\DateTimeInterface $value): self
     {
         $this->updated_at = $value;
+        return $this;
     }
 }

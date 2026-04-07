@@ -3,6 +3,20 @@
 
 {% block body %}
 
+    {% for message in app.flashes('error') %}
+        {% if loop.first %}
+        <script>
+            let errors = [];
+            {% endif %}
+
+            errors.push("{{ message|e('js') }}");
+
+            {% if loop.last %}
+            alert(errors.join("\n"));
+        </script>
+        {% endif %}
+    {% endfor %}
+
     <nav class="breadcrumb">
         <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
         <span class="breadcrumb__sep">›</span>
@@ -16,99 +30,145 @@
     <header class="page-header">
         <div class="page-header__left">
             <h1 class="page-header__title">✏️ Modifier la nuit</h1>
-            <p class="page-header__subtitle">{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }}</p>
+            <p class="page-header__subtitle">
+                {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }}
+            </p>
         </div>
     </header>
 
     <div class="card">
-        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+        {{ form_start(form, {
+            attr: {
+                novalidate: 'novalidate',
+                class: 'sleep-form'
+            }
+        }) }}
+
+        {% if form.vars.submitted and not form.vars.valid %}
+            <script>
+                let errors = [];
+
+                {% for field in form %}
+                {% for error in field.vars.errors %}
+                errors.push("{{ error.message|e('js') }}");
+                {% endfor %}
+                {% endfor %}
+
+                {% for error in form.vars.errors %}
+                errors.push("{{ error.message|e('js') }}");
+                {% endfor %}
+
+                if (errors.length > 0) {
+                    alert(errors.join("\n"));
+                }
+            </script>
+        {% endif %}
+
+        {{ form_errors(form) }}
 
         <div class="form-section">
             <div class="form-section__title">⏰ Horaires</div>
             <div class="form-grid">
+
                 <div class="form-group">
-                    {{ form_label(form.dateNuit, 'Date de la nuit', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.dateNuit, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.dateNuit) }}
+                    {{ form_widget(form.dateNuit) }}
                     {{ form_errors(form.dateNuit) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.heureCoucher, 'Heure de coucher', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.heureCoucher, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.heureCoucher) }}
+                    {{ form_widget(form.heureCoucher) }}
                     {{ form_errors(form.heureCoucher) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.heureReveil, 'Heure de réveil', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.heureReveil, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.heureReveil) }}
+                    {{ form_widget(form.heureReveil) }}
                     {{ form_errors(form.heureReveil) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.dureeSommeil, 'Durée (heures)', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.dureeSommeil, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.dureeSommeil) }}
+                    {{ form_widget(form.dureeSommeil) }}
                     {{ form_errors(form.dureeSommeil) }}
                 </div>
+
             </div>
         </div>
 
         <div class="form-section">
             <div class="form-section__title">⭐ Qualité & ressenti</div>
             <div class="form-grid">
+
                 <div class="form-group">
-                    {{ form_label(form.qualite, 'Qualité', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.qualite, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.qualite) }}
+                    {{ form_widget(form.qualite) }}
                     {{ form_errors(form.qualite) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.humeurReveil, 'Humeur au réveil', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.humeurReveil, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.humeurReveil) }}
+                    {{ form_widget(form.humeurReveil) }}
                     {{ form_errors(form.humeurReveil) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.interruptions, 'Interruptions', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.interruptions, {attr: {class: 'form-control', min: '0'}}) }}
+                    {{ form_label(form.interruptions) }}
+                    {{ form_widget(form.interruptions) }}
                     {{ form_errors(form.interruptions) }}
                 </div>
+
             </div>
         </div>
 
         <div class="form-section">
             <div class="form-section__title">🏠 Environnement</div>
             <div class="form-grid">
+
                 <div class="form-group">
-                    {{ form_label(form.environnement, 'Environnement', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.environnement, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.environnement) }}
+                    {{ form_widget(form.environnement) }}
                     {{ form_errors(form.environnement) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.temperature, 'Température (°C)', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.temperature, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.temperature) }}
+                    {{ form_widget(form.temperature) }}
                     {{ form_errors(form.temperature) }}
                 </div>
+
                 <div class="form-group">
-                    {{ form_label(form.bruitNiveau, 'Niveau de bruit', {label_attr: {class: 'form-label'}}) }}
-                    {{ form_widget(form.bruitNiveau, {attr: {class: 'form-control'}}) }}
+                    {{ form_label(form.bruitNiveau) }}
+                    {{ form_widget(form.bruitNiveau) }}
                     {{ form_errors(form.bruitNiveau) }}
                 </div>
+
             </div>
         </div>
 
         <div class="form-section">
             <div class="form-section__title">📝 Notes</div>
-            <div class="form-group">
-                {{ form_label(form.commentaire, 'Commentaire', {label_attr: {class: 'form-label'}}) }}
-                {{ form_widget(form.commentaire, {attr: {class: 'form-control', rows: '4'}}) }}
-                {{ form_errors(form.commentaire) }}
-            </div>
+
+            {{ form_label(form.commentaire) }}
+            {{ form_widget(form.commentaire) }}
+            {{ form_errors(form.commentaire) }}
+
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn btn--primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                Sauvegarder
+                ✔ Sauvegarder
             </button>
-            <a href="{{ path('app_sommeil_show', {id: sommeil.id}) }}" class="btn btn--secondary">Annuler</a>
+
+            <a href="{{ path('app_sommeil_show', {id: sommeil.id}) }}" class="btn btn--secondary">
+                Annuler
+            </a>
         </div>
 
         {{ form_end(form) }}
+
     </div>
 
 {% endblock %}
