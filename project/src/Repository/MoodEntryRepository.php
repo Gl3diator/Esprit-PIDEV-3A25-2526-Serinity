@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\MoodEntry;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /** @extends ServiceEntityRepository<MoodEntry> */
@@ -15,6 +16,20 @@ class MoodEntryRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MoodEntry::class);
+    }
+
+    public function findOwnedByUser(string $entryId, User $user): ?MoodEntry
+    {
+        return $this->createQueryBuilder('entry')
+            ->leftJoin('entry.emotions', 'emotion')
+            ->leftJoin('entry.influences', 'influence')
+            ->addSelect('emotion', 'influence')
+            ->andWhere('entry.id = :entryId')
+            ->andWhere('entry.user = :user')
+            ->setParameter('entryId', $entryId)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function hasDayEntryForDate(User $user, \DateTimeImmutable $entryDate, ?string $excludedEntryId = null): bool
@@ -58,7 +73,23 @@ class MoodEntryRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->setFirstResult($offset);
 
-        return $qb->getQuery()->getResult();
+        $entries = $qb->getQuery()->getResult();
+
+        // Eager load emotions and influences to avoid N+1 queries
+        if (count($entries) > 0) {
+            $ids = array_map(fn($entry) => $entry->getId(), $entries);
+            
+            $this->createQueryBuilder('e')
+                ->leftJoin('e.emotions', 'emotion')
+                ->leftJoin('e.influences', 'influence')
+                ->addSelect('emotion', 'influence')
+                ->where('e.id IN (:ids)')
+                ->setParameter('ids', $ids)
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $entries;
     }
 
     public function countHistory(
@@ -183,14 +214,10 @@ class MoodEntryRepository extends ServiceEntityRepository
         ?\DateTimeImmutable $fromDate,
         ?\DateTimeImmutable $toDate,
         ?int $level = null,
-    ): \Doctrine\ORM\QueryBuilder {
+    ): QueryBuilder {
         $qb = $this->createQueryBuilder('entry')
-            ->leftJoin('entry.emotions', 'emotion')
-            ->leftJoin('entry.influences', 'influence')
-            ->addSelect('emotion', 'influence')
             ->orderBy('entry.entryDate', 'DESC')
-            ->addOrderBy('entry.updatedAt', 'DESC')
-            ->distinct();
+            ->addOrderBy('entry.updatedAt', 'DESC');
 
         if ($user !== null) {
             $qb->andWhere('entry.user = :user')
@@ -218,11 +245,15 @@ class MoodEntryRepository extends ServiceEntityRepository
         }
 
         if ($search !== null && $search !== '') {
-            $qb->andWhere(
-                'LOWER(emotion.name) LIKE :search
-                 OR LOWER(influence.name) LIKE :search
-                 OR LOWER(entry.momentType) LIKE :search'
-            )->setParameter('search', '%' . mb_strtolower($search) . '%');
+            $qb->leftJoin('entry.emotions', 'emotion')
+               ->leftJoin('entry.influences', 'influence')
+               ->andWhere(
+                   'LOWER(emotion.name) LIKE :search
+                    OR LOWER(influence.name) LIKE :search
+                    OR LOWER(entry.momentType) LIKE :search'
+               )
+               ->setParameter('search', '%' . mb_strtolower($search) . '%')
+               ->distinct();
         }
 
         return $qb;
