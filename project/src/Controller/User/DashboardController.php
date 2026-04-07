@@ -45,19 +45,6 @@ final class DashboardController extends AbstractUserUiController
         ]);
     }
 
-    #[Route('/exercises', name: 'user_ui_exercises', methods: ['GET'])]
-    public function exercises(): Response
-    {
-        $user = $this->currentUser();
-
-        return $this->render('access_control/pages/coming_soon.html.twig', [
-            'nav' => $this->buildNav('user_ui_exercises'),
-            'userName' => $user->getEmail(),
-            'title' => 'Exercises',
-            'subtitle' => 'User exercises module will be available soon.',
-        ]);
-    }
-
     #[Route('/forum', name: 'user_ui_forum', methods: ['GET'])]
     public function forum(): Response
     {
@@ -87,13 +74,8 @@ final class DashboardController extends AbstractUserUiController
     #[Route('/sleep', name: 'user_ui_sleep', methods: ['GET'])]
     public function sleep(): Response
     {
-        $user = $this->currentUser();
+        $this->currentUser();
 
-        return $this->render('access_control/pages/coming_soon.html.twig', [
-            'nav' => $this->buildNav('user_ui_sleep'),
-            'userName' => $user->getEmail(),
-            'title' => 'Sleep',
-            'subtitle' => 'Sleep tracking module will be available soon.',
-        ]);
+        return $this->redirectToRoute('user_ui_sommeil_list');
     }
 }

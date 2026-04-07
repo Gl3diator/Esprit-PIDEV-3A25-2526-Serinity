@@ -4,9 +4,6 @@ export default class extends Controller {
     static targets = [
         'form',
         'submitButton',
-        'cancelEditButton',
-        'formHeading',
-        'formHelper',
         'moodLevelValue',
         'weeklyCount',
         'weeklyAverage',
@@ -23,23 +20,25 @@ export default class extends Controller {
         'filterSearch',
         'filterMomentType',
         'filterFromDate',
+        'editModal',
+        'editForm',
+        'editEntryId',
+        'editMoodLevelValue',
+        'editSubmitButton',
     ];
 
     static values = {
         createUrl: String,
-        updateUrlTemplate: String,
-        deleteUrlTemplate: String,
         historyUrl: String,
         summaryUrl: String,
+        updateUrlTemplate: String,
+        deleteUrlTemplate: String,
     };
 
     connect() {
         this.page = 1;
-        this.limit = 20;
+        this.limit = 100;
         this.loadingHistory = false;
-        this.editingEntryId = null;
-
-        this.ensureHistoryCardStyles();
         this.loadSummary();
         this.loadHistory();
     }
@@ -62,30 +61,28 @@ export default class extends Controller {
             influenceKeys: this.selectedValues('influenceKeys'),
         };
 
-        const isEditing = this.editingEntryId !== null;
-        const url = isEditing ? this.buildEntryUrl(this.updateUrlTemplateValue, this.editingEntryId) : this.createUrlValue;
-        const method = isEditing ? 'PUT' : 'POST';
-
         this.setSubmitState(true);
 
         try {
-            const response = await fetch(url, {
-                method,
+            const response = await fetch(this.createUrlValue, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
             const body = await this.readJson(response);
 
             if (!response.ok || !body?.success) {
-                throw new Error(body?.message || (isEditing ? 'Failed to update mood entry.' : 'Failed to create mood entry.'));
+                throw new Error(body?.message || 'Failed to create mood entry.');
             }
 
-            this.showToast(body.message || (isEditing ? 'Mood entry updated successfully.' : 'Mood entry created successfully.'), 'success');
-            this.resetFormState();
+            this.showToast(body.message || 'Mood entry created successfully.', 'success');
+            this.formTarget.reset();
+            this.formTarget.elements.moodLevel.value = '3';
+            this.moodLevelValueTarget.textContent = '3';
             this.page = 1;
             await Promise.all([this.loadSummary(), this.loadHistory()]);
         } catch (error) {
-            this.showToast(error.message || (isEditing ? 'Failed to update mood entry.' : 'Failed to create mood entry.'), 'error');
+            this.showToast(error.message || 'Failed to create mood entry.', 'error');
         } finally {
             this.setSubmitState(false);
         }
@@ -98,73 +95,19 @@ export default class extends Controller {
     }
 
     prevPage() {
-        if (this.page <= 1 || this.loadingHistory) {
-            return;
-        }
-
-        this.page -= 1;
-        this.loadHistory();
+        return;
     }
 
     nextPage() {
-        if (this.loadingHistory) {
+        return;
+    }
+
+    updateEditMoodLevelLabel(event) {
+        if (!this.hasEditMoodLevelValueTarget) {
             return;
         }
 
-        this.page += 1;
-        this.loadHistory();
-    }
-
-    startEdit(entry) {
-        this.editingEntryId = String(entry.id);
-        this.formTarget.elements.momentType.value = entry.momentType || 'MOMENT';
-        this.formTarget.elements.moodLevel.value = String(entry.moodLevel ?? 3);
-        this.moodLevelValueTarget.textContent = String(entry.moodLevel ?? 3);
-
-        this.toggleCheckboxGroup('emotionKeys', entry.emotions || []);
-        this.toggleCheckboxGroup('influenceKeys', entry.influences || []);
-
-        this.formHeadingTarget.textContent = 'Edit mood entry';
-        this.formHelperTarget.textContent = `Editing entry from ${this.formatEntryDate(entry.entryDate)}`;
-        this.cancelEditButtonTarget.hidden = false;
-        this.submitButtonTarget.textContent = 'Update entry';
-
-        this.formTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    cancelEdit() {
-        this.resetFormState();
-    }
-
-    async deleteEntryById(entryId) {
-        if (!window.confirm('Delete this mood entry?')) {
-            return;
-        }
-
-        if (this.editingEntryId === String(entryId)) {
-            this.resetFormState();
-        }
-
-        try {
-            const response = await fetch(this.buildEntryUrl(this.deleteUrlTemplateValue, entryId), {
-                method: 'DELETE',
-            });
-            const body = await this.readJson(response);
-
-            if (!response.ok || !body?.success) {
-                throw new Error(body?.message || 'Failed to delete mood entry.');
-            }
-
-            this.showToast(body.message || 'Mood entry deleted successfully.', 'success');
-
-            if (this.page > 1 && this.historyListTarget.childElementCount <= 1) {
-                this.page -= 1;
-            }
-
-            await Promise.all([this.loadSummary(), this.loadHistory()]);
-        } catch (error) {
-            this.showToast(error.message || 'Failed to delete mood entry.', 'error');
-        }
+        this.editMoodLevelValueTarget.textContent = `${event.currentTarget.value}`;
     }
 
     async loadSummary() {
@@ -188,40 +131,43 @@ export default class extends Controller {
         this.prevPageButtonTarget.disabled = true;
         this.nextPageButtonTarget.disabled = true;
 
-        const query = new URLSearchParams({
-            page: String(this.page),
+        const baseQuery = new URLSearchParams({
             limit: String(this.limit),
         });
 
         const search = this.filterSearchTarget.value.trim();
         if (search !== '') {
-            query.set('search', search);
+            baseQuery.set('search', search);
         }
 
         const momentType = this.filterMomentTypeTarget.value;
         if (momentType !== '') {
-            query.set('momentType', momentType);
+            baseQuery.set('momentType', momentType);
         }
 
         const fromDate = this.filterFromDateTarget.value;
         if (fromDate !== '') {
-            query.set('fromDate', fromDate);
+            baseQuery.set('fromDate', fromDate);
         }
 
         try {
-            const response = await fetch(`${this.historyUrlValue}?${query.toString()}`);
-            const body = await this.readJson(response);
+            const firstPageData = await this.fetchHistoryPage(baseQuery, 1);
+            const totalPages = Number(firstPageData?.pagination?.totalPages || 1);
+            const mergedData = {
+                groups: { ...(firstPageData.groups || {}) },
+                pagination: {
+                    ...(firstPageData.pagination || {}),
+                    page: 1,
+                },
+            };
 
-            if (!response.ok || !body?.success || !body.data) {
-                throw new Error(body?.message || 'Failed to load mood history.');
+            for (let page = 2; page <= totalPages; page += 1) {
+                const pageData = await this.fetchHistoryPage(baseQuery, page);
+                this.mergeHistoryGroups(mergedData.groups, pageData.groups || {});
             }
 
-            this.renderHistory(body.data);
+            this.renderHistory(mergedData);
         } catch (error) {
-            if (this.page > 1) {
-                this.page -= 1;
-            }
-
             this.historyMetaTarget.textContent = 'Failed to load history.';
             this.showToast(error.message || 'Failed to load mood history.', 'error');
         } finally {
@@ -242,12 +188,12 @@ export default class extends Controller {
         const groups = Object.values(data.groups ?? {});
         const pagination = data.pagination ?? { page: 1, totalPages: 1, total: 0 };
 
-        this.page = Number(pagination.page || 1);
-        this.pageLabelTarget.textContent = `Page ${pagination.page || 1}`;
+        this.page = 1;
+        this.pageLabelTarget.textContent = 'All entries';
         this.historyMetaTarget.textContent = `${pagination.total || 0} entries`;
 
-        this.prevPageButtonTarget.disabled = this.page <= 1;
-        this.nextPageButtonTarget.disabled = this.page >= Number(pagination.totalPages || 1);
+        this.prevPageButtonTarget.disabled = true;
+        this.nextPageButtonTarget.disabled = true;
 
         this.historyListTarget.replaceChildren();
         this.historyEmptyTarget.hidden = groups.length > 0;
@@ -258,271 +204,40 @@ export default class extends Controller {
 
         groups.forEach((group) => {
             const groupSection = document.createElement('article');
-            groupSection.className = 'ac-mood-history-group ac-mood-history-group--refined';
+            groupSection.className = 'ac-mood-history-group';
 
             const groupTitle = document.createElement('h4');
-            groupTitle.className = 'ac-mood-history-group-title';
             groupTitle.textContent = group.label || 'Unknown';
             groupSection.appendChild(groupTitle);
 
             (group.entries || []).forEach((entry) => {
-                const card = document.createElement('article');
-                card.className = 'ac-mood-entry-row ac-mood-entry-card ac-mood-entry-card--refined';
+                const row = document.createElement('div');
+                row.className = 'ac-mood-entry-row';
 
                 const rowHead = document.createElement('div');
-                rowHead.className = 'ac-row-between ac-mood-entry-header ac-mood-entry-header--refined';
-
-                const rowLeft = document.createElement('div');
-                rowLeft.className = 'ac-mood-entry-left ac-mood-entry-left--refined';
+                rowHead.className = 'ac-row-between';
 
                 const typeBadge = document.createElement('span');
-                typeBadge.className = `ac-badge ac-badge-${entry.momentType === 'DAY' ? 'primary' : 'secondary'} ac-mood-type-badge ac-mood-type-badge--${entry.momentType === 'DAY' ? 'day' : 'moment'}`;
+                typeBadge.className = `ac-badge ac-badge-${entry.momentType === 'DAY' ? 'primary' : 'secondary'}`;
                 typeBadge.textContent = entry.momentType || 'MOMENT';
 
-                const timeMeta = document.createElement('p');
-                timeMeta.className = 'ac-muted ac-mood-entry-time';
-                timeMeta.textContent = this.formatEntryDate(entry.entryDate);
-
-                rowLeft.appendChild(typeBadge);
-                rowLeft.appendChild(timeMeta);
-
-                const rowRight = document.createElement('div');
-                rowRight.className = 'ac-row-end ac-mood-entry-right ac-mood-entry-right--refined';
-
-                const levelContainer = document.createElement('div');
-                levelContainer.className = 'ac-mood-level-pill ac-mood-level-pill--refined';
-
                 const level = document.createElement('strong');
-                level.className = 'ac-mood-level-text';
+                level.className = 'ac-mood-level-pill';
                 level.textContent = `Level ${entry.moodLevel ?? '-'}/5`;
 
-                const levelTrack = document.createElement('div');
-                levelTrack.className = 'ac-mood-level-track';
+                rowHead.appendChild(typeBadge);
+                rowHead.appendChild(level);
 
-                const levelFill = document.createElement('span');
-                levelFill.className = 'ac-mood-level-fill';
-                levelFill.style.width = `${Math.max(0, Math.min(5, Number(entry.moodLevel) || 0)) * 20}%`;
-                levelTrack.appendChild(levelFill);
-                levelContainer.appendChild(level);
-                levelContainer.appendChild(levelTrack);
+                row.appendChild(rowHead);
+                row.appendChild(this.buildTagList('Emotions', entry.emotions || []));
+                row.appendChild(this.buildTagList('Influences', entry.influences || []));
+                row.appendChild(this.buildRowActions(entry));
 
-                const actions = document.createElement('div');
-                actions.className = 'ac-mood-entry-actions';
-
-                const editButton = document.createElement('button');
-                editButton.type = 'button';
-                editButton.className = 'ac-ghost-btn ac-mood-edit-btn ac-mood-action-btn';
-                editButton.textContent = 'Edit';
-                editButton.addEventListener('click', () => this.startEdit(entry));
-
-                const deleteButton = document.createElement('button');
-                deleteButton.type = 'button';
-                deleteButton.className = 'ac-ghost-btn ac-mood-delete-btn ac-mood-action-btn';
-                deleteButton.textContent = 'Delete';
-                deleteButton.addEventListener('click', () => this.deleteEntryById(entry.id));
-
-                actions.appendChild(editButton);
-                actions.appendChild(deleteButton);
-                rowRight.appendChild(levelContainer);
-                rowRight.appendChild(actions);
-
-                rowHead.appendChild(rowLeft);
-                rowHead.appendChild(rowRight);
-
-                const emotionsSection = this.buildTagList('Emotions', entry.emotions || []);
-                const influencesSection = this.buildTagList('Influences', entry.influences || []);
-
-                [emotionsSection, influencesSection].forEach((section) => {
-                    section.classList.add('ac-mood-tag-row--refined');
-
-                    const sectionLabel = section.querySelector('.ac-mood-tag-label');
-                    if (sectionLabel) {
-                        sectionLabel.classList.add('ac-mood-tag-label--refined');
-                    }
-
-                    const tags = section.querySelector('.ac-mood-tags');
-                    if (tags) {
-                        tags.classList.add('ac-mood-tags--refined');
-                    }
-
-                    section.querySelectorAll('.ac-badge').forEach((tag) => {
-                        tag.classList.add('ac-mood-tag-pill');
-                    });
-                });
-
-                card.appendChild(rowHead);
-                card.appendChild(emotionsSection);
-                card.appendChild(influencesSection);
-
-                groupSection.appendChild(card);
+                groupSection.appendChild(row);
             });
 
             this.historyListTarget.appendChild(groupSection);
         });
-    }
-
-    ensureHistoryCardStyles() {
-        if (document.getElementById('ac-mood-history-refined-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'ac-mood-history-refined-styles';
-        style.textContent = `
-            .ac-mood-history-group--refined {
-                background: #E6F2F1;
-                border-radius: 14px;
-                padding: 12px;
-                margin-bottom: 14px;
-            }
-            .ac-mood-history-group-title {
-                margin: 0 0 10px 0;
-                font-size: 1rem;
-                font-weight: 700;
-                color: #2F6F6D;
-            }
-            .ac-mood-entry-card--refined {
-                background: #fff;
-                border: 1px solid rgba(47, 111, 109, 0.12);
-                border-radius: 14px;
-                padding: 14px 16px;
-                margin-bottom: 10px;
-                box-shadow: 0 8px 18px rgba(47, 111, 109, 0.08);
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .ac-mood-entry-card--refined:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 14px 28px rgba(47, 111, 109, 0.14);
-            }
-            .ac-mood-entry-header--refined {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 10px;
-                margin-bottom: 8px;
-            }
-            .ac-mood-entry-left--refined {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            .ac-mood-type-badge {
-                align-self: flex-start;
-                padding: 3px 9px;
-                border-radius: 999px;
-                font-size: 0.7rem;
-                font-weight: 700;
-                letter-spacing: 0.02em;
-                color: #fff;
-            }
-            .ac-mood-type-badge--day {
-                background: #2F6F6D;
-            }
-            .ac-mood-type-badge--moment {
-                background: #88BDBC;
-            }
-            .ac-mood-entry-time {
-                margin: 0;
-                font-size: 0.8rem;
-                color: rgba(47, 111, 109, 0.72);
-            }
-            .ac-mood-entry-right--refined {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-width: 208px;
-            }
-            .ac-mood-level-pill--refined {
-                width: 112px;
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            .ac-mood-level-text {
-                font-size: 0.78rem;
-                font-weight: 700;
-                color: #2F6F6D;
-                line-height: 1.1;
-            }
-            .ac-mood-level-track {
-                width: 100%;
-                height: 7px;
-                border-radius: 999px;
-                background: #E6F2F1;
-                overflow: hidden;
-            }
-            .ac-mood-level-fill {
-                display: block;
-                height: 100%;
-                background: #88BDBC;
-                border-radius: 999px;
-            }
-            .ac-mood-entry-actions {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .ac-mood-action-btn {
-                padding: 4px 8px;
-                border-radius: 9px;
-                font-weight: 600;
-                font-size: 0.78rem;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-            .ac-mood-edit-btn {
-                border: 1px solid #2F6F6D;
-                background: #fff;
-                color: #2F6F6D;
-            }
-            .ac-mood-edit-btn:hover {
-                background: #E6F2F1;
-            }
-            .ac-mood-delete-btn {
-                border: 1px solid #F3C9C9;
-                background: #FFF8F8;
-                color: #A85B5B;
-            }
-            .ac-mood-delete-btn:hover {
-                background: #FDEDED;
-                border-color: #E9B8B8;
-            }
-            .ac-mood-tag-row--refined {
-                display: flex;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-top: 7px;
-            }
-            .ac-mood-tag-label--refined {
-                font-size: 0.74rem;
-                font-weight: 700;
-                color: rgba(47, 111, 109, 0.75);
-                flex: 0 0 auto;
-            }
-            .ac-mood-tags--refined {
-                display: inline-flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                align-items: center;
-            }
-            .ac-mood-tag-pill {
-                padding: 4px 8px;
-                border-radius: 999px;
-                background: #E6F2F1;
-                color: #2F6F6D;
-                border: 1px solid rgba(47, 111, 109, 0.12);
-                font-size: 0.72rem;
-                font-weight: 600;
-                line-height: 1.1;
-                transition: background 0.2s ease;
-            }
-            .ac-mood-tag-pill:hover {
-                background: #88BDBC;
-            }
-        `;
-
-        document.head.appendChild(style);
     }
 
     buildTagList(label, items) {
@@ -539,7 +254,7 @@ export default class extends Controller {
 
         items.forEach((item) => {
             const tag = document.createElement('span');
-            tag.className = 'ac-badge ac-badge-secondary ac-mood-tag-pill';
+            tag.className = 'ac-badge ac-badge-secondary';
             tag.textContent = item.label || item.key || '';
             tags.appendChild(tag);
         });
@@ -549,38 +264,129 @@ export default class extends Controller {
         return wrapper;
     }
 
-    toggleCheckboxGroup(name, items) {
-        const selectedKeys = new Set((items || []).map((item) => item.key));
+    buildRowActions(entry) {
+        const actions = document.createElement('div');
+        actions.className = 'ac-mood-row-actions';
 
-        this.formTarget.querySelectorAll(`input[name="${name}"]`).forEach((field) => {
-            field.checked = selectedKeys.has(field.value);
-        });
+        const editButton = document.createElement('button');
+        editButton.className = 'ac-ghost-btn';
+        editButton.type = 'button';
+        editButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">edit</span>';
+        editButton.setAttribute('aria-label', 'Edit mood entry');
+        editButton.addEventListener('click', () => this.openEditModal(entry));
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'ac-ghost-btn ac-btn-danger';
+        deleteButton.type = 'button';
+        deleteButton.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">delete</span>';
+        deleteButton.setAttribute('aria-label', 'Delete mood entry');
+        deleteButton.addEventListener('click', () => this.deleteEntry(entry.id));
+
+        actions.append(editButton, deleteButton);
+
+        return actions;
     }
 
-    selectedValues(name) {
-        return Array.from(this.formTarget.querySelectorAll(`input[name="${name}"]:checked`))
+    openEditModal(entry) {
+        this.editEntryIdTarget.value = String(entry.id);
+        this.editFormTarget.elements.momentType.value = entry.momentType || 'MOMENT';
+        this.editFormTarget.elements.moodLevel.value = String(entry.moodLevel ?? 3);
+        this.editMoodLevelValueTarget.textContent = String(entry.moodLevel ?? 3);
+
+        this.editFormTarget.querySelectorAll('input[name="emotionKeys"]').forEach((input) => {
+            input.checked = (entry.emotions || []).some((emotion) => emotion.key === input.value);
+        });
+
+        this.editFormTarget.querySelectorAll('input[name="influenceKeys"]').forEach((input) => {
+            input.checked = (entry.influences || []).some((influence) => influence.key === input.value);
+        });
+
+        this.editModalTarget.hidden = false;
+    }
+
+    closeEditModal(event = null) {
+        if (event && event.type === 'click' && event.currentTarget === this.editModalTarget && event.target !== this.editModalTarget) {
+            return;
+        }
+
+        this.editModalTarget.hidden = true;
+    }
+
+    async submitEdit(event) {
+        event.preventDefault();
+
+        const entryId = this.editEntryIdTarget.value;
+        if (!entryId) {
+            this.showToast('Mood entry not found.', 'error');
+            return;
+        }
+
+        const payload = {
+            momentType: this.editFormTarget.elements.momentType.value,
+            moodLevel: Number(this.editFormTarget.elements.moodLevel.value),
+            emotionKeys: this.selectedValues('emotionKeys', this.editFormTarget),
+            influenceKeys: this.selectedValues('influenceKeys', this.editFormTarget),
+        };
+
+        this.setEditSubmitState(true);
+
+        try {
+            const response = await fetch(this.entryUrl(this.updateUrlTemplateValue, entryId), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const body = await this.readJson(response);
+
+            if (!response.ok || !body?.success) {
+                throw new Error(body?.message || 'Failed to update mood entry.');
+            }
+
+            this.showToast(body.message || 'Mood entry updated successfully.', 'success');
+            this.closeEditModal();
+            await Promise.all([this.loadSummary(), this.loadHistory()]);
+        } catch (error) {
+            this.showToast(error.message || 'Failed to update mood entry.', 'error');
+        } finally {
+            this.setEditSubmitState(false);
+        }
+    }
+
+    async deleteEntry(entryId) {
+        if (!window.confirm('Delete this mood entry?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(this.entryUrl(this.deleteUrlTemplateValue, entryId), {
+                method: 'DELETE',
+            });
+            const body = await this.readJson(response);
+
+            if (!response.ok || !body?.success) {
+                throw new Error(body?.message || 'Failed to delete mood entry.');
+            }
+
+            this.showToast(body.message || 'Mood entry deleted successfully.', 'success');
+            await Promise.all([this.loadSummary(), this.loadHistory()]);
+        } catch (error) {
+            this.showToast(error.message || 'Failed to delete mood entry.', 'error');
+        }
+    }
+
+    selectedValues(name, scope = this.formTarget) {
+        return Array.from(scope.querySelectorAll(`input[name="${name}"]:checked`))
             .map((field) => field.value);
     }
 
     setSubmitState(isLoading) {
         this.submitButtonTarget.disabled = isLoading;
-        this.submitButtonTarget.textContent = isLoading
-            ? (this.editingEntryId ? 'Updating...' : 'Saving...')
-            : (this.editingEntryId ? 'Update entry' : 'Save entry');
-
-        this.cancelEditButtonTarget.disabled = isLoading;
+        this.submitButtonTarget.textContent = isLoading ? 'Saving...' : 'Save entry';
     }
 
-    resetFormState() {
-        this.editingEntryId = null;
-        this.formTarget.reset();
-        this.formTarget.elements.moodLevel.value = '3';
-        this.moodLevelValueTarget.textContent = '3';
-        this.formHeadingTarget.textContent = 'New mood entry';
-        this.formHelperTarget.textContent = '1 = very low, 5 = very high';
-        this.submitButtonTarget.textContent = 'Save entry';
-        this.cancelEditButtonTarget.hidden = true;
-        this.cancelEditButtonTarget.disabled = false;
+    setEditSubmitState(isLoading) {
+        this.editSubmitButtonTarget.disabled = isLoading;
+        this.editSubmitButtonTarget.textContent = isLoading ? 'Saving...' : 'Save changes';
     }
 
     formatTop(item) {
@@ -591,25 +397,39 @@ export default class extends Controller {
         return `${item.label} (${item.usageCount ?? 0})`;
     }
 
-    formatEntryDate(value) {
-        if (!value) {
-            return '';
-        }
-
-        const date = new Date(value.replace(' ', 'T'));
-        if (Number.isNaN(date.getTime())) {
-            return value;
-        }
-
-        return date.toLocaleString();
-    }
-
-    buildEntryUrl(template, entryId) {
-        return template.replace('__ID__', String(entryId));
-    }
-
     async readJson(response) {
         return response.json().catch(() => null);
+    }
+
+    async fetchHistoryPage(baseQuery, page) {
+        const query = new URLSearchParams(baseQuery.toString());
+        query.set('page', String(page));
+
+        const response = await fetch(`${this.historyUrlValue}?${query.toString()}`);
+        const body = await this.readJson(response);
+
+        if (!response.ok || !body?.success || !body.data) {
+            throw new Error(body?.message || 'Failed to load mood history.');
+        }
+
+        return body.data;
+    }
+
+    mergeHistoryGroups(targetGroups, sourceGroups) {
+        Object.entries(sourceGroups).forEach(([groupKey, groupData]) => {
+            if (!targetGroups[groupKey]) {
+                targetGroups[groupKey] = {
+                    label: groupData?.label || groupKey,
+                    entries: [],
+                };
+            }
+
+            targetGroups[groupKey].entries.push(...(groupData?.entries || []));
+        });
+    }
+
+    entryUrl(template, entryId) {
+        return template.replace('__id__', encodeURIComponent(String(entryId)));
     }
 
     showToast(message, type = 'success') {
