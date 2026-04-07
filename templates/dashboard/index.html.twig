@@ -1,0 +1,348 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<style>
+.dashboard-header {
+    font-weight: 700;
+    color: #2F6F6D;
+}
+
+.search-wrap {
+    position: relative;
+}
+
+.filters-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 560px;
+}
+
+.sort-select {
+    min-width: 170px;
+    border-radius: 999px;
+}
+
+.search-wrap .form-control {
+    border-radius: 999px;
+    padding-left: 42px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.card-dashboard {
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+    border: none;
+    transition: 0.2s;
+}
+
+.card-dashboard:hover {
+    transform: translateY(-3px);
+}
+
+/* TABLE */
+.table-modern th {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.table-modern td {
+    vertical-align: middle;
+}
+
+/* STATUS */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-attente { background:#fff3cd; color:#856404; }
+.status-valide { background:#d4edda; color:#155724; }
+.status-refuse { background:#f8d7da; color:#721c24; }
+
+/* AVATAR */
+.avatar-sm {
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#2F6F6D,#88BDBC);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+/* BUTTON */
+.btn-action {
+    border-radius: 30px;
+    padding: 6px 14px;
+}
+</style>
+
+<div class="container mt-4">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+        <h4 class="dashboard-header">
+            <i class="bi bi-speedometer2"></i> Dashboard Médical
+        </h4>
+        <small class="text-muted">Gestion des rendez-vous et patients</small>
+    </div>
+
+    <!-- RDV -->
+    <div class="card card-dashboard p-4 mb-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">
+                <i class="bi bi-calendar-check"></i> Rendez-vous
+            </h6>
+        </div>
+
+        <table class="table table-hover table-modern" id="rdvsTable">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-person"></i> Patient</th>
+                    <th><i class="bi bi-clock"></i> Date</th>
+                    <th><i class="bi bi-activity"></i> Statut</th>
+                    <th><i class="bi bi-gear"></i> Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="rdvsTableBody">
+            {% for rdv in rdvs %}
+<tr>
+
+    <!-- PATIENT -->
+    <td>
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar-sm">
+                {{ rdv.patient.fullName|slice(0,1) }}
+            </div>
+            {{ rdv.patient.fullName }}
+        </div>
+    </td>
+
+    <!-- DATE -->
+    <td>
+        <i class="bi bi-calendar-event text-muted"></i>
+        {{ rdv.dateTime|date('d/m/Y H:i') }}
+    </td>
+
+    <!-- STATUS -->
+    <td>
+        <span class="badge-status
+            {% if rdv.status == 'EN_ATTENTE' %}status-attente
+            {% elseif rdv.status == 'VALIDE' %}status-valide
+            {% else %}status-refuse{% endif %}
+        ">
+            {{ rdv.status }}
+        </span>
+    </td>
+
+    <!-- ACTION -->
+    <td>
+
+        <a href="{{ path('app_dashboard_rdv_show', {id: rdv.id}) }}"
+           class="btn btn-sm btn-outline-primary rounded-pill"
+           title="Voir la demande">
+            <i class="bi bi-eye"></i>
+        </a>
+
+        {% if rdv.status == 'EN_ATTENTE' %}
+
+            <a href="{{ path('app_rdv_accept', {id: rdv.id}) }}"
+               class="btn btn-sm btn-success rounded-pill">
+                <i class="bi bi-pencil-square"></i>
+            </a>
+
+            <a href="{{ path('app_rdv_refuse', {id: rdv.id}) }}"
+               class="btn btn-sm btn-danger rounded-pill">
+                <i class="bi bi-x-circle"></i>
+            </a>
+
+        {% else %}
+
+            <span class="text-muted small">
+                <i class="bi bi-lock"></i> Traité
+            </span>
+
+        {% endif %}
+
+    </td>
+
+</tr>
+{% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        <i class="bi bi-inbox"></i> Aucun rendez-vous
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+    <!-- PATIENTS -->
+    <div class="card card-dashboard p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+            <h6 class="mb-0">
+                <i class="bi bi-people"></i> Patients
+            </h6>
+
+            <div class="filters-wrap">
+                <div class="search-wrap" style="min-width: 260px; flex: 1;">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="search"
+                           id="patientSearch"
+                           class="form-control"
+                           placeholder="Rechercher un patient...">
+                </div>
+
+                <select id="patientSort" class="form-select sort-select">
+                    <option value="name_asc">Nom A-Z</option>
+                    <option value="name_desc">Nom Z-A</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="table table-hover table-modern" id="patientsTable">
+            <thead>
+                <tr>
+                    <th><i class="bi bi-person"></i> Nom</th>
+                    <th><i class="bi bi-gear"></i> Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="patientsTableBody">
+            {% for patient in patients %}
+                <tr>
+
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-sm">
+                                {{ patient.fullName|slice(0,1) }}
+                            </div>
+                            {{ patient.fullName }}
+                        </div>
+                    </td>
+
+                    <td>
+                        <a href="{{ path('app_rapport_show', {id: patient.id}) }}"
+                           class="btn btn-sm primary-btn btn-action">
+
+                            <i class="bi bi-eye"></i> Voir
+                        </a>
+                    </td>
+
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted" id="noPatientsRow">
+                        <i class="bi bi-person-x"></i> Aucun patient
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const searchInput = document.getElementById('patientSearch');
+    const sortSelect = document.getElementById('patientSort');
+    const tableBody = document.getElementById('patientsTableBody');
+
+    if (!searchInput || !tableBody) {
+        return;
+    }
+
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    const emptyRow = document.getElementById('noPatientsRow');
+    const dataRows = rows.filter(function (row) {
+        return row !== emptyRow;
+    });
+    const emptyRowHtml = emptyRow ? emptyRow.innerHTML : '';
+
+    function normalize(value) {
+        return value
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function getPatientName(row) {
+        const firstCell = row.querySelector('td');
+        return normalize(firstCell ? firstCell.textContent : '');
+    }
+
+    function applyFiltersAndSort() {
+        const query = normalize(searchInput.value.trim());
+        const sortValue = sortSelect ? sortSelect.value : 'name_asc';
+
+        const sortedRows = dataRows.slice().sort(function (a, b) {
+            const nameA = getPatientName(a);
+            const nameB = getPatientName(b);
+
+            if (sortValue === 'name_desc') {
+                return nameB.localeCompare(nameA);
+            }
+
+            return nameA.localeCompare(nameB);
+        });
+
+        sortedRows.forEach(function (row) {
+            tableBody.appendChild(row);
+        });
+
+        let visibleCount = 0;
+
+        sortedRows.forEach(function (row) {
+            const text = normalize(row.textContent || '');
+            const match = query === '' || text.includes(query);
+
+            row.style.display = match ? '' : 'none';
+
+            if (match) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyRow) {
+            emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+            emptyRow.innerHTML = visibleCount === 0
+                ? '<i class="bi bi-search"></i> Aucun patient correspondant'
+                : emptyRowHtml;
+        }
+    }
+
+    searchInput.addEventListener('input', applyFiltersAndSort);
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', applyFiltersAndSort);
+    }
+
+    applyFiltersAndSort();
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de rendez-vous{% endblock %}
+
+{% block body %}
+
+<style>
+.rdv-container {
+	display: flex;
+	justify-content: center;
+	margin-top: 30px;
+}
+
+.rdv-card {
+	width: 100%;
+	max-width: 760px;
+	background: white;
+	border-radius: 20px;
+	padding: 30px;
+	box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+.section-title {
+	font-size: 18px;
+	font-weight: 700;
+	color: #2F6F6D;
+	margin-bottom: 18px;
+}
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 14px;
+	margin-bottom: 18px;
+}
+
+.info-item {
+	background: #f9fafb;
+	border-radius: 12px;
+	padding: 12px;
+}
+
+.label {
+	font-size: 12px;
+	color: #6b7280;
+	margin-bottom: 4px;
+}
+
+.value {
+	font-size: 14px;
+	font-weight: 600;
+	color: #1f2933;
+}
+
+.box {
+	background: #f9fafb;
+	border-radius: 12px;
+	padding: 14px;
+	margin-bottom: 14px;
+}
+
+.status {
+	display: inline-flex;
+	align-items: center;
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.status-attente { background:#fff3cd; color:#856404; }
+.status-valide { background:#d4edda; color:#155724; }
+.status-refuse { background:#f8d7da; color:#721c24; }
+
+.actions {
+	margin-top: 20px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+</style>
+
+<div class="rdv-container">
+	<div class="rdv-card">
+
+		<div class="section-title">
+			<i class="bi bi-eye"></i> Dossier de la demande
+		</div>
+
+		<div class="info-grid">
+			<div class="info-item">
+				<div class="label">Patient</div>
+				<div class="value">{{ rdv.patient.fullName }}</div>
+			</div>
+
+			<div class="info-item">
+				<div class="label">Date demandee</div>
+				<div class="value">{{ rdv.dateTime|date('d/m/Y H:i') }}</div>
+			</div>
+
+			<div class="info-item">
+				<div class="label">Statut</div>
+				<div class="value">
+					<span class="status {% if rdv.status == 'EN_ATTENTE' %}status-attente{% elseif rdv.status == 'VALIDE' %}status-valide{% else %}status-refuse{% endif %}">
+						{{ rdv.status }}
+					</span>
+				</div>
+			</div>
+
+			<div class="info-item">
+				<div class="label">Cree le</div>
+				<div class="value">{{ rdv.createdAt|date('d/m/Y H:i') }}</div>
+			</div>
+		</div>
+
+		<div class="box">
+			<div class="label">Motif</div>
+			<div class="value">{{ rdv.motif ?: 'Sans motif' }}</div>
+		</div>
+
+		<div class="box">
+			<div class="label">Description du patient</div>
+			<div class="value">{{ rdv.description ?: 'Aucune description' }}</div>
+		</div>
+
+		{% if rdv.proposedDateTime %}
+			<div class="box">
+				<div class="label">Date proposee par le medecin</div>
+				<div class="value">{{ rdv.proposedDateTime|date('d/m/Y H:i') }}</div>
+			</div>
+		{% endif %}
+
+		{% if rdv.doctorNote %}
+			<div class="box">
+				<div class="label">Note medecin</div>
+				<div class="value">{{ rdv.doctorNote }}</div>
+			</div>
+		{% endif %}
+
+		<div class="actions">
+			{% if rdv.status == 'EN_ATTENTE' %}
+				<a href="{{ path('app_rdv_accept', {id: rdv.id}) }}" class="btn btn-success rounded-pill">
+					<i class="bi bi-check2-circle"></i> Accepter
+				</a>
+				<a href="{{ path('app_rdv_refuse', {id: rdv.id}) }}" class="btn btn-danger rounded-pill">
+					<i class="bi bi-x-circle"></i> Refuser
+				</a>
+			{% endif %}
+
+			<a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary rounded-pill">
+				<i class="bi bi-arrow-left"></i> Retour dashboard
+			</a>
+		</div>
+
+	</div>
+</div>
+
+{% endblock %}

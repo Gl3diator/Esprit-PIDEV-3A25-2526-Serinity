@@ -1,0 +1,17 @@
+{% extends 'baseclient.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+
+<div class="card-custom">
+    <div class="page-title">Dashboard</div>
+    <div class="subtitle">Bienvenue {{ currentUser.fullName }} </div>
+
+    <br>
+
+    <button class="primary-btn">Créer RDV</button>
+</div>
+
+
+{% endblock %}

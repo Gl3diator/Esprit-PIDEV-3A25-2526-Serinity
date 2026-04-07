@@ -1,0 +1,392 @@
+{% extends 'baseclient.html.twig' %}
+
+{% block title %}Liste des médecins{% endblock %}
+
+{% block body %}
+
+<style>
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.doctor-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+
+.doctor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(to right, #2F6F6D, #88BDBC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.doctor-name {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.doctor-role {
+    color: #2F6F6D;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-wrap {
+    position: relative;
+    max-width: 420px;
+}
+
+.filters-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 0 20px auto;
+    justify-content: flex-end;
+}
+
+.search-wrap .input {
+    padding-left: 42px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.sort-select {
+    min-width: 180px;
+    max-width: 220px;
+}
+
+.no-results {
+    display: none;
+    text-align: center;
+    padding: 24px;
+    color: #6b7280;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 16px;
+    border: 1px dashed #cbd5e1;
+    margin-top: 10px;
+}
+
+.btn-rdv {
+    flex: 1;
+    background: #2F6F6D;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-show {
+    flex: 1;
+    background: #E6F2F1;
+    color: #2F6F6D;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+}.modal-overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box {
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    width:400px;
+    animation: fadeIn 0.2s ease;
+}
+
+.form-group {
+    margin-bottom:12px;
+}
+
+.input {
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ddd;
+}
+
+.error {
+    color:red;
+    font-size:12px;
+}
+
+.modal-actions {
+    margin-top:15px;
+    display:flex;
+    gap:10px;
+}
+
+@keyframes fadeIn {
+    from {transform:scale(0.9); opacity:0;}
+    to {transform:scale(1); opacity:1;}
+}
+</style>
+
+<div class="card-client">
+
+    <h2 class="page-title">
+        <i class="bi bi-person-badge"></i> Nos Médecins
+    </h2>
+
+    <p class="subtitle">Choisissez votre spécialiste et prenez rendez-vous</p>
+
+    <br>
+
+    <div class="filters-wrap">
+        <div class="search-wrap" style="min-width: 260px; flex: 1;">
+            <i class="bi bi-search search-icon"></i>
+            <input type="search"
+                   id="doctorSearch"
+                   class="input"
+                   placeholder="Rechercher un médecin...">
+        </div>
+
+        <select id="doctorSort" class="input sort-select">
+            <option value="name_asc">Nom A-Z</option>
+            <option value="name_desc">Nom Z-A</option>
+            <option value="speciality_asc">Specialite A-Z</option>
+        </select>
+    </div>
+
+    <div class="doctors-grid">
+
+        {% for doctor in doctors %}
+
+              <div class="doctor-card"
+                  data-name="{{ doctor.fullName|lower }}"
+                  data-speciality="{{ doctor.speciality|default('')|lower }}">
+
+                <div style="display:flex; gap:15px; align-items:center;">
+                    
+                    <div class="avatar">
+                        {{ doctor.fullName|slice(0,1) }}
+                    </div>
+
+                    <div>
+                        <div class="doctor-name">{{ doctor.fullName }}</div>
+                        <div class="doctor-role">
+                            <i class="bi bi-patch-check-fill"></i> {{doctor.speciality}}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top:10px; font-size:13px; color:#6b7280;">
+                    📧 {{ doctor.email }}
+                </div>
+
+                <div class="actions">
+
+                  <button class="btn-rdv" onclick="openModal({{ doctor.id }}, '{{ doctor.fullName }}')">
+    <i class="bi bi-calendar-plus"></i> RDV
+</button>
+
+                    <a href="{{ path('app_doctor_show', {id: doctor.id}) }}" class="btn-show">
+                        <i class="bi bi-eye"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <p>Aucun médecin trouvé</p>
+
+        {% endfor %}
+
+    </div>
+
+    <div id="noDoctorsMatch" class="no-results">
+        <i class="bi bi-search"></i> Aucun médecin ne correspond à votre recherche
+    </div>
+
+</div>
+<!-- MODAL -->
+<div id="rdvModal" class="modal-overlay">
+
+    <div class="modal-box">
+
+        <h3><i class="bi bi-calendar-plus"></i> Prendre Rendez-vous</h3>
+
+        <form method="POST" action="{{ path('app_rdv_save') }}" onsubmit="return validateForm()">
+
+            <input type="hidden" name="doctor_id" id="doctor_id">
+
+            <div class="form-group">
+                <label>Motif</label>
+                <input type="text" name="motif" id="motif" class="input">
+                <small class="error" id="motifError"></small>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" id="description" class="input"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Date & Heure</label>
+                <input type="datetime-local" name="dateTime" id="dateTime" class="input">
+                <small class="error" id="dateError"></small>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="primary-btn">Confirmer</button>
+                <button type="button" onclick="closeModal()" class="btn-show">Annuler</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+<script>
+function openModal(doctorId, doctorName) {
+    document.getElementById('rdvModal').style.display = 'flex';
+    document.getElementById('doctor_id').value = doctorId;
+}
+
+function closeModal() {
+    document.getElementById('rdvModal').style.display = 'none';
+}
+
+function validateForm() {
+    let valid = true;
+
+    let motif = document.getElementById('motif').value;
+    let date = document.getElementById('dateTime').value;
+
+    document.getElementById('motifError').innerText = "";
+    document.getElementById('dateError').innerText = "";
+
+    if (motif.trim() === "") {
+        document.getElementById('motifError').innerText = "Motif obligatoire";
+        valid = false;
+    }
+
+    if (date === "") {
+        document.getElementById('dateError').innerText = "Date obligatoire";
+        valid = false;
+    }
+
+    return valid;
+}
+
+(function () {
+    const searchInput = document.getElementById('doctorSearch');
+    const sortSelect = document.getElementById('doctorSort');
+    const grid = document.querySelector('.doctors-grid');
+    const doctorCards = Array.from(document.querySelectorAll('.doctor-card'));
+    const emptyState = document.getElementById('noDoctorsMatch');
+
+    if (!searchInput || !grid || doctorCards.length === 0 || !emptyState) {
+        return;
+    }
+
+    function normalize(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function cardValue(card, field) {
+        return normalize(card.getAttribute(field) || '');
+    }
+
+    function applyFiltersAndSort() {
+        const query = normalize(searchInput.value.trim());
+        const sortValue = sortSelect ? sortSelect.value : 'name_asc';
+
+        const sortedCards = doctorCards.slice().sort(function (a, b) {
+            const nameA = cardValue(a, 'data-name');
+            const nameB = cardValue(b, 'data-name');
+
+            if (sortValue === 'name_desc') {
+                return nameB.localeCompare(nameA);
+            }
+
+            if (sortValue === 'speciality_asc') {
+                const specA = cardValue(a, 'data-speciality');
+                const specB = cardValue(b, 'data-speciality');
+                const specCmp = specA.localeCompare(specB);
+
+                if (specCmp !== 0) {
+                    return specCmp;
+                }
+            }
+
+            return nameA.localeCompare(nameB);
+        });
+
+        sortedCards.forEach(function (card) {
+            grid.appendChild(card);
+        });
+
+        let visibleCount = 0;
+
+        sortedCards.forEach(function (card) {
+            const text = normalize(card.textContent);
+            const match = query === '' || text.includes(query);
+
+            card.style.display = match ? '' : 'none';
+
+            if (match) {
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', applyFiltersAndSort);
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', applyFiltersAndSort);
+    }
+
+    applyFiltersAndSort();
+})();
+</script>
+{% endblock %}
