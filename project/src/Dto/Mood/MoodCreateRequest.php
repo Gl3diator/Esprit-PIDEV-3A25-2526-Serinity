@@ -33,4 +33,5 @@ final class MoodCreateRequest
         new Assert\Length(max: 64),
     ])]
     public array $influenceKeys = [];
+
 }

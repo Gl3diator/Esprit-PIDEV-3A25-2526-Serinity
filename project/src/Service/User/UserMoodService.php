@@ -29,7 +29,11 @@ final readonly class UserMoodService
 
     public function create(User $user, MoodCreateRequest $request): ServiceResult
     {
-        $entryDate = $this->resolveEntryDate($request);
+        $rawEntryDate = $this->nullable($request->entryDate);
+        $entryDate = $rawEntryDate === null
+            ? new \DateTimeImmutable('today')
+            : $this->parseDate($rawEntryDate);
+
         if ($entryDate === null) {
             return ServiceResult::failure('Invalid entry date.');
         }
@@ -49,14 +53,22 @@ final readonly class UserMoodService
             return ServiceResult::failure('One or more influence keys are invalid.');
         }
 
+        $now = new \DateTimeImmutable();
+
         $entry = (new MoodEntry())
             ->setUser($user)
             ->setEntryDate($entryDate)
             ->setMomentType($momentType)
             ->setMoodLevel($request->moodLevel)
-            ->setUpdatedAt(new \DateTimeImmutable());
+            ->setUpdatedAt($now);
 
-        $this->syncRelations($entry, $emotions, $influences);
+        foreach ($emotions as $emotion) {
+            $entry->addEmotion($emotion);
+        }
+
+        foreach ($influences as $influence) {
+            $entry->addInfluence($influence);
+        }
 
         $this->entityManager->persist($entry);
         $this->entityManager->flush();
@@ -66,12 +78,20 @@ final readonly class UserMoodService
 
     public function update(User $user, string $entryId, MoodCreateRequest $request): ServiceResult
     {
-        $entry = $this->moodEntryRepository->findOwnedByUser($entryId, $user);
-        if ($entry === null) {
+        $entry = $this->moodEntryRepository->findOneBy([
+            'id' => $entryId,
+            'user' => $user,
+        ]);
+
+        if (!$entry instanceof MoodEntry) {
             return ServiceResult::failure('Mood entry not found.');
         }
 
-        $entryDate = $this->resolveEntryDate($request, $entry);
+        $rawEntryDate = $this->nullable($request->entryDate);
+        $entryDate = $rawEntryDate === null
+            ? $entry->getEntryDate()
+            : $this->parseDate($rawEntryDate);
+
         if ($entryDate === null) {
             return ServiceResult::failure('Invalid entry date.');
         }
@@ -100,7 +120,19 @@ final readonly class UserMoodService
             ->setMoodLevel($request->moodLevel)
             ->setUpdatedAt(new \DateTimeImmutable());
 
-        $this->syncRelations($entry, $emotions, $influences);
+        foreach ($entry->getEmotions()->toArray() as $emotion) {
+            $entry->removeEmotion($emotion);
+        }
+        foreach ($emotions as $emotion) {
+            $entry->addEmotion($emotion);
+        }
+
+        foreach ($entry->getInfluences()->toArray() as $influence) {
+            $entry->removeInfluence($influence);
+        }
+        foreach ($influences as $influence) {
+            $entry->addInfluence($influence);
+        }
 
         $this->entityManager->flush();
 
@@ -109,8 +141,12 @@ final readonly class UserMoodService
 
     public function delete(User $user, string $entryId): ServiceResult
     {
-        $entry = $this->moodEntryRepository->findOwnedByUser($entryId, $user);
-        if ($entry === null) {
+        $entry = $this->moodEntryRepository->findOneBy([
+            'id' => $entryId,
+            'user' => $user,
+        ]);
+
+        if (!$entry instanceof MoodEntry) {
             return ServiceResult::failure('Mood entry not found.');
         }
 
@@ -307,40 +343,6 @@ final readonly class UserMoodService
         ];
     }
 
-    /**
-     * @param list<MoodEmotion> $emotions
-     * @param list<MoodInfluence> $influences
-     */
-    private function syncRelations(MoodEntry $entry, array $emotions, array $influences): void
-    {
-        foreach ($entry->getEmotions()->toArray() as $emotion) {
-            $entry->removeEmotion($emotion);
-        }
-
-        foreach ($entry->getInfluences()->toArray() as $influence) {
-            $entry->removeInfluence($influence);
-        }
-
-        foreach ($emotions as $emotion) {
-            $entry->addEmotion($emotion);
-        }
-
-        foreach ($influences as $influence) {
-            $entry->addInfluence($influence);
-        }
-    }
-
-    private function resolveEntryDate(MoodCreateRequest $request, ?MoodEntry $existingEntry = null): ?\DateTimeImmutable
-    {
-        $rawEntryDate = $this->nullable($request->entryDate);
-
-        if ($rawEntryDate === null) {
-            return $existingEntry?->getEntryDate() ?? new \DateTimeImmutable('today');
-        }
-
-        return $this->parseDate($rawEntryDate);
-    }
-
     /** @return list<MoodEmotion>|null */
     private function resolveEmotions(array $keys): ?array
     {
@@ -434,6 +436,7 @@ final readonly class UserMoodService
      *     entryDate:string,
      *     momentType:string,
      *     moodLevel:int,
+     *     note:?string,
      *     emotions:list<array{key:string,label:string}>,
      *     influences:list<array{key:string,label:string}>,
      *     createdAt:string,
@@ -457,6 +460,7 @@ final readonly class UserMoodService
             'entryDate' => $entry->getEntryDate()->format('Y-m-d H:i:s'),
             'momentType' => $entry->getMomentType(),
             'moodLevel' => $entry->getMoodLevel(),
+            'note' => null,
             'emotions' => $emotions,
             'influences' => $influences,
             'createdAt' => $entry->getUpdatedAt()->format('c'),
