@@ -21,7 +21,7 @@ final class DoctorController extends AbstractController
         $doctors = $qb->select('u')
             ->from(User::class, 'u')
             ->where('u.role LIKE :role')
-            ->setParameter('role', '%DOCTOR%')
+            ->setParameter('role', '%THERAPIST%')
             ->getQuery()
             ->getResult();
     

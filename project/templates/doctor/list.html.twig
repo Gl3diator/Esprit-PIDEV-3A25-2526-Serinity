@@ -203,20 +203,19 @@
         {% for doctor in doctors %}
 
               <div class="doctor-card"
-                  data-name="{{ doctor.fullName|lower }}"
-                  data-speciality="{{ doctor.speciality|default('')|lower }}">
+                  data-name="{{ doctor.profile.username|lower }}"
+                  data-speciality="{{ doctor.profile.speciality|default('')|lower }}">
 
                 <div style="display:flex; gap:15px; align-items:center;">
                     
                     <div class="avatar">
-                        {{ doctor.fullName|slice(0,1) }}
+                        {{ doctor.profile.username|slice(0,1) }}
                     </div>
 
                     <div>
-                        <div class="doctor-name">{{ doctor.fullName }}</div>
+                        <div class="doctor-name">{{ doctor.profile.username }}</div>
                         <div class="doctor-role">
-                            <i class="bi bi-patch-check-fill"></i> {{doctor.speciality}}
-                        </div>
+                         </div>
                     </div>
 
                 </div>
@@ -227,11 +226,11 @@
 
                 <div class="actions">
 
-                  <button class="btn-rdv" onclick="openModal({{ doctor.id }}, '{{ doctor.fullName }}')">
+                  <button class="btn-rdv" onclick="openModal({{ doctor.profile.id }}, '{{ doctor.profile.username }}')">
     <i class="bi bi-calendar-plus"></i> RDV
 </button>
 
-                    <a href="{{ path('app_doctor_show', {id: doctor.id}) }}" class="btn-show">
+                    <a href="{{ path('app_doctor_show', {id: doctor.profile.id}) }}" class="btn-show">
                         <i class="bi bi-eye"></i>
                     </a>
 
