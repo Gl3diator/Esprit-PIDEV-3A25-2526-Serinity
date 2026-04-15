@@ -12,7 +12,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AuthSessionRepository::class)]
 #[ORM\Table(name: 'auth_sessions')]
-#[ORM\Index(name: 'idx_session_token', columns: ['refresh_token'])]
 #[ORM\Index(name: 'idx_session_user', columns: ['user_id'])]
 class AuthSession
 {
@@ -20,8 +19,11 @@ class AuthSession
     #[ORM\Column(type: Types::STRING, length: 36)]
     private string $id;
 
-    /** Sensitive: refresh token, never expose in API payloads. */
-    #[ORM\Column(name: 'refresh_token', type: Types::STRING, length: 255, unique: true)]
+    /**
+     * Refresh token (indexed safely)
+     * IMPORTANT: 191 avoids MySQL 1000-byte index limit
+     */
+    #[ORM\Column(name: 'refresh_token', length: 191, unique: true)]
     private string $refreshToken;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
@@ -54,7 +56,6 @@ class AuthSession
     public function setId(string $id): self
     {
         $this->id = $id;
-
         return $this;
     }
 
@@ -66,7 +67,6 @@ class AuthSession
     public function setRefreshToken(string $refreshToken): self
     {
         $this->refreshToken = $refreshToken;
-
         return $this;
     }
 
@@ -78,7 +78,6 @@ class AuthSession
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -90,7 +89,6 @@ class AuthSession
     public function setExpiresAt(\DateTimeImmutable $expiresAt): self
     {
         $this->expiresAt = $expiresAt;
-
         return $this;
     }
 
@@ -102,7 +100,6 @@ class AuthSession
     public function setRevoked(bool $revoked): self
     {
         $this->revoked = $revoked;
-
         return $this;
     }
 
@@ -114,7 +111,6 @@ class AuthSession
     public function setUser(User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -137,7 +133,6 @@ class AuthSession
     public function removeAuditLog(AuditLog $auditLog): self
     {
         $this->auditLogs->removeElement($auditLog);
-
         return $this;
     }
 }

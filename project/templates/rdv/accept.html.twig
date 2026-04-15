@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="container mt-5" style="max-width:600px;">
+
+    <div class="card p-4 shadow rounded-4">
+
+        <h5 class="mb-3">
+            <i class="bi bi-check-circle"></i> Valider Rendez-vous
+        </h5>
+
+        <p><strong>Patient :</strong> {{ rdv.patient.fullName }}</p>
+
+        {{ form_start(form, {'attr': {'novalidate':'novalidate'}}) }}
+
+        <div class="mb-3">
+            {{ form_label(form.proposedDateTime) }}
+            {{ form_widget(form.proposedDateTime) }}
+            {{ form_errors(form.proposedDateTime) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.doctorNote) }}
+            {{ form_widget(form.doctorNote) }}
+        </div>
+
+        <button class="btn btn-success w-100">
+            <i class="bi bi-check"></i> Confirmer
+        </button>
+
+        {{ form_end(form) }}
+
+    </div>
+
+</div>
+
+{% endblock %}

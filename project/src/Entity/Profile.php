@@ -10,8 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
 #[ORM\Table(name: 'profiles')]
-#[ORM\UniqueConstraint(name: 'uk_profile_username', columns: ['username'])]
-class Profile
+ class Profile
 {
     #[ORM\Id]
     #[ORM\Column(type: Types::STRING, length: 36)]
@@ -23,8 +22,8 @@ class Profile
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $updatedAt;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private string $username;
+#[ORM\Column(type: Types::STRING, length: 191, unique: true)]
+private string $username;
 
     #[ORM\Column(name: 'firstName', type: Types::STRING, length: 255, nullable: true)]
     private ?string $firstName = null;

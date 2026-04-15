@@ -1,0 +1,257 @@
+{% extends 'baseclient.html.twig' %}
+
+{% block title %}Mes Rendez-vous{% endblock %}
+
+{% block body %}
+
+<style>
+.rdv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* CARD */
+.rdv-card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    transition: 0.25s;
+    border-left: 5px solid #2F6F6D;
+}
+
+.rdv-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* LEFT */
+.rdv-left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* AVATAR */
+.avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(to right,#2F6F6D,#88BDBC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* INFO */
+.rdv-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rdv-doctor {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.rdv-date {
+    color: #2F6F6D;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.rdv-motif {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* RIGHT */
+.rdv-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* STATUS BADGE */
+.rdv-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-wait { background:#FFF3E0; color:#E65100; }
+.status-ok { background:#E8F5E9; color:#2E7D32; }
+.status-refused { background:#FFEBEE; color:#C62828; }
+
+/* ACTION */
+.btn-cancel {
+    background: #FFEBEE;
+    color: #C62828;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #ffcdd2;
+}
+
+.btn-edit {
+    background: #E6F2F1;
+    color: #2F6F6D;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-edit:hover {
+    background: #d4ebe8;
+}
+
+.btn-view {
+    background: #E8F5E9;
+    color: #2E7D32;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-view:hover {
+    background: #d8edd9;
+}
+
+/* EMPTY */
+.empty-box {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.empty-icon {
+    font-size: 40px;
+    color: #88BDBC;
+    margin-bottom: 10px;
+}
+</style>
+
+<div class="card-client">
+
+    <h2 class="page-title">
+        <i class="bi bi-calendar2-check-fill"></i> Mes Rendez-vous
+    </h2>
+
+    <p class="subtitle">
+        <i class="bi bi-clock-history"></i> Suivez et gérez vos consultations
+    </p>
+
+    <br>
+
+    <div class="rdv-list">
+
+        {% for rdv in rdvs %}
+
+            <div class="rdv-card">
+
+                <!-- LEFT -->
+                <div class="rdv-left">
+
+                    <div class="avatar">
+                        {{ rdv.doctor.fullName|slice(0,1) }}
+                    </div>
+
+                    <div class="rdv-info">
+
+                        <div class="rdv-doctor">
+                            <i class="bi bi-person-badge-fill"></i>
+                            {{ rdv.doctor.fullName }}
+                        </div>
+
+                        <div class="rdv-date">
+                            <i class="bi bi-calendar-event-fill"></i>
+                            {{ rdv.dateTime|date('d M Y - H:i') }}
+                        </div>
+
+                        <div class="rdv-motif">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ rdv.motif ?? 'Sans motif' }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- RIGHT -->
+                <div class="rdv-right">
+
+                    <span class="rdv-status
+                        {% if rdv.status == 'EN_ATTENTE' %}status-wait
+                        {% elseif rdv.status == 'VALIDE' %}status-ok
+                        {% else %}status-refused{% endif %}
+                    ">
+                        {% if rdv.status == 'EN_ATTENTE' %}
+                            <i class="bi bi-hourglass-split"></i>
+                        {% elseif rdv.status == 'VALIDE' %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill"></i>
+                        {% endif %}
+
+                        {{ rdv.status }}
+                    </span>
+
+                    {% if rdv.status == 'EN_ATTENTE' %}
+                        <a href="{{ path('app_rdv_edit', {id: rdv.id}) }}" class="btn-edit" title="Modifier">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+
+                        <a href="{{ path('app_rdv_delete', {id: rdv.id}) }}" class="btn-cancel" title="Supprimer">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    {% elseif rdv.status == 'VALIDE' %}
+                        <a href="{{ path('app_rdv_show', {id: rdv.id}) }}" class="btn-view" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_rdv_delete', {id: rdv.id}) }}" class="btn-cancel" title="Supprimer">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-box">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+                <h4>Aucun rendez-vous</h4>
+                <p>Vous n'avez encore pris aucun rendez-vous.</p>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

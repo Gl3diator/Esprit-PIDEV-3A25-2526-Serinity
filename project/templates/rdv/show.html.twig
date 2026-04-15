@@ -1,0 +1,211 @@
+{% extends 'baseclient.html.twig' %}
+
+{% block title %}Détail du Rendez-vous{% endblock %}
+
+{% block body %}
+
+<style>
+.rdv-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.rdv-card {
+    width: 100%;
+    max-width: 650px;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+/* HEADER */
+.rdv-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(to right,#2F6F6D,#88BDBC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.rdv-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.rdv-sub {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* SECTION */
+.rdv-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.rdv-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.rdv-row i {
+    color: #2F6F6D;
+    font-size: 16px;
+}
+
+/* STATUS */
+.rdv-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-wait { background:#FFF3E0; color:#E65100; }
+.status-ok { background:#E8F5E9; color:#2E7D32; }
+.status-refused { background:#FFEBEE; color:#C62828; }
+
+/* ACTIONS */
+.rdv-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.btn-delete {
+    background: #FFEBEE;
+    color: #C62828;
+}
+.btn-delete:hover { background: #ffcdd2; }
+
+.btn-view {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+.btn-view:hover { background: #bbdefb; }
+
+</style>
+
+<div class="rdv-container">
+
+    <div class="rdv-card">
+
+        <!-- HEADER -->
+        <div class="rdv-header">
+            <div class="avatar">
+                {{ rdv.doctor.fullName|default('D')|slice(0,1) }}
+            </div>
+
+            <div>
+                <div class="rdv-title">
+                    <i class="bi bi-person-badge-fill"></i>
+                    {{ rdv.doctor.fullName|default('Médecin') }}
+                </div>
+                <div class="rdv-sub">Détails du rendez-vous</div>
+            </div>
+        </div>
+
+        <!-- STATUS -->
+        <div>
+            <span class="rdv-status
+                {% if rdv.status == 'EN_ATTENTE' %}status-wait
+                {% elseif rdv.status == 'VALIDE' %}status-ok
+                {% else %}status-refused{% endif %}
+            ">
+                {% if rdv.status == 'EN_ATTENTE' %}
+                    <i class="bi bi-hourglass-split"></i>
+                {% elseif rdv.status == 'VALIDE' %}
+                    <i class="bi bi-check-circle-fill"></i>
+                {% else %}
+                    <i class="bi bi-x-circle-fill"></i>
+                {% endif %}
+
+                {{ rdv.status }}
+            </span>
+        </div>
+
+        <!-- INFOS -->
+        <div class="rdv-section">
+
+            <div class="rdv-row">
+                <i class="bi bi-calendar-event-fill"></i>
+                {{ rdv.dateTime|date('d M Y - H:i') }}
+            </div>
+
+            <div class="rdv-row">
+                <i class="bi bi-chat-left-text-fill"></i>
+                {{ rdv.motif ?? 'Sans motif' }}
+            </div>
+
+            <div class="rdv-row">
+                <i class="bi bi-card-text"></i>
+                {{ rdv.description ?? 'Aucune description' }}
+            </div>
+
+        </div>
+
+        <!-- PROPOSED DATE -->
+        {% if rdv.proposedDateTime %}
+        <div class="rdv-section">
+            <div class="rdv-row">
+                <i class="bi bi-arrow-repeat"></i>
+                Nouvelle date proposée :
+                <strong>{{ rdv.proposedDateTime|date('d M Y - H:i') }}</strong>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- DOCTOR NOTE -->
+        {% if rdv.doctorNote %}
+        <div class="rdv-section">
+            <div class="rdv-row">
+                <i class="bi bi-journal-text"></i>
+                {{ rdv.doctorNote }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ACTIONS -->
+        <div class="rdv-actions">
+
+          
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
