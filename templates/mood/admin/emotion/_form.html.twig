@@ -1,0 +1,25 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+<div class="sn-admin-form">
+    <div class="sn-admin-field">
+        {{ form_label(form.name, 'Emotion name', {'label_attr': {'class': 'sn-admin-label'}}) }}
+        {{ form_widget(form.name, {'attr': {'class': 'sn-admin-input'}}) }}
+
+        {% if form_errors(form.name) %}
+            <div class="sn-admin-form-errors mt-2">
+                {{ form_errors(form.name) }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="sn-admin-form-footer">
+        <p class="sn-admin-form-note">
+            This emotion will be available in mood entries.
+        </p>
+        <button class="sn-btn sn-btn-primary sn-admin-btn">
+            {{ button_label|default('Save') }}
+        </button>
+    </div>
+</div>
+
+{{ form_end(form) }}

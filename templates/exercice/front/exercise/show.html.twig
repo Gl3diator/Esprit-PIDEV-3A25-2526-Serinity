@@ -1,0 +1,91 @@
+{% extends 'exercice/front/base_front.html.twig' %}
+
+{% block title %}Detail exercice{% endblock %}
+
+{% block body %}
+    {% set primaryResource = exercise.resources|first %}
+
+    <section class="sn-exercise-shell">
+        <div class="sn-exercise-hero">
+            <div class="sn-exercise-panel sn-exercise-panel-main">
+                <p class="sn-exercise-kicker">{{ exercise.type }}</p>
+                <h1 class="sn-section-title">{{ exercise.title }}</h1>
+                <p class="sn-exercise-lead">Un exercice de niveau {{ exercise.level }} a realiser en environ {{ exercise.durationMinutes }} minutes.</p>
+
+                <div class="sn-exercise-stats">
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Type</p>
+                        <p class="sn-exercise-stat-value">{{ exercise.type }}</p>
+                    </div>
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Niveau</p>
+                        <p class="sn-exercise-stat-value">{{ exercise.level }}</p>
+                    </div>
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Duree</p>
+                        <p class="sn-exercise-stat-value">{{ exercise.durationMinutes }} min</p>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sn-exercise-panel sn-exercise-panel-side">
+                <div>
+                    <h2 class="sn-exercise-side-title">Passez a l'action</h2>
+                    <p class="sn-exercise-side-text">Consultez les informations de l'exercice puis demarrez votre session quand vous etes pret.</p>
+                </div>
+                <div class="sn-exercise-actions">
+                    <a class="sn-btn sn-btn-outline" href="{{ path('app_front_exercise_index') }}">Retour a la liste</a>
+                    <a class="sn-btn sn-btn-primary" href="{{ path('app_front_session_start', {'id': exercise.id}) }}">Demarrer la session</a>
+                </div>
+            </aside>
+        </div>
+
+        <div class="sn-exercise-detail">
+            <article class="sn-exercise-detail-card">
+                <div class="sn-feature-icon icon-exercice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <h2 class="sn-exercise-card-title">A propos de cet exercice</h2>
+                    <p class="sn-exercise-copy">{{ exercise.description|default('Aucune description disponible.') }}</p>
+                </div>
+
+                {% if primaryResource and primaryResource.content %}
+                    <div class="sn-exercise-block">
+                        <p class="sn-exercise-aside-title">Ressource associee</p>
+                        <p class="sn-exercise-copy">{{ primaryResource.content|nl2br }}</p>
+                    </div>
+                {% endif %}
+            </article>
+
+            <aside class="sn-exercise-aside">
+                <div class="sn-exercise-block">
+                    <p class="sn-exercise-aside-title">Type</p>
+                    <p class="sn-exercise-card-text">{{ exercise.type }}</p>
+                </div>
+                <div class="sn-exercise-block">
+                    <p class="sn-exercise-aside-title">Niveau</p>
+                    <p class="sn-exercise-card-text">{{ exercise.level }}</p>
+                </div>
+                <div class="sn-exercise-block">
+                    <p class="sn-exercise-aside-title">Duree estimee</p>
+                    <p class="sn-exercise-card-text">{{ exercise.durationMinutes }} minutes</p>
+                </div>
+                <div class="sn-exercise-block">
+                    <p class="sn-exercise-aside-title">Ressources</p>
+                    {% if exercise.resources|length > 0 %}
+                        <p class="sn-exercise-card-text">{{ exercise.resources|length }} ressource{{ exercise.resources|length > 1 ? 's' : '' }} disponible{{ exercise.resources|length > 1 ? 's' : '' }}</p>
+                        {% if primaryResource and primaryResource.url %}
+                            <a class="sn-btn sn-btn-outline" href="{{ primaryResource.url }}" target="_blank" rel="noopener noreferrer">Ouvrir la ressource</a>
+                        {% endif %}
+                    {% else %}
+                        <p class="sn-exercise-card-text">La ressource associee sera bientot disponible.</p>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+    </section>
+{% endblock %}

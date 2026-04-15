@@ -1,0 +1,140 @@
+{% extends 'exercice/front/base_front.html.twig' %}
+
+{% block title %}Exercices{% endblock %}
+
+{% block body %}
+    <section class="sn-exercise-shell">
+        <div class="sn-exercise-hero">
+            <div class="sn-exercise-panel sn-exercise-panel-main">
+                <h1 class="sn-section-title">Bouger avec douceur, progresser avec constance</h1>
+                <p class="sn-exercise-lead">Découvrez une sélection d’exercices pensés pour accompagner votre énergie du jour, votre niveau et le temps dont vous disposez.</p>
+
+                <div class="sn-exercise-stats">
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Exercices</p>
+                        <p class="sn-exercise-stat-value">{{ exercises|length }}</p>
+                    </div>
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Objectif</p>
+                        <p class="sn-exercise-stat-value">Régularité</p>
+                    </div>
+                    <div class="sn-exercise-stat">
+                        <p class="sn-exercise-stat-label">Rythme</p>
+                        <p class="sn-exercise-stat-value">À votre mesure</p>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="sn-exercise-panel sn-exercise-panel-side">
+                <div>
+                    <h2 class="sn-exercise-side-title">Un espace simple pour choisir votre prochaine séance</h2>
+                    <p class="sn-exercise-side-text">Le module Exercice reprend le langage visuel Serinity pour rester cohérent avec le reste de l’application tout en mettant l’accent sur l’action.</p>
+                </div>
+                <div class="sn-exercise-actions">
+                    <a class="sn-btn sn-btn-primary" href="#catalogue-exercices">Explorer les exercices</a>
+                    <a class="sn-btn sn-btn-outline" href="{{ path('app_front_session_history') }}">Voir mes sessions</a>
+                </div>
+            </aside>
+        </div>
+
+        <section class="sn-exercise-filters" aria-label="Recherche et filtres">
+            <form method="get" action="{{ path('app_front_exercise_index') }}" class="sn-exercise-filters-form">
+                <div class="sn-exercise-filter-field sn-exercise-filter-search">
+                    <label for="exercise-search" class="sn-exercise-filter-label">Recherche</label>
+                    <input
+                        id="exercise-search"
+                        class="sn-exercise-filter-input"
+                        type="search"
+                        name="q"
+                        value="{{ filters.q }}"
+                        placeholder="Rechercher par titre">
+                </div>
+
+                <div class="sn-exercise-filter-field">
+                    <label for="exercise-type" class="sn-exercise-filter-label">Type</label>
+                    <select id="exercise-type" class="sn-exercise-filter-input" name="type">
+                        <option value="">Tous les types</option>
+                        {% for type in availableTypes %}
+                            <option value="{{ type }}" {{ filters.type == type ? 'selected' : '' }}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="sn-exercise-filter-field">
+                    <label for="exercise-level" class="sn-exercise-filter-label">Niveau</label>
+                    <select id="exercise-level" class="sn-exercise-filter-input" name="level">
+                        <option value="">Tous les niveaux</option>
+                        {% for level in availableLevels %}
+                            <option value="{{ level }}" {{ filters.level == level ? 'selected' : '' }}>Niveau {{ level }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="sn-exercise-filter-field">
+                    <label for="exercise-sort" class="sn-exercise-filter-label">Tri</label>
+                    <select id="exercise-sort" class="sn-exercise-filter-input" name="sort">
+                        <option value="title_asc" {{ filters.sort == 'title_asc' ? 'selected' : '' }}>Titre A-Z</option>
+                        <option value="title_desc" {{ filters.sort == 'title_desc' ? 'selected' : '' }}>Titre Z-A</option>
+                        <option value="duration_asc" {{ filters.sort == 'duration_asc' ? 'selected' : '' }}>Durée croissante</option>
+                        <option value="duration_desc" {{ filters.sort == 'duration_desc' ? 'selected' : '' }}>Durée décroissante</option>
+                        <option value="level_asc" {{ filters.sort == 'level_asc' ? 'selected' : '' }}>Niveau croissant</option>
+                        <option value="level_desc" {{ filters.sort == 'level_desc' ? 'selected' : '' }}>Niveau décroissant</option>
+                    </select>
+                </div>
+
+                <div class="sn-exercise-filter-actions">
+                    <button class="sn-btn sn-btn-primary" type="submit">Appliquer</button>
+                    <a class="sn-btn sn-btn-outline" href="{{ path('app_front_exercise_index') }}">Réinitialiser</a>
+                </div>
+            </form>
+        </section>
+
+        <div class="sn-exercise-grid" id="catalogue-exercices">
+            {% for exercise in exercises %}
+                <article class="sn-exercise-card">
+                    <div class="sn-exercise-card-head">
+                        <div>
+                            <h2 class="sn-exercise-card-title">{{ exercise.title }}</h2>
+                        </div>
+                        <div class="sn-feature-icon icon-exercice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="sn-exercise-badges">
+                        <span class="sn-exercise-badge type">{{ exercise.type }}</span>
+                        <span class="sn-exercise-badge level">{{ exercise.level }}</span>
+                        <span class="sn-exercise-badge duration">{{ exercise.durationMinutes }} min</span>
+                    </div>
+
+                    <p class="sn-exercise-card-text">
+                        {{ exercise.description|default('Aucune description disponible.')|length > 170
+                            ? exercise.description|default('Aucune description disponible.')|slice(0, 170) ~ '...'
+                            : exercise.description|default('Aucune description disponible.')
+                        }}
+                    </p>
+
+                    <div class="sn-exercise-card-footer">
+                        <span class="sn-feature-desc">Prêt à commencer quand vous voulez.</span>
+                        <a class="sn-btn sn-btn-primary" href="{{ path('app_front_exercise_show', {'id': exercise.id}) }}">Voir l'exercice</a>
+                    </div>
+                </article>
+            {% else %}
+                <article class="sn-exercise-card sn-exercise-empty">
+                    <div class="sn-feature-icon icon-exercice" style="margin: 0 auto;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <h2 class="sn-exercise-card-title">Aucun exercice trouvé</h2>
+                    <p>Aucun résultat ne correspond à votre recherche ou à vos filtres actuels.</p>
+                    <div class="sn-exercise-actions" style="justify-content: center;">
+                        <a class="sn-btn sn-btn-outline" href="{{ path('app_front_exercise_index') }}">Réinitialiser les filtres</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

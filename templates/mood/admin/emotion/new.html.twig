@@ -1,0 +1,20 @@
+{% extends 'mood/admin/base_admin.html.twig' %}
+
+{% block title %}New emotion{% endblock %}
+{% block breadcrumb %}Nouvelle émotion{% endblock %}
+
+{% block admin_content %}
+    <article class="sn-admin-panel sn-admin-panel-soft">
+        <div class="sn-admin-panel-header sn-admin-panel-header-inline">
+            <h2 class="sn-admin-panel-title">Create new emotion</h2>
+
+            <a href="{{ path('app_admin_emotion_index') }}" class="sn-btn sn-btn-outline sn-admin-btn">
+                Back to list
+            </a>
+        </div>
+
+        <div class="sn-admin-panel-body">
+            {{ include('mood/admin/emotion/_form.html.twig') }}
+        </div>
+    </article>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'mood/admin/base_admin.html.twig' %}
+
+{% block title %}Emotion management{% endblock %}
+{% block breadcrumb %}Émotions{% endblock %}
+
+{% block admin_content %}
+    <article class="sn-admin-panel sn-admin-panel-soft">
+        <div class="sn-admin-panel-header sn-admin-panel-header-inline">
+            <div>
+                <h2 class="sn-admin-panel-title">Emotion management</h2>
+                <p class="sn-admin-text mb-0 mt-2">
+                    Manage the emotion list used in mood entries.
+                </p>
+            </div>
+
+            <a href="{{ path('app_admin_emotion_new') }}" class="sn-btn sn-btn-primary sn-admin-btn">
+                Create new
+            </a>
+        </div>
+
+        <div class="sn-admin-table-wrap">
+            <table class="sn-admin-table">
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for emotion in emotions %}
+                    <tr>
+                        <td>{{ emotion.id }}</td>
+                        <td>{{ emotion.name }}</td>
+                        <td class="text-right">
+                            <div class="sn-admin-table-actions">
+                                <a href="{{ path('app_admin_emotion_show', {'id': emotion.id}) }}" class="sn-admin-action sn-admin-action-ghost">
+                                    Show
+                                </a>
+                                <a href="{{ path('app_admin_emotion_edit', {'id': emotion.id}) }}" class="sn-admin-action sn-admin-action-primary">
+                                    Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="sn-admin-empty">
+                            <h3>No records found.</h3>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+{% endblock %}

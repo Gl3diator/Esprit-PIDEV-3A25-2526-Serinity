@@ -1,0 +1,43 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Modifier l'exercice{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker sn-admin-kicker-warning">Mise a jour</span>
+                <h1 class="sn-admin-title">Modifier l'exercice</h1>
+                <p class="sn-admin-text">Mettez a jour les informations de cet exercice sans modifier son fonctionnement.</p>
+            </div>
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_exercise_index') }}">Retour a la liste</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                    <div class="sn-admin-panel-header">
+                        <h2 class="sn-admin-panel-title">Formulaire de modification</h2>
+                    </div>
+                    <div class="sn-admin-panel-body">
+                        {{ include('admin/exercise/_form.html.twig', {'button_label': 'Mettre a jour'}) }}
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-lg-4">
+                <article class="sn-admin-panel h-100">
+                    <div class="sn-admin-panel-header">
+                        <h2 class="sn-admin-panel-title">Zone de suppression</h2>
+                    </div>
+                    <div class="sn-admin-panel-body sn-admin-stack">
+                        <p class="sn-admin-text">Cette action est irreversible. Verifiez les informations avant de supprimer l'exercice.</p>
+                        {{ include('admin/exercise/_delete_form.html.twig') }}
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+{% endblock %}

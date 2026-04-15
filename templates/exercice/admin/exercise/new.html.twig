@@ -1,0 +1,33 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Ajouter un exercice{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker sn-admin-kicker-success">Création</span>
+                <h1 class="sn-admin-title">Ajouter un exercice</h1>
+                <p class="sn-admin-text">
+                    Renseignez les informations nécessaires pour créer un nouvel exercice.
+                </p>
+            </div>
+
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_exercise_index') }}">
+                    Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <article class="sn-admin-panel sn-admin-panel-soft">
+            <div class="sn-admin-panel-header">
+                <h2 class="sn-admin-panel-title">Formulaire de création</h2>
+            </div>
+
+            <div class="sn-admin-panel-body">
+                {{ include('exercice/admin/exercise/_form.html.twig') }}
+            </div>
+        </article>
+    </section>
+{% endblock %}

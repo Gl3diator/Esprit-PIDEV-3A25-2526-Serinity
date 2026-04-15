@@ -1,0 +1,39 @@
+{% extends 'sleep/admin/base.html.twig' %}
+
+{% block title %}Admin Humeur — Serinity{% endblock %}
+{% block breadcrumb %}Humeur{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker">Administration</span>
+                <h1 class="sn-admin-title">Mood Admin</h1>
+                <p class="sn-admin-text">
+                    Manage emotions and influences used by the mood module.
+                </p>
+            </div>
+
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_dashboard') }}">
+                    Retour au dashboard
+                </a>
+                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_emotion_index') }}">
+                    Gérer les émotions
+                </a>
+                <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_influence_index') }}">
+                    Gérer les influences
+                </a>
+            </div>
+        </div>
+
+        {% block admin_content %}{% endblock %}
+    </section>
+{% endblock %}

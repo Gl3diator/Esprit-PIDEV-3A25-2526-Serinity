@@ -1,0 +1,29 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group">
+        {{ form_label(form.title, 'Title', {'label_attr': {'class': 'form-control-label'}}) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control rounded-pill'}}) }}
+        {% if form_errors(form.title) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.title) }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.content, 'Content', {'label_attr': {'class': 'form-control-label'}}) }}
+        {{ form_widget(form.content, {'attr': {'class': 'form-control', 'rows': 8, 'style': 'border-radius: 1rem;'}}) }}
+        {% if form_errors(form.content) %}
+            <div class="text-danger text-sm mt-2">
+                {{ form_errors(form.content) }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary ">
+            {{ button_label|default('Save') }}
+        </button>
+    </div>
+
+{{ form_end(form) }}

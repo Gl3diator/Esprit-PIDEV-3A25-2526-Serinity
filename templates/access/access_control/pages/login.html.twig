@@ -1,0 +1,256 @@
+{% extends 'access/access_control/layout.html.twig' %}
+
+{% block title %}Authentification | Serinity{% endblock %}
+
+{% set authMode = mode|default('signin') %}
+
+{% block content %}
+    <div class="auth-page-shell serinity-auth-shell">
+
+        <main class="ac-auth auth-page-main" data-controller="auth-switcher auth-form password-toggle">
+            <section class="ac-auth-side-brand">
+                <div class="ac-brand-gradient"></div>
+
+                <div class="ac-brand-content">
+                    <div class="ac-brand-badge">Mental wellness platform</div>
+
+                    <img
+                            src="{{ asset('assets/img/logo2.png') }}"
+                            alt="Serinity logo"
+                            class="ac-auth-logo"
+                    >
+
+                    <h1>Votre espace bien-être commence ici</h1>
+                    <p>
+                        Serinity vous aide à suivre votre sommeil, mieux comprendre votre humeur
+                        et accéder à des outils de bien-être dans une expérience fluide et apaisante.
+                    </p>
+
+                    <ul class="ac-brand-list">
+                        <li>
+                            <span class="material-symbols-outlined">bedtime</span>
+                            Suivi du sommeil et journal des rêves
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">exercise</span>
+                            Exercices et historique des sessions
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">mood</span>
+                            Suivi de l’humeur et accompagnement quotidien
+                        </li>
+                        <li>
+                            <span class="material-symbols-outlined">shield_lock</span>
+                            Accès sécurisé à votre espace personnel
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="ac-auth-panel-wrap">
+                <div class="ac-auth-card">
+                    <div class="ac-auth-tabs" role="tablist" aria-label="Authentication mode">
+                        <button
+                                id="signin-tab"
+                                class="ac-tab-btn {{ authMode == 'signin' ? 'is-active' : '' }}"
+                                role="tab"
+                                aria-selected="{{ authMode == 'signin' ? 'true' : 'false' }}"
+                                aria-controls="signin-panel"
+                                data-auth-switcher-target="signinTab"
+                                data-action="click->auth-switcher#showSignin"
+                                type="button"
+                        >
+                            Sign in
+                        </button>
+
+                        <button
+                                id="signup-tab"
+                                class="ac-tab-btn {{ authMode == 'signup' ? 'is-active' : '' }}"
+                                role="tab"
+                                aria-selected="{{ authMode == 'signup' ? 'true' : 'false' }}"
+                                aria-controls="signup-panel"
+                                data-auth-switcher-target="signupTab"
+                                data-action="click->auth-switcher#showSignup"
+                                type="button"
+                        >
+                            Sign up
+                        </button>
+                    </div>
+
+                    <p class="ac-inline-error" data-auth-form-target="error" hidden></p>
+
+                    <section
+                            id="signin-panel"
+                            class="ac-auth-panel {{ authMode == 'signin' ? 'is-active' : '' }}"
+                            role="tabpanel"
+                            aria-labelledby="signin-tab"
+                            data-auth-switcher-target="signin"
+                            {% if authMode == 'signup' %}style="display: none;"{% endif %}
+                    >
+                        <div class="ac-panel-head">
+                            <span class="ac-panel-kicker">Connexion</span>
+                            <h2>Bienvenue</h2>
+                            <p>Connectez-vous pour accéder à votre espace Serinity.</p>
+                        </div>
+
+                        <form
+                                class="ac-form"
+                                data-action="submit->auth-form#submit"
+                                method="post"
+                                action="{{ path('api_auth_login') }}"
+                        >
+                            <label>
+                                <span class="ac-label">Email ou nom d’utilisateur</span>
+                                <input
+                                        class="ac-input"
+                                        type="text"
+                                        name="usernameOrEmail"
+                                        required
+                                        autocomplete="username"
+                                        placeholder="Entrez votre email ou username"
+                                >
+                            </label>
+
+                            <label>
+                                <span class="ac-label">Mot de passe</span>
+                                <div class="ac-password-wrap">
+                                    <input
+                                            class="ac-input"
+                                            type="password"
+                                            name="password"
+                                            required
+                                            autocomplete="current-password"
+                                            placeholder="Votre mot de passe"
+                                            data-password-toggle-target="input"
+                                    >
+                                    <button
+                                            class="ac-password-toggle"
+                                            type="button"
+                                            data-action="password-toggle#toggle"
+                                            aria-label="Afficher ou masquer le mot de passe"
+                                    >
+                                        <span class="material-symbols-outlined" data-password-toggle-target="icon">visibility</span>
+                                    </button>
+                                </div>
+                            </label>
+
+                            <label class="ac-check">
+                                <input type="checkbox" name="rememberMe" value="1">
+                                <span>Se souvenir de moi</span>
+                            </label>
+
+                            <button class="ac-btn ac-btn-primary" type="submit">
+                            <span class="ac-btn-content">
+                                <span class="ac-btn-text">Se connecter</span>
+                                <span class="ac-btn-spinner" hidden>
+                                    <span class="material-symbols-outlined ac-spin">progress_activity</span>
+                                </span>
+                            </span>
+                            </button>
+                        </form>
+
+                        <a class="ac-link-btn" href="{{ path('ac_ui_reset_password') }}">
+                            Mot de passe oublié ?
+                        </a>
+                    </section>
+
+                    <section
+                            id="signup-panel"
+                            class="ac-auth-panel {{ authMode == 'signup' ? 'is-active' : '' }}"
+                            role="tabpanel"
+                            aria-labelledby="signup-tab"
+                            data-auth-switcher-target="signup"
+                            {% if authMode == 'signin' %}style="display: none;"{% endif %}
+                    >
+                        <div class="ac-panel-head">
+                            <span class="ac-panel-kicker">Inscription</span>
+                            <h2>Créer un compte</h2>
+                            <p>Rejoignez Serinity pour accéder à votre suivi bien-être personnalisé.</p>
+                        </div>
+
+                        <form
+                                class="ac-form"
+                                data-action="submit->auth-form#submit"
+                                method="post"
+                                action="{{ path('api_auth_register') }}"
+                        >
+                            <label>
+                                <span class="ac-label">Email</span>
+                                <input
+                                        class="ac-input"
+                                        type="email"
+                                        name="email"
+                                        required
+                                        autocomplete="email"
+                                        placeholder="vous@exemple.com"
+                                >
+                            </label>
+
+                            <label>
+                                <span class="ac-label">Mot de passe</span>
+                                <div class="ac-password-wrap">
+                                    <input
+                                            class="ac-input"
+                                            type="password"
+                                            name="password"
+                                            required
+                                            minlength="8"
+                                            autocomplete="new-password"
+                                            placeholder="Minimum 8 caractères"
+                                            data-password-toggle-target="input"
+                                    >
+                                    <button
+                                            class="ac-password-toggle"
+                                            type="button"
+                                            data-action="password-toggle#toggle"
+                                            aria-label="Afficher ou masquer le mot de passe"
+                                    >
+                                        <span class="material-symbols-outlined" data-password-toggle-target="icon">visibility</span>
+                                    </button>
+                                </div>
+                            </label>
+
+                            <label>
+                                <span class="ac-label">Confirmer le mot de passe</span>
+                                <input
+                                        class="ac-input"
+                                        type="password"
+                                        name="confirmPassword"
+                                        required
+                                        minlength="8"
+                                        autocomplete="new-password"
+                                        placeholder="Confirmez votre mot de passe"
+                                >
+                            </label>
+
+                            <label>
+                                <span class="ac-label">Rôle</span>
+                                <select class="ac-input" name="role">
+                                    <option value="PATIENT">Patient</option>
+                                    <option value="THERAPIST">Therapist</option>
+                                </select>
+                            </label>
+
+                            <button class="ac-btn ac-btn-primary" type="submit">
+                            <span class="ac-btn-content">
+                                <span class="ac-btn-text">Créer mon compte</span>
+                                <span class="ac-btn-spinner" hidden>
+                                    <span class="material-symbols-outlined ac-spin">progress_activity</span>
+                                </span>
+                            </span>
+                            </button>
+                        </form>
+                    </section>
+                </div>
+            </section>
+        </main>
+
+        <footer class="home-footer auth-footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p>&copy; 2026 Serinity. Plateforme de bien-être mentale sécurisée et privacy-first.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+{% endblock %}

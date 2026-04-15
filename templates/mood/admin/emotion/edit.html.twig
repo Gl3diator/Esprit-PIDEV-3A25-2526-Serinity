@@ -1,0 +1,35 @@
+{% extends 'mood/admin/base_admin.html.twig' %}
+
+{% block title %}Edit emotion{% endblock %}
+{% block breadcrumb %}Modifier émotion{% endblock %}
+
+{% block admin_content %}
+    <div class="row">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                <div class="sn-admin-panel-header sn-admin-panel-header-inline">
+                    <h2 class="sn-admin-panel-title">Edit emotion</h2>
+
+                    <a href="{{ path('app_admin_emotion_index') }}" class="sn-btn sn-btn-outline sn-admin-btn">
+                        Back to list
+                    </a>
+                </div>
+
+                <div class="sn-admin-panel-body">
+                    {{ include('mood/admin/emotion/_form.html.twig', {'button_label': 'Update'}) }}
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-4">
+            <article class="sn-admin-panel h-100">
+                <div class="sn-admin-panel-header">
+                    <h2 class="sn-admin-panel-title">Delete emotion</h2>
+                </div>
+                <div class="sn-admin-panel-body">
+                    {{ include('mood/admin/emotion/_delete_form.html.twig') }}
+                </div>
+            </article>
+        </div>
+    </div>
+{% endblock %}

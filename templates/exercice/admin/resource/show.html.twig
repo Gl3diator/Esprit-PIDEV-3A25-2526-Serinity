@@ -1,0 +1,75 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Detail de la ressource{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker">Fiche ressource</span>
+                <h1 class="sn-admin-title">{{ resource.title }}</h1>
+                <p class="sn-admin-text">Consultez la ressource associee a l'exercice {{ resource.exercise ? resource.exercise.title : 'non associe' }}.</p>
+            </div>
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_resource_index') }}">Retour a la liste</a>
+                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_resource_edit', {'id': resource.id}) }}">Modifier</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                    <div class="sn-admin-panel-header">
+                        <h2 class="sn-admin-panel-title">Informations generales</h2>
+                    </div>
+                    <div class="sn-admin-panel-body">
+                        <div class="sn-admin-meta-grid">
+                            <div class="sn-admin-meta-card">
+                                <p class="sn-admin-eyebrow">Exercice</p>
+                                <p class="sn-admin-meta-value">{{ resource.exercise ? resource.exercise.title : 'Non associe' }}</p>
+                            </div>
+                            <div class="sn-admin-meta-card">
+                                <p class="sn-admin-eyebrow">Type</p>
+                                <span class="sn-admin-pill sn-admin-pill-accent">{{ resource.mediaType }}</span>
+                            </div>
+                            <div class="sn-admin-meta-card">
+                                <p class="sn-admin-eyebrow">Acces</p>
+                                <p class="sn-admin-meta-value">{{ resource.url ? 'Lien externe' : 'Contenu integre' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="sn-admin-info sn-admin-info-block">
+                            <div>
+                                <h3 class="sn-admin-info-title">URL</h3>
+                                {% if resource.url %}
+                                    <p class="sn-admin-copy"><a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url }}</a></p>
+                                {% else %}
+                                    <p class="sn-admin-copy">Aucune URL renseignee.</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3 class="sn-admin-info-title">Contenu</h3>
+                                <p class="sn-admin-copy">{{ resource.content|default('Aucun contenu additionnel renseigne.')|nl2br }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-lg-4">
+                <article class="sn-admin-panel h-100">
+                    <div class="sn-admin-panel-header">
+                        <h2 class="sn-admin-panel-title">Actions rapides</h2>
+                    </div>
+                    <div class="sn-admin-panel-body sn-admin-stack">
+                        <a class="sn-btn sn-btn-primary sn-admin-btn sn-admin-btn-block" href="{{ path('app_admin_resource_edit', {'id': resource.id}) }}">Modifier la ressource</a>
+                        {% if resource.exercise %}
+                            <a class="sn-btn sn-btn-outline sn-admin-btn sn-admin-btn-block" href="{{ path('app_admin_exercise_show', {'id': resource.exercise.id}) }}">Voir l'exercice</a>
+                        {% endif %}
+                        {{ include('admin/resource/_delete_form.html.twig') }}
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+{% endblock %}

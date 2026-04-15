@@ -1,0 +1,61 @@
+{% extends 'exercice/front/base_front.html.twig' %}
+
+{% block title %}Historique des sessions{% endblock %}
+
+{% block body %}
+    <section class="sn-exercise-shell">
+        <div class="sn-exercise-hero">
+            <div class="sn-exercise-panel sn-exercise-panel-main">
+                <p class="sn-exercise-kicker">Suivi</p>
+                <h1 class="sn-section-title">Historique des sessions</h1>
+                <p class="sn-exercise-lead">Retrouvez vos dernières sessions liées au module Exercice et gardez une trace simple de votre progression.</p>
+            </div>
+
+            <aside class="sn-exercise-panel sn-exercise-panel-side">
+                <div>
+                    <h2 class="sn-exercise-side-title">Votre activité</h2>
+                    <p class="sn-exercise-side-text">Chaque carte résume une séance avec son statut, sa durée active et ses repères temporels.</p>
+                </div>
+                <div class="sn-exercise-actions">
+                    <a class="sn-btn sn-btn-outline" href="{{ path('app_front_exercise_index') }}">Voir les exercices</a>
+                </div>
+            </aside>
+        </div>
+
+        <div class="sn-exercise-session-grid">
+            {% for session in sessions %}
+                <article class="sn-session-card">
+                    <div class="sn-feature-icon icon-exercice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h2>Séance enregistrée</h2>
+                    </div>
+
+                    <div class="sn-session-meta">
+                        <p><strong>Exercice :</strong> {{ session.exerciseId }}</p>
+                        <p><strong>Statut :</strong> {{ session.status }}</p>
+                        <p><strong>Début :</strong> {{ session.startedAt ? session.startedAt|date('d/m/Y H:i') : 'Non renseigné' }}</p>
+                        <p><strong>Fin :</strong> {{ session.completedAt ? session.completedAt|date('d/m/Y H:i') : 'Non renseignée' }}</p>
+                        <p><strong>Temps actif :</strong> {{ session.activeSeconds }} secondes</p>
+                    </div>
+                </article>
+            {% else %}
+                <article class="sn-session-card">
+                    <div class="sn-feature-icon icon-exercice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>Aucune session trouvée</h2>
+                        <p class="sn-feature-desc">Votre historique de sessions apparaîtra ici dès que vous aurez démarré un exercice.</p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

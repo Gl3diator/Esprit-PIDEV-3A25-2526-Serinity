@@ -1,0 +1,10 @@
+<form method="post"
+      action="{{ path('app_admin_influence_delete', {'id': influence.id}) }}"
+      class="js-confirm-delete-form"
+      data-confirm-title="Confirmer la suppression"
+      data-confirm-message="Êtes-vous sûr de vouloir supprimer cette influence ?">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ influence.id) }}">
+    <button class="sn-admin-action sn-admin-action-danger sn-admin-btn-block" type="submit">
+        Delete
+    </button>
+</form>

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+{% endblock %}
+
+{# IMPORTANT : on désactive tout le reste du site #}
+{% block site_navigation %}{% endblock %}
+{% block flash_messages %}{% endblock %}
+{% block site_footer %}{% endblock %}
+
+{% block body %}
+    <div class="auth-shell ac-shell" data-controller="ui-theme">
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}

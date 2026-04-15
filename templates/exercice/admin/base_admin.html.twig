@@ -1,0 +1,128 @@
+{% extends 'sleep/admin/base.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+
+{% block body_class %}sn-admin-body admin-layout{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+{% endblock %}
+
+{# On garde le layout Sleep admin (sidebar gauche + header) #}
+
+{% block page_main %}
+    {{ parent() }}
+
+    <div class="sn-confirm-modal" id="snConfirmModal" hidden aria-hidden="true">
+        <div class="sn-confirm-modal__backdrop" data-modal-close></div>
+        <div
+                class="sn-confirm-modal__dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="snConfirmModalTitle"
+                aria-describedby="snConfirmModalMessage"
+        >
+            <div class="sn-confirm-modal__content">
+                <p class="sn-confirm-modal__eyebrow">Serinity Admin</p>
+                <h2 class="sn-confirm-modal__title" id="snConfirmModalTitle">Confirmer la suppression</h2>
+                <p class="sn-confirm-modal__message" id="snConfirmModalMessage">
+                    Êtes-vous sûr de vouloir supprimer cet exercice ?
+                </p>
+                <div class="sn-confirm-modal__actions">
+                    <button
+                            type="button"
+                            class="sn-btn sn-btn-outline sn-admin-btn"
+                            data-modal-cancel
+                    >
+                        Annuler
+                    </button>
+                    <button
+                            type="button"
+                            class="sn-btn sn-btn-primary sn-admin-btn sn-confirm-modal__confirm"
+                            data-modal-confirm
+                    >
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        (function () {
+            const modal = document.getElementById('snConfirmModal');
+            if (!modal) return;
+
+            const title = modal.querySelector('#snConfirmModalTitle');
+            const message = modal.querySelector('#snConfirmModalMessage');
+            const confirmButton = modal.querySelector('[data-modal-confirm]');
+            const cancelButton = modal.querySelector('[data-modal-cancel]');
+            const closeTriggers = modal.querySelectorAll('[data-modal-close]');
+            let pendingForm = null;
+
+            function openModal(form) {
+                pendingForm = form;
+                title.textContent = form.dataset.confirmTitle || 'Confirmer la suppression';
+                message.textContent = form.dataset.confirmMessage || 'Êtes-vous sûr de vouloir supprimer cet exercice ?';
+
+                modal.hidden = false;
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('sn-modal-open');
+                confirmButton.focus();
+            }
+
+            function closeModal() {
+                pendingForm = null;
+                modal.hidden = true;
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('sn-modal-open');
+            }
+
+            document.addEventListener('submit', function (event) {
+                const form = event.target.closest('.js-confirm-delete-form');
+                if (!form) return;
+
+                if (form.dataset.modalConfirmed === 'true') {
+                    delete form.dataset.modalConfirmed;
+                    return;
+                }
+
+                event.preventDefault();
+                openModal(form);
+            });
+
+            confirmButton.addEventListener('click', function () {
+                if (!pendingForm) return;
+
+                pendingForm.dataset.modalConfirmed = 'true';
+                const formToSubmit = pendingForm;
+                closeModal();
+
+                if (typeof formToSubmit.requestSubmit === 'function') {
+                    formToSubmit.requestSubmit();
+                } else {
+                    formToSubmit.submit();
+                }
+            });
+
+            cancelButton.addEventListener('click', closeModal);
+
+            closeTriggers.forEach(function (trigger) {
+                trigger.addEventListener('click', closeModal);
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !modal.hidden) {
+                    closeModal();
+                }
+            });
+        }());
+    </script>
+{% endblock %}

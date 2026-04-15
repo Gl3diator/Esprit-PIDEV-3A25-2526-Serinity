@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }} | Serinity{% endblock %}
+
+{% block body %}
+    <div class="ac-app-layout">
+        {% include 'access/access_control/components/_sidebar.html.twig' with { items: nav } %}
+
+        <div class="ac-main">
+            {% include 'access/access_control/components/_topbar.html.twig' with {
+                title: title,
+                subtitle: subtitle,
+                userName: userName|default('Admin')
+            } %}
+
+            <main class="ac-content">
+                <div class="ac-coming-soon-card">
+                    <h1 class="ac-coming-soon-title">{{ title }}</h1>
+                    <p class="ac-coming-soon-subtitle">{{ subtitle }}</p>
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock %}

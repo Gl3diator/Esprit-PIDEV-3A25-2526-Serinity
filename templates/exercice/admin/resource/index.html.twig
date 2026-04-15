@@ -1,0 +1,76 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Liste des ressources{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker">Administration</span>
+                <h1 class="sn-admin-title">Liste des ressources</h1>
+                <p class="sn-admin-text">Associez une ressource claire a chaque exercice pour guider l'utilisateur.</p>
+            </div>
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_resource_new') }}">Ajouter une ressource</a>
+            </div>
+        </div>
+
+        <article class="sn-admin-panel sn-admin-panel-soft">
+            <div class="sn-admin-panel-header sn-admin-panel-header-inline">
+                <h2 class="sn-admin-panel-title">Catalogue des ressources</h2>
+                <span class="sn-admin-counter">{{ resources|length }} ressource{{ resources|length > 1 ? 's' : '' }}</span>
+            </div>
+
+            <div class="sn-admin-table-wrap">
+                <table class="table mb-0 sn-admin-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Titre</th>
+                            <th scope="col">Exercice</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Lien</th>
+                            <th scope="col" class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for resource in resources %}
+                        <tr>
+                            <td><div class="sn-admin-cell-title">{{ resource.title }}</div></td>
+                            <td>{{ resource.exercise ? resource.exercise.title : 'Non associee' }}</td>
+                            <td><span class="sn-admin-pill sn-admin-pill-accent">{{ resource.mediaType }}</span></td>
+                            <td class="sn-admin-cell-text">
+                                {% if resource.url %}
+                                    <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|slice(0, 40) }}{{ resource.url|length > 40 ? '...' : '' }}</a>
+                                {% else %}
+                                    Contenu integre
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="sn-admin-table-actions">
+                                    <a class="sn-admin-action sn-admin-action-ghost" href="{{ path('app_admin_resource_show', {'id': resource.id}) }}">Afficher</a>
+                                    <a class="sn-admin-action sn-admin-action-primary" href="{{ path('app_admin_resource_edit', {'id': resource.id}) }}">Modifier</a>
+                                    <form method="post" action="{{ path('app_admin_resource_delete', {'id': resource.id}) }}" class="d-inline-block mb-0 js-confirm-delete-form" data-confirm-title="Confirmer la suppression" data-confirm-message="Êtes-vous sûr de vouloir supprimer cette ressource ?">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ resource.id) }}">
+                                        <button class="sn-admin-action sn-admin-action-danger" type="submit">Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="sn-admin-empty">
+                                <div class="sn-admin-empty-icon">
+                                    <i class="ni ni-books"></i>
+                                </div>
+                                <h3>Aucune ressource trouvee</h3>
+                                <p>Ajoutez une ressource pour enrichir vos exercices.</p>
+                                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_resource_new') }}">Ajouter une ressource</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+{% endblock %}

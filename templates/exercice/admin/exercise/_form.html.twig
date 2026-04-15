@@ -1,0 +1,57 @@
+{{ form_start(form) }}
+    <div class="sn-admin-form">
+        <div class="sn-admin-form-errors">{{ form_errors(form) }}</div>
+
+        <div class="row">
+            <div class="col-md-6">
+                {{ form_row(form.title, {
+                    label: 'Titre de l exercice',
+                    row_attr: {class: 'form-group sn-admin-field'},
+                    label_attr: {class: 'sn-admin-label'},
+                    attr: {class: 'form-control sn-admin-input'}
+                }) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.type, {
+                    label: 'Type d exercice',
+                    row_attr: {class: 'form-group sn-admin-field'},
+                    label_attr: {class: 'sn-admin-label'},
+                    attr: {class: 'form-control sn-admin-input'}
+                }) }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                {{ form_row(form.level, {
+                    label: 'Niveau',
+                    row_attr: {class: 'form-group sn-admin-field'},
+                    label_attr: {class: 'sn-admin-label'},
+                    attr: {class: 'form-control sn-admin-input'}
+                }) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.durationMinutes, {
+                    label: 'Duree (minutes)',
+                    row_attr: {class: 'form-group sn-admin-field'},
+                    label_attr: {class: 'sn-admin-label'},
+                    attr: {class: 'form-control sn-admin-input'}
+                }) }}
+            </div>
+        </div>
+
+        {{ form_row(form.description, {
+            label: 'Description',
+            row_attr: {class: 'form-group sn-admin-field'},
+            label_attr: {class: 'sn-admin-label'},
+            attr: {class: 'form-control sn-admin-input sn-admin-textarea'}
+        }) }}
+
+        <div class="sn-admin-form-footer">
+            <p class="sn-admin-form-note">Les champs saisis seront utilises immediatement dans l'administration.</p>
+            <button class="sn-btn sn-btn-primary sn-admin-btn" type="submit">{{ button_label|default('Enregistrer') }}</button>
+        </div>
+
+        {{ form_rest(form) }}
+    </div>
+{{ form_end(form, {'render_rest': false}) }}

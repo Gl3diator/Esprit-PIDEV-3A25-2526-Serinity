@@ -1,0 +1,151 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Liste des exercices{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page sn-admin-exercise-index">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker">Administration</span>
+                <h1 class="sn-admin-title">Liste des exercices</h1>
+                <p class="sn-admin-text">Gerez les exercices, consultez leur fiche et mettez a jour leur contenu.</p>
+            </div>
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_exercise_new') }}">
+                    <i class="ni ni-fat-add"></i>
+                    <span>Ajouter un exercice</span>
+                </a>
+            </div>
+        </div>
+
+        <article class="sn-admin-panel sn-admin-panel-soft">
+            <div class="sn-admin-panel-header sn-admin-panel-header-inline">
+                <h2 class="sn-admin-panel-title">Catalogue des exercices</h2>
+                <span class="sn-admin-counter">{{ exercises|length }} exercice{{ exercises|length > 1 ? 's' : '' }}</span>
+            </div>
+
+            <div class="sn-admin-panel-body sn-admin-exercise-filters-wrap">
+                <div class="sn-admin-exercise-toolbar">
+                    <div>
+                        <p class="sn-admin-exercise-toolbar-title">Recherche, filtres et tri</p>
+                        <p class="sn-admin-exercise-toolbar-text">Affinez rapidement la liste pour retrouver un exercice ou verifier son niveau, son type et ses ressources.</p>
+                    </div>
+                </div>
+                <form method="get" action="{{ path('app_admin_exercise_index') }}" class="sn-admin-filters sn-admin-exercise-filters">
+                    <div class="sn-admin-filter-field sn-admin-filter-search sn-admin-filter-field-wide">
+                        <label for="admin-exercise-search" class="sn-admin-label">Recherche</label>
+                        <input
+                            id="admin-exercise-search"
+                            class="sn-admin-input sn-admin-exercise-input"
+                            type="search"
+                            name="q"
+                            value="{{ filters.q }}"
+                            placeholder="Rechercher par titre">
+                    </div>
+
+                    <div class="sn-admin-filter-field">
+                        <label for="admin-exercise-type" class="sn-admin-label">Type</label>
+                        <select id="admin-exercise-type" class="sn-admin-input sn-admin-exercise-input" name="type">
+                            <option value="">Tous les types</option>
+                            {% for type in availableTypes %}
+                                <option value="{{ type }}" {{ filters.type == type ? 'selected' : '' }}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="sn-admin-filter-field">
+                        <label for="admin-exercise-level" class="sn-admin-label">Niveau</label>
+                        <select id="admin-exercise-level" class="sn-admin-input sn-admin-exercise-input" name="level">
+                            <option value="">Tous les niveaux</option>
+                            {% for level in availableLevels %}
+                                <option value="{{ level }}" {{ filters.level == level ? 'selected' : '' }}>Niveau {{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="sn-admin-filter-field">
+                        <label for="admin-exercise-sort" class="sn-admin-label">Tri</label>
+                        <select id="admin-exercise-sort" class="sn-admin-input sn-admin-exercise-input" name="sort">
+                            <option value="title_asc" {{ filters.sort == 'title_asc' ? 'selected' : '' }}>Titre A-Z</option>
+                            <option value="title_desc" {{ filters.sort == 'title_desc' ? 'selected' : '' }}>Titre Z-A</option>
+                            <option value="duration_asc" {{ filters.sort == 'duration_asc' ? 'selected' : '' }}>Duree croissante</option>
+                            <option value="duration_desc" {{ filters.sort == 'duration_desc' ? 'selected' : '' }}>Duree decroissante</option>
+                            <option value="level_asc" {{ filters.sort == 'level_asc' ? 'selected' : '' }}>Niveau croissant</option>
+                            <option value="level_desc" {{ filters.sort == 'level_desc' ? 'selected' : '' }}>Niveau decroissant</option>
+                        </select>
+                    </div>
+
+                    <div class="sn-admin-filter-actions">
+                        <button class="sn-btn sn-btn-primary sn-admin-btn sn-admin-exercise-filter-btn" type="submit">Appliquer</button>
+                        <a class="sn-btn sn-btn-outline sn-admin-btn sn-admin-exercise-filter-btn" href="{{ path('app_admin_exercise_index') }}">Reinitialiser</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sn-admin-table-wrap sn-admin-exercise-table-wrap">
+                <table class="table mb-0 sn-admin-table sn-admin-exercise-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="sn-admin-col-title">Titre</th>
+                            <th scope="col" class="sn-admin-col-type">Type</th>
+                            <th scope="col" class="sn-admin-col-level">Niveau</th>
+                            <th scope="col" class="sn-admin-col-duration">Duree</th>
+                            <th scope="col" class="sn-admin-col-resource">Ressources</th>
+                            <th scope="col" class="sn-admin-col-description">Description</th>
+                            <th scope="col" class="sn-admin-col-actions text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for exercise in exercises %}
+                        <tr>
+                            <td class="sn-admin-cell-main">
+                                <div class="sn-admin-cell-title">{{ exercise.title }}</div>
+                                <div class="sn-admin-exercise-meta">Exercice {{ loop.index }}</div>
+                            </td>
+                            <td class="sn-admin-cell-nowrap"><span class="sn-admin-pill sn-admin-pill-accent">{{ exercise.type }}</span></td>
+                            <td class="sn-admin-cell-nowrap"><span class="sn-admin-pill sn-admin-pill-primary">{{ exercise.level }}</span></td>
+                            <td class="sn-admin-cell-nowrap">{{ exercise.durationMinutes }} min</td>
+                            <td class="sn-admin-cell-nowrap">
+                                {% if exercise.resources|length > 0 %}
+                                    <span class="sn-admin-pill sn-admin-pill-accent sn-admin-resource-pill">{{ exercise.resources|length }} ressource{{ exercise.resources|length > 1 ? 's' : '' }}</span>
+                                {% else %}
+                                    <a class="sn-admin-action sn-admin-action-primary sn-admin-exercise-action" href="{{ path('app_admin_resource_new', {'exercise': exercise.id}) }}">Ajouter</a>
+                                {% endif %}
+                            </td>
+                            <td class="sn-admin-cell-text sn-admin-cell-text-compact">
+                                <span class="sn-admin-exercise-description">
+                                    {{ exercise.description|default('Aucune description')|length > 110
+                                        ? exercise.description|default('Aucune description')|slice(0, 110) ~ '...'
+                                        : exercise.description|default('Aucune description')
+                                    }}
+                                </span>
+                            </td>
+                            <td class="sn-admin-cell-actions text-right">
+                                <div class="sn-admin-table-actions sn-admin-exercise-actions">
+                                    <a class="sn-admin-action sn-admin-action-ghost sn-admin-exercise-action" href="{{ path('app_admin_exercise_show', {'id': exercise.id}) }}">Afficher</a>
+                                    <a class="sn-admin-action sn-admin-action-primary sn-admin-exercise-action" href="{{ path('app_admin_exercise_edit', {'id': exercise.id}) }}">Modifier</a>
+                                    <form method="post" action="{{ path('app_admin_exercise_delete', {'id': exercise.id}) }}" class="d-inline-block mb-0 js-confirm-delete-form" data-confirm-title="Confirmer la suppression" data-confirm-message="Êtes-vous sûr de vouloir supprimer cet exercice ?">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ exercise.id) }}">
+                                        <button class="sn-admin-action sn-admin-action-danger sn-admin-exercise-action" type="submit">Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="sn-admin-empty">
+                                <div class="sn-admin-empty-icon">
+                                    <i class="ni ni-collection"></i>
+                                </div>
+                                <h3>Aucun exercice trouve</h3>
+                                <p>Aucun resultat ne correspond a votre recherche ou a vos filtres actuels.</p>
+                                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_exercise_new') }}">Ajouter un exercice</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+{% endblock %}

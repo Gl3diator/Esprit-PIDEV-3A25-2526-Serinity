@@ -1,0 +1,40 @@
+{% extends 'mood/admin/base_admin.html.twig' %}
+
+{% block title %}Dashboard Humeur{% endblock %}
+{% block breadcrumb %}Dashboard Humeur{% endblock %}
+
+{% block admin_content %}
+    <div class="row">
+        <div class="col-xl-6 mb-4">
+            <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                <div class="sn-admin-panel-header">
+                    <h2 class="sn-admin-panel-title">Gestion des émotions</h2>
+                </div>
+                <div class="sn-admin-panel-body">
+                    <p class="sn-admin-text mb-4">
+                        Add, update and review the emotion list used in mood entries.
+                    </p>
+                    <a href="{{ path('app_admin_emotion_index') }}" class="sn-btn sn-btn-primary sn-admin-btn">
+                        Manage emotions
+                    </a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-xl-6 mb-4">
+            <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                <div class="sn-admin-panel-header">
+                    <h2 class="sn-admin-panel-title">Gestion des influences</h2>
+                </div>
+                <div class="sn-admin-panel-body">
+                    <p class="sn-admin-text mb-4">
+                        Add, update and review the influence list used in mood entries.
+                    </p>
+                    <a href="{{ path('app_admin_influence_index') }}" class="sn-btn sn-btn-primary sn-admin-btn">
+                        Manage influences
+                    </a>
+                </div>
+            </article>
+        </div>
+    </div>
+{% endblock %}

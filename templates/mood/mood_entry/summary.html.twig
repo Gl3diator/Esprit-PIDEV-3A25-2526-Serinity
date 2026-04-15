@@ -1,0 +1,88 @@
+{% extends 'mood/front/base_front.html.twig' %}
+
+{% block title %}Mood summary{% endblock %}
+{% block front_title %}Mood summary{% endblock %}
+{% block front_subtitle %}See your weekly mood insights at a glance.{% endblock %}
+{% block front_summary %}
+    <h4 class="text-white mb-2">Mood analytics</h4>
+    <p class="mb-0">Review weekly mood indicators, top emotion, and top influence.</p>
+{% endblock %}
+
+{% block front_content %}
+    <div class="serinity-top-cards-wrap">
+        <div class="row mb-4">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-info text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-calendar-grid-58"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">This week</h6>
+                        <h2 class="mb-0">{{ weekly_count }}</h2>
+                        <p class="text-sm text-muted mb-0">Mood entries saved</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-primary text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-chart-bar-32"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Average mood</h6>
+                        <h2 class="mb-0">
+                            {{ weekly_average_mood is not null ? weekly_average_mood ~ '/5' : '-' }}
+                        </h2>
+                        <p class="text-sm text-muted mb-0">Based on the last 7 days</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-success text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-tag"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Most used type</h6>
+                        <h2 class="mb-0">{{ most_used_type }}</h2>
+                        <p class="text-sm text-muted mb-0">Most frequent mood entry style this week</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-lg-6 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-warning text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-favourite-28"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Top emotion</h6>
+                        <h2 class="mb-0">{{ top_emotion_name }}</h2>
+                        <p class="text-sm text-muted mb-0">
+                            {{ top_emotion_count > 0 ? top_emotion_count ~ ' selections this week' : 'No emotion data this week' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 mb-3">
+                <div class="card shadow-sm border-0 card-lift--hover h-100">
+                    <div class="card-body py-4">
+                        <div class="icon icon-shape bg-default text-white rounded-circle shadow mb-3">
+                            <i class="ni ni-bulb-61"></i>
+                        </div>
+                        <h6 class="text-uppercase text-muted mb-1">Top influence</h6>
+                        <h2 class="mb-0">{{ top_influence_name }}</h2>
+                        <p class="text-sm text-muted mb-0">
+                            {{ top_influence_count > 0 ? top_influence_count ~ ' selections this week' : 'No influence data this week' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau rêve — Sleep Tracker{% endblock %}
+
+{% block body %}
+
+    <nav class="breadcrumb">
+        <a href="{{ path('app_reve_index') }}">Rêves</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">Nouveau rêve</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">💭 Nouveau rêve</h1>
+            <p class="page-header__subtitle">Décrivez votre rêve avec le plus de détails possible</p>
+        </div>
+    </header>
+
+    <div class="card sleep-form-shell">
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+        <!-- GENERAL -->
+        <div class="form-section">
+            <div class="form-section__title">🌙 Général</div>
+            <div class="form-grid">
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.sommeilId) }}
+                    {{ form_widget(form.sommeilId, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.sommeilId) }}
+                </div>
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.titre) }}
+                    {{ form_widget(form.titre, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CLASSIFICATION -->
+        <div class="form-section">
+            <div class="form-section__title">🏷️ Classification</div>
+            <div class="form-grid">
+
+                <div class="form-group">
+                    {{ form_label(form.typeReve) }}
+                    {{ form_widget(form.typeReve, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.typeReve) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.humeur) }}
+                    {{ form_widget(form.humeur, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.humeur) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.intensite) }}
+                    {{ form_widget(form.intensite, {attr: {class: 'form-control', id: 'intensite_input'}}) }}
+                    {{ form_errors(form.intensite) }}
+
+                    <div class="intensity-bar" id="intensite_preview">
+                        {% for i in 1..10 %}
+                            <div class="intensity-dot" data-val="{{ i }}"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.emotions) }}
+                    {{ form_widget(form.emotions, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.emotions) }}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DETAILS -->
+        <div class="form-section">
+            <div class="form-section__title">🔍 Détails</div>
+            <div class="form-grid">
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.symboles) }}
+                    {{ form_widget(form.symboles, {attr: {class: 'form-control'}}) }}
+                    {{ form_errors(form.symboles) }}
+                </div>
+
+                <!-- CHECKBOX FIX -->
+                <div class="form-group checkbox-group">
+                    {{ form_widget(form.couleur) }}
+                    {{ form_label(form.couleur) }}
+                </div>
+
+                <div class="form-group checkbox-group">
+                    {{ form_widget(form.recurrent) }}
+                    {{ form_label(form.recurrent) }}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">✔ Enregistrer</button>
+            <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}

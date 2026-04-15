@@ -1,0 +1,71 @@
+{% extends 'exercice/admin/base_admin.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+    <section class="sn-admin-page">
+        <div class="sn-admin-hero">
+            <div>
+                <span class="sn-admin-kicker">Administration</span>
+                <h1 class="sn-admin-title">Tableau de bord</h1>
+                <p class="sn-admin-text">
+                    Retrouvez un aperçu rapide de l'espace d'administration
+                    et accédez à la gestion des exercices.
+                </p>
+            </div>
+
+            <div class="sn-admin-actions">
+                <a class="sn-btn sn-btn-primary sn-admin-btn" href="{{ path('app_admin_exercise_index') }}">
+                    <i class="ni ni-collection"></i>
+                    <span>Gérer les exercices</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5 mb-4 mb-lg-0">
+                <article class="sn-admin-panel sn-admin-panel-highlight h-100">
+                    <div class="sn-admin-metric-head">
+                        <div>
+                            <p class="sn-admin-eyebrow">Nombre total d'exercices</p>
+                            <h2 class="sn-admin-metric-value">{{ exerciseCount }}</h2>
+                        </div>
+                        <div class="sn-admin-metric-icon">
+                            <i class="ni ni-collection"></i>
+                        </div>
+                    </div>
+
+                    <p class="sn-admin-panel-note">
+                        Ce total reflète l'ensemble des exercices actuellement disponibles dans l'administration.
+                    </p>
+                </article>
+            </div>
+
+            <div class="col-lg-7">
+                <article class="sn-admin-panel sn-admin-panel-soft h-100">
+                    <div class="sn-admin-panel-header">
+                        <h2 class="sn-admin-panel-title">Accès rapide</h2>
+                    </div>
+                    <div class="sn-admin-panel-body">
+                        <p class="sn-admin-text">
+                            Utilisez ce raccourci pour consulter, modifier ou ajouter des exercices dans le back office.
+                        </p>
+
+                        <div class="sn-admin-info">
+                            <div>
+                                <h3 class="sn-admin-info-title">Gestion des exercices</h3>
+                                <p class="sn-admin-text mb-0">
+                                    Accédez au listing admin et gérez les exercices facilement.
+                                </p>
+                            </div>
+
+                            <a class="sn-btn sn-btn-outline sn-admin-btn" href="{{ path('app_admin_exercise_index') }}">
+                                Ouvrir la gestion
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+{% endblock %}
