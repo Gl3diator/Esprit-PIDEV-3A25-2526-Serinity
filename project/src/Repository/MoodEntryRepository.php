@@ -176,6 +176,16 @@ class MoodEntryRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    public function countDistinctMoodDaysWithinRange(User $user, \DateTimeImmutable $fromDate, \DateTimeImmutable $toDate): int
+    {
+        $days = [];
+        foreach ($this->findWithinDateRange($user, $fromDate, $toDate) as $entry) {
+            $days[$entry->getEntryDate()->format('Y-m-d')] = true;
+        }
+
+        return count($days);
+    }
+
     private function createBaseHistoryQuery(
         ?User $user,
         ?string $search,
