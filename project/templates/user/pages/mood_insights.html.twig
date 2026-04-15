@@ -1,0 +1,109 @@
+{% extends 'access_control/layout.html.twig' %}
+{% block title %}Mood insights | Serinity{% endblock %}
+
+{% block content %}
+<div class="ac-app-layout">
+    {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
+    <div class="ac-main">
+        {% include 'access_control/components/_topbar.html.twig' with { title: 'Mood insights', subtitle: 'Advanced emotional signals', username: userName } %}
+        <div data-controller="flash-toast">
+            {% for message in app.flashes('success') %}
+                <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <span data-flash-toast-target="message" data-type="error" hidden>{{ message }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="ac-journal-shell">
+            <section class="ac-cards ac-journal-kpis">
+                <article class="ac-stat-card ac-journal-kpi-card">
+                    <h3><span class="material-symbols-outlined">warning</span> Critical status</h3>
+                    <p>{{ criticalPeriod.status|upper }}</p>
+                </article>
+                <article class="ac-stat-card ac-journal-kpi-card">
+                    <h3><span class="material-symbols-outlined">monitoring</span> Risk score</h3>
+                    <p>{{ criticalPeriod.score }}/100</p>
+                </article>
+                <article class="ac-stat-card ac-journal-kpi-card">
+                    <h3><span class="material-symbols-outlined">favorite</span> Resilience</h3>
+                    <p>{{ resilienceScore.score }}/100</p>
+                </article>
+                <article class="ac-stat-card ac-journal-kpi-card">
+                    <h3><span class="material-symbols-outlined">label</span> Label</h3>
+                    <p>{{ resilienceScore.label }}</p>
+                </article>
+            </section>
+
+            <section class="ac-card ac-journal-history-card">
+                <div class="ac-row-between ac-journal-history-head">
+                    <h3><span class="material-symbols-outlined">health_and_safety</span> Critical period detection</h3>
+                    <small>{{ criticalPeriod.timeframe.from }} → {{ criticalPeriod.timeframe.to }}</small>
+                </div>
+                <p class="ac-muted">{{ criticalPeriod.summary }}</p>
+
+                <div class="ac-journal-list">
+                    {% for reason in criticalPeriod.reasons %}
+                        <article class="ac-journal-card">
+                            <div class="ac-row-between">
+                                <h5>{{ reason }}</h5>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="ac-card ac-journal-history-card">
+                <div class="ac-row-between ac-journal-history-head">
+                    <h3><span class="material-symbols-outlined">analytics</span> Resilience score breakdown</h3>
+                    <small>{{ resilienceScore.timeframe.from }} → {{ resilienceScore.timeframe.to }}</small>
+                </div>
+                <p class="ac-muted">{{ resilienceScore.interpretation }}</p>
+                <div class="ac-journal-list">
+                    <article class="ac-journal-card">
+                        <div class="ac-row-between">
+                            <h5><span class="material-symbols-outlined">mood</span> Mood average factor</h5>
+                            <span class="ac-badge ac-badge-secondary">{{ resilienceScore.breakdown.mood }}/60</span>
+                        </div>
+                    </article>
+                    <article class="ac-journal-card">
+                        <div class="ac-row-between">
+                            <h5><span class="material-symbols-outlined">event_available</span> Tracking consistency factor</h5>
+                            <span class="ac-badge ac-badge-secondary">{{ resilienceScore.breakdown.tracking }}/25</span>
+                        </div>
+                    </article>
+                    <article class="ac-journal-card">
+                        <div class="ac-row-between">
+                            <h5><span class="material-symbols-outlined">edit_note</span> Journal consistency factor</h5>
+                            <span class="ac-badge ac-badge-secondary">{{ resilienceScore.breakdown.journaling }}/15</span>
+                        </div>
+                    </article>
+                </div>
+                <div class="ac-row-end">
+                    {% if weeklyTrendReviewed %}
+                        <form method="post" action="{{ path('user_ui_mood_insights_rereview_weekly_trend') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('mood_rereview_weekly_trend') }}">
+                            <button class="ac-ghost-btn" type="submit">
+                                <span class="material-symbols-outlined">restart_alt</span>
+                                Re-review
+                            </button>
+                        </form>
+                        <span class="ac-badge ac-badge-primary">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Weekly trend reviewed
+                        </span>
+                    {% else %}
+                        <form method="post" action="{{ path('user_ui_mood_insights_review_weekly_trend') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('mood_review_weekly_trend') }}">
+                            <button class="ac-ghost-btn" type="submit">
+                                <span class="material-symbols-outlined">task_alt</span>
+                                Mark weekly trend as reviewed
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
