@@ -1,0 +1,574 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ *  SERENITY SLEEP — serinity-custom.css
+ *  Overrides et ajustements fine-tuning sur tous les templates
+ *  Chargé en DERNIER — après tous les autres CSS
+ * ═══════════════════════════════════════════════════════════════════
+ */
+@import url('tokens.css');
+
+/* ══════════════════════════════════════════════════════════════════
+   RESET BOOTSTRAP / ARGON (mood & exercice admin héritent ces libs)
+   On neutralise les conflits sans toucher aux twig
+══════════════════════════════════════════════════════════════════ */
+
+/* Remplace les .btn bootstrap par nos styles */
+.btn.btn-primary,
+.sn-btn-primary.btn {
+  background: var(--sn-teal) !important;
+  border-color: var(--sn-teal) !important;
+  color: #fff !important;
+  border-radius: var(--radius) !important;
+  font-weight: 600 !important;
+  transition: all var(--t-fast) !important;
+}
+.btn.btn-primary:hover,
+.sn-btn-primary.btn:hover {
+  background: var(--sn-teal-dark) !important;
+  border-color: var(--sn-teal-dark) !important;
+  transform: translateY(-1px) !important;
+}
+.btn.btn-outline-secondary {
+  border-color: var(--border) !important;
+  color: var(--text-muted) !important;
+  border-radius: var(--radius) !important;
+}
+.btn.btn-outline-secondary:hover {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+.btn.btn-sm { font-size: 0.8rem !important; padding: 0.35rem 0.75rem !important; }
+
+/* Remplace les .card bootstrap */
+.card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.card-header {
+  background: var(--surface-2) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+}
+.card-body { padding: 1.25rem !important; }
+.card.shadow { box-shadow: var(--shadow) !important; }
+.card-lift--hover:hover { transform: translateY(-3px); box-shadow: var(--shadow) !important; }
+
+/* Inputs bootstrap */
+.form-control {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  font-size: 0.88rem !important;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast) !important;
+}
+.form-control:focus {
+  background: var(--surface) !important;
+  border-color: var(--sn-teal) !important;
+  box-shadow: 0 0 0 3px var(--sn-teal-glow) !important;
+}
+.form-control-label { font-size: 0.82rem !important; font-weight: 600 !important; color: var(--text-muted) !important; }
+
+/* Input group argon */
+.input-group-alternative .input-group-text {
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ARGON NAVBAR OVERRIDE (exercice/admin)
+══════════════════════════════════════════════════════════════════ */
+.navbar.navbar-main.admin-navbar,
+.sn-admin-navbar {
+  background: var(--adm-surface) !important;
+  border-bottom: 1px solid var(--adm-border) !important;
+  box-shadow: none !important;
+  padding: 0.75rem 0 !important;
+}
+.sn-admin-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  text-decoration: none !important;
+}
+.sn-admin-brand-logo { width: 36px; height: 36px; border-radius: var(--radius); }
+.sn-admin-brand-text {
+  display: flex; flex-direction: column; line-height: 1;
+  color: #fff;
+}
+.sn-admin-brand-text strong { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; }
+.sn-admin-brand-text small  { font-size: 0.65rem; color: var(--sn-teal); letter-spacing: 0.1em; text-transform: uppercase; }
+
+.sn-admin-nav .nav-link {
+  color: var(--adm-text-muted) !important;
+  font-size: 0.87rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: var(--radius) !important;
+  transition: all var(--t-fast) !important;
+}
+.sn-admin-nav .nav-link:hover { background: rgba(255,255,255,0.06) !important; color: var(--adm-text) !important; }
+.sn-admin-nav .nav-link.active { background: rgba(12,165,169,0.14) !important; color: var(--sn-teal) !important; font-weight: 600 !important; }
+
+/* Shell card argon admin */
+.admin-shell-card, .sn-admin-shell {
+  background: var(--adm-surface-2) !important;
+  border: 1px solid var(--adm-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--adm-shadow) !important;
+}
+.sn-admin-main {
+  background: var(--adm-bg) !important;
+  min-height: calc(100dvh - 60px);
+}
+
+/* Confirm modal argon restyle */
+.sn-confirm-modal {
+  position: fixed; inset: 0; z-index: 600;
+  display: grid; place-items: center;
+}
+.sn-confirm-modal[hidden] { display: none; }
+.sn-confirm-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(5,10,18,0.7);
+  backdrop-filter: blur(4px);
+}
+.sn-confirm-modal__dialog {
+  position: relative; z-index: 1;
+  width: min(440px, 92vw);
+  background: var(--adm-surface-2);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  animation: sn-scale-in 200ms var(--ease) both;
+}
+.sn-confirm-modal__content { padding: 1.75rem; }
+.sn-confirm-modal__eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--adm-text-faint); margin-bottom: 0.5rem; }
+.sn-confirm-modal__title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 0.6rem; }
+.sn-confirm-modal__message { font-size: 0.9rem; color: var(--adm-text-muted); line-height: 1.6; margin-bottom: 1.4rem; }
+.sn-confirm-modal__actions { display: flex; justify-content: flex-end; gap: 0.65rem; }
+
+/* ══════════════════════════════════════════════════════════════════
+   MOOD ADMIN — Argon sidebar override
+══════════════════════════════════════════════════════════════════ */
+.bg-gradient-primary {
+  background: linear-gradient(87deg, var(--sn-teal-deep), var(--sn-teal)) !important;
+}
+/* Sidebar argon mood (partials/sidebar.html.twig) */
+.main-content { background: var(--bg); }
+
+/* ══════════════════════════════════════════════════════════════════
+   SERINITY.CSS VARIABLES BRIDGE
+   Pont complet entre tokens.css (--var) et serinity.css (--sn-*)
+   Garantit la compatibilité entre tous les CSS du projet
+══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Surfaces */
+  --sn-surface-2:    var(--surface-2);
+  --sn-surface-3:    var(--surface-3);
+
+  /* Bordures */
+  --sn-border:       var(--border);
+  --sn-border-soft:  var(--border-soft);
+
+  /* Textes */
+  --sn-text:         var(--text);
+  --sn-text-muted:   var(--text-muted);
+  --sn-text-faint:   var(--text-faint);
+
+  /* Couleurs — déjà définies dans serinity.css mais on s'assure
+     qu'elles restent synchronisées avec tokens.css */
+  --sn-bg:           var(--bg);
+  --sn-surface:      var(--surface);
+  --sn-navy:         var(--sn-navy, #0d1b2a);
+
+  /* Espacements serinity.css (--sn-sp-N) */
+  --sn-sp-1:  var(--sp-1);
+  --sn-sp-2:  var(--sp-2);
+  --sn-sp-3:  var(--sp-3);
+  --sn-sp-4:  var(--sp-4);
+  --sn-sp-5:  var(--sp-5);
+  --sn-sp-6:  var(--sp-6);
+  --sn-sp-8:  var(--sp-8);
+  --sn-sp-10: var(--sp-10);
+  --sn-sp-12: var(--sp-12);
+  --sn-sp-16: var(--sp-16);
+
+  /* Radius serinity.css (--sn-r-N) */
+  --sn-r-sm:   var(--radius-sm);
+  --sn-r-md:   var(--radius);
+  --sn-r-lg:   var(--radius-lg);
+  --sn-r-xl:   var(--radius-xl);
+  --sn-r-full: var(--radius-full);
+
+  /* Ombres serinity.css */
+  --sn-shadow-sm: var(--shadow-sm);
+  --sn-shadow-md: var(--shadow);
+  --sn-shadow-lg: var(--shadow-lg);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SLEEP FRONT — Surcharges serinity.css (sommeil list, show, forms)
+══════════════════════════════════════════════════════════════════ */
+
+/* Page container */
+.sl-page-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 4rem;
+}
+
+/* Export PDF */
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--t-fast);
+  cursor: pointer;
+}
+.export-btn:hover { background: var(--surface-2); color: var(--sn-teal); border-color: var(--sn-teal); }
+
+/* Pagination front */
+.sn-pagination {
+  display: flex; align-items: center; gap: 0.35rem;
+  margin-top: 1.25rem; justify-content: center;
+}
+.sn-page-link {
+  min-width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius);
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all var(--t-fast);
+}
+.sn-page-link:hover { background: var(--surface-2); color: var(--sn-teal); border-color: var(--sn-teal); }
+.sn-page-link.active { background: var(--sn-teal); color: #fff; border-color: var(--sn-teal); }
+
+/* Sentiment badge (analyse rêve) */
+.sentiment-positif { color: var(--sn-success); font-weight: 600; }
+.sentiment-neutre  { color: var(--sn-teal);    font-weight: 600; }
+.sentiment-negatif { color: var(--sn-danger);  font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════════════════
+   EMPTY STATES
+══════════════════════════════════════════════════════════════════ */
+.sn-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.85rem;
+}
+.sn-empty-icon {
+  width: 72px; height: 72px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-3);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-faint);
+  font-size: 2rem;
+}
+.sn-empty h3 { font-size: 1rem; font-weight: 600; color: var(--text); }
+.sn-empty p  { font-size: 0.87rem; color: var(--text-muted); max-width: 340px; line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SEARCH HIGHLIGHT
+══════════════════════════════════════════════════════════════════ */
+mark, .sn-highlight {
+  background: rgba(244,198,66,0.25);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TOOLTIPS
+══════════════════════════════════════════════════════════════════ */
+[title] { cursor: help; }
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES FINAUX
+══════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .ac-cards { grid-template-columns: 1fr 1fr !important; }
+  .sn-admin-hero { flex-direction: column !important; }
+}
+/* =========================================================
+   SLEEP CREATE FORM — Nouvelle nuit
+========================================================= */
+
+.sleep-create-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  margin-bottom: 1.5rem;
+  color: #6b7c93;
+}
+
+.breadcrumb a {
+  color: #1f7a9b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.page-header {
+  margin-bottom: 1.8rem;
+}
+
+.page-title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+  font-weight: 800;
+  color: #0f4c6a;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: #5e7385;
+  line-height: 1.6;
+}
+
+/* Carte principale */
+.sleep-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(12, 165, 169, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(14, 54, 74, 0.08);
+  padding: 1.75rem;
+  backdrop-filter: blur(6px);
+}
+
+/* Form global */
+.sleep-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Sections */
+.form-section {
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(12, 165, 169, 0.08);
+  border-radius: 18px;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.form-section h3 {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #0f4c6a;
+}
+
+/* Grille */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+/* Labels */
+.sleep-form label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1c5168;
+}
+
+/* Inputs / selects / textarea */
+.sleep-form input[type="text"],
+.sleep-form input[type="date"],
+.sleep-form input[type="time"],
+.sleep-form input[type="number"],
+.sleep-form select,
+.sleep-form textarea {
+  width: 100%;
+  border: 1px solid rgba(55, 145, 173, 0.22);
+  background: #ffffff;
+  color: #113b4c;
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 2px 8px rgba(13, 52, 71, 0.03);
+}
+
+.sleep-form select {
+  cursor: pointer;
+}
+
+.sleep-form textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.sleep-form input::placeholder,
+.sleep-form textarea::placeholder {
+  color: #8aa0ac;
+}
+
+/* Focus */
+.sleep-form input:focus,
+.sleep-form select:focus,
+.sleep-form textarea:focus {
+  outline: none;
+  border-color: rgba(12, 165, 169, 0.55);
+  box-shadow: 0 0 0 4px rgba(12, 165, 169, 0.12);
+  background: #fcffff;
+}
+
+/* Erreurs */
+.sleep-form .form-error-message,
+.sleep-form .invalid-feedback,
+.sleep-form .form-errors,
+.sleep-form ul {
+  margin-top: 0.4rem;
+  color: #c0392b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  padding-left: 1rem;
+}
+
+.sleep-form .is-invalid,
+.sleep-form input:invalid,
+.sleep-form select:invalid,
+.sleep-form textarea:invalid {
+  border-color: rgba(231, 76, 60, 0.45);
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+/* Boutons */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.85rem 1.4rem;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #11a9b2, #0d8d97);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(13, 141, 151, 0.20);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #14b7c1, #0d8d97);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #0f4c6a;
+  border-color: rgba(15, 76, 106, 0.14);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  background: #f5fbfc;
+  color: #09384e;
+}
+
+/* Ajustement sur les widgets Symfony qui injectent des wrappers */
+.sleep-form > div,
+.sleep-form .form-section > div,
+.sleep-form .form-grid > div {
+  min-width: 0;
+}
+
+/* Si Symfony rend des champs avec classes par défaut */
+.sleep-form .form-control {
+  width: 100%;
+  border: 1px solid rgba(55, 145, 173, 0.22);
+  background: #ffffff;
+  color: #113b4c;
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(13, 52, 71, 0.03);
+}
+
+.sleep-form .form-control:focus {
+  outline: none;
+  border-color: rgba(12, 165, 169, 0.55);
+  box-shadow: 0 0 0 4px rgba(12, 165, 169, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sleep-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .sleep-create-page {
+    padding: 1.2rem 0.9rem 2rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .form-section {
+    padding: 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}

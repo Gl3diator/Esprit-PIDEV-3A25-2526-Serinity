@@ -1,0 +1,132 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ *  SERENITY SLEEP — Design Tokens (variables globales)
+ *  Fichier central : importé par tous les autres CSS
+ *  Ne jamais modifier les noms de variables — seulement les valeurs
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+/* ── Palette de base (thème nuit/sommeil) ────────────────────────── */
+:root {
+  /* Couleurs principales */
+  --sn-teal:         #0ca5a9;   /* Accent principal teal */
+  --sn-teal-dark:    #0b7d80;   /* Hover / emphase */
+  --sn-teal-deep:    #065f62;   /* Focus / actif profond */
+  --sn-teal-light:   #d0f4f5;   /* Fond léger teal */
+  --sn-teal-glow:    rgba(12, 165, 169, 0.18);
+
+  --sn-navy:         #0d1b2a;   /* Fond nuit profond */
+  --sn-navy-mid:     #112233;   /* Surfaces sombres */
+  --sn-navy-soft:    #16293d;   /* Cards sombres */
+
+  --sn-gold:         #f4c642;   /* Accent doré (étoiles) */
+  --sn-gold-soft:    rgba(244, 198, 66, 0.15);
+  --sn-lavender:     #9b8fef;   /* Humeur / mood */
+  --sn-lavender-bg:  rgba(155, 143, 239, 0.12);
+  --sn-emerald:      #10b981;   /* Exercice / actif */
+  --sn-emerald-bg:   rgba(16, 185, 129, 0.12);
+  --sn-rose:         #f472b6;   /* Consultation */
+  --sn-rose-bg:      rgba(244, 114, 182, 0.12);
+  --sn-orange:       #fb923c;   /* Forum */
+  --sn-orange-bg:    rgba(251, 146, 60, 0.12);
+
+  /* Sémantiques */
+  --sn-success:      #10b981;
+  --sn-success-bg:   rgba(16, 185, 129, 0.12);
+  --sn-warning:      #f4c642;
+  --sn-warning-bg:   rgba(244, 198, 66, 0.13);
+  --sn-danger:       #ef4444;
+  --sn-danger-bg:    rgba(239, 68, 68, 0.12);
+  --sn-info:         #0ca5a9;
+  --sn-info-bg:      rgba(12, 165, 169, 0.12);
+
+  /* ── Mode clair (front office) ─────────────────────────────────── */
+  --bg:              #f0f8f9;
+  --bg-alt:          #e8f4f5;
+  --surface:         #ffffff;
+  --surface-2:       #f7fbfc;
+  --surface-3:       #edf7f8;
+  --border:          #c5e6e8;
+  --border-soft:     rgba(12, 165, 169, 0.12);
+  --text:            #0d1b2a;
+  --text-muted:      #4a7880;
+  --text-faint:      #8ab5bb;
+  --shadow-sm:       0 2px 8px rgba(13, 27, 42, 0.07);
+  --shadow:          0 6px 24px rgba(13, 27, 42, 0.10);
+  --shadow-lg:       0 16px 48px rgba(13, 27, 42, 0.14);
+  --shadow-teal:     0 8px 28px rgba(12, 165, 169, 0.20);
+
+  /* ── Mode sombre (admin) ────────────────────────────────────────── */
+  --adm-bg:          #080e14;
+  --adm-surface:     #0d1520;
+  --adm-surface-2:   #121e2d;
+  --adm-surface-3:   #18263a;
+  --adm-border:      rgba(255,255,255, 0.07);
+  --adm-border-soft: rgba(255,255,255, 0.04);
+  --adm-text:        #d8eaf0;
+  --adm-text-muted:  #6a8fa0;
+  --adm-text-faint:  #3a5a6a;
+  --adm-shadow:      0 4px 20px rgba(0,0,0, 0.35);
+  --adm-sidebar-w:   240px;
+  --adm-topbar-h:    58px;
+
+  /* ── Typographie ────────────────────────────────────────────────── */
+  --font-body:       'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-display:    'Playfair Display', 'Georgia', serif;
+
+  /* ── Spacing ────────────────────────────────────────────────────── */
+  --sp-1:  0.25rem;
+  --sp-2:  0.5rem;
+  --sp-3:  0.75rem;
+  --sp-4:  1rem;
+  --sp-5:  1.25rem;
+  --sp-6:  1.5rem;
+  --sp-8:  2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* ── Radius ─────────────────────────────────────────────────────── */
+  --radius-sm:  6px;
+  --radius:     10px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-full: 9999px;
+
+  /* ── Transitions ────────────────────────────────────────────────── */
+  --ease:       cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast:     140ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base:     260ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow:     480ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset minimal ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+img, svg { display: block; max-width: 100%; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+ul { list-style: none; }
+
+/* ── Utilitaires partagés ───────────────────────────────────────── */
+.sr-only { position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);overflow:hidden;white-space:nowrap; }
+
+/* Animations partagées */
+@keyframes sn-fade-in   { from{opacity:0} to{opacity:1} }
+@keyframes sn-slide-up  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes sn-scale-in  { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
+@keyframes sn-float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes sn-pulse-glow{ 0%,100%{box-shadow:0 0 0 0 var(--sn-teal-glow)} 50%{box-shadow:0 0 0 10px transparent} }
+@keyframes sn-spin      { to{transform:rotate(360deg)} }
+@keyframes sn-shimmer   { from{background-position:200% 0} to{background-position:-200% 0} }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
