@@ -282,9 +282,25 @@ h1,h2,h3,p { margin: 0; }
 .ac-journal-entry-card tinymce-editor,
 .ac-journal-modal tinymce-editor {
     display: block;
+    background: #fff;
     border: 1px solid #cfe1df;
     border-radius: 12px;
     overflow: hidden;
+}
+.ac-journal-rich-content {
+    color: #2f3e3d;
+    line-height: 1.55;
+}
+.ac-journal-rich-content p {
+    margin: 0 0 .6rem;
+}
+.ac-journal-rich-content ul,
+.ac-journal-rich-content ol {
+    margin: 0 0 .6rem 1.2rem;
+    padding: 0;
+}
+.ac-journal-rich-content li {
+    margin-bottom: .25rem;
 }
 .ac-journal-entry-card .ac-input:focus,
 .ac-journal-modal .ac-input:focus,
@@ -1717,6 +1733,10 @@ h1,h2,h3,p { margin: 0; }
 [data-theme="dark"] .ac-journal-entry-card tinymce-editor,
 [data-theme="dark"] .ac-journal-modal tinymce-editor {
     border-color: #1e4f62;
+    background: #fff;
+}
+[data-theme="dark"] .ac-journal-rich-content {
+    color: #d9edf5;
 }
 [data-theme="dark"] .ac-mood-chip span {
     background: #0f2c3b;

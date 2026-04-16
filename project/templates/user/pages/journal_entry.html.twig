@@ -90,8 +90,7 @@
                                             <h5>{{ journal_entry.title }}</h5>
                                             <small class="ac-journal-time">{{ journal_entry.createdAt|date('H:i') }}</small>
                                         </div>
-                                        {% set entryPreview = journal_entry.content|striptags %}
-                                        <p>{{ entryPreview|length > 220 ? entryPreview|slice(0, 220) ~ '...' : entryPreview }}</p>
+                                        <div class="ac-journal-rich-content">{{ journal_entry.content|sanitize_html('journal_content') }}</div>
                                         <div class="ac-journal-actions">
                                             <button
                                                 class="ac-ghost-btn"
@@ -99,7 +98,7 @@
                                                 data-action="journal-editor#open"
                                                 data-edit-url="{{ path('user_ui_journal_entry_edit', {'id': journal_entry.id}) }}"
                                                 data-entry-title="{{ journal_entry.title|e('html_attr') }}"
-                                                data-entry-content="{{ journal_entry.content|e('html_attr') }}"
+                                                data-entry-content="{{ journal_entry.content|sanitize_html('journal_content')|e('html_attr') }}"
                                                 data-csrf="{{ csrf_token('journal_edit_' ~ journal_entry.id) }}"
                                             >Edit</button>
                                             <form method="post" action="{{ path('user_ui_journal_entry_delete', {'id': journal_entry.id}) }}">
