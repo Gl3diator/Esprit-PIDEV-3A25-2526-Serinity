@@ -1,6 +1,7 @@
 tinymce:
-    skin: appstack
-    content_css: appstack
+    skin: oxide
+    content_css: default
+    content_style: "body { background:#ffffff; color:#1f3b3a; font-family:'Fira Sans', sans-serif; font-size:14px; line-height:1.55; } p { margin: 0 0 .75rem; }"
     plugins: "autolink lists"
     toolbar: "undo redo | blocks | bold italic underline | bullist numlist | removeformat"
     menubar: ""
