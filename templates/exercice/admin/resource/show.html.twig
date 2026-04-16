@@ -66,7 +66,7 @@
                         {% if resource.exercise %}
                             <a class="sn-btn sn-btn-outline sn-admin-btn sn-admin-btn-block" href="{{ path('app_admin_exercise_show', {'id': resource.exercise.id}) }}">Voir l'exercice</a>
                         {% endif %}
-                        {{ include('admin/resource/_delete_form.html.twig') }}
+                        {{ include('exercice/admin/resource/_delete_form.html.twig') }}
                     </div>
                 </article>
             </div>

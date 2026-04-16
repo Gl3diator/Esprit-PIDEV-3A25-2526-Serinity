@@ -1,51 +1,48 @@
 {{ form_start(form) }}
     <div class="sn-admin-form">
-        <div class="sn-admin-form-errors">{{ form_errors(form) }}</div>
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="sn-admin-form-errors">{{ form_errors(form) }}</div>
+        {% endif %}
 
         <div class="row">
             <div class="col-md-6">
-                {{ form_row(form.title, {
-                    label: 'Titre de l exercice',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.title, 'Titre de l exercice', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.title, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.title) }}</div>
+                </div>
             </div>
             <div class="col-md-6">
-                {{ form_row(form.type, {
-                    label: 'Type d exercice',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.type, 'Type d exercice', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.type, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.type) }}</div>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                {{ form_row(form.level, {
-                    label: 'Niveau',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.level, 'Niveau', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.level, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.level) }}</div>
+                </div>
             </div>
             <div class="col-md-6">
-                {{ form_row(form.durationMinutes, {
-                    label: 'Duree (minutes)',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.durationMinutes, 'Duree (minutes)', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.durationMinutes, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.durationMinutes) }}</div>
+                </div>
             </div>
         </div>
 
-        {{ form_row(form.description, {
-            label: 'Description',
-            row_attr: {class: 'form-group sn-admin-field'},
-            label_attr: {class: 'sn-admin-label'},
-            attr: {class: 'form-control sn-admin-input sn-admin-textarea'}
-        }) }}
+        <div class="form-group sn-admin-field">
+            {{ form_label(form.description, 'Description', {label_attr: {class: 'sn-admin-label'}}) }}
+            {{ form_widget(form.description, {attr: {class: 'form-control sn-admin-input sn-admin-textarea'}}) }}
+            <div class="sn-admin-form-errors">{{ form_errors(form.description) }}</div>
+        </div>
 
         <div class="sn-admin-form-footer">
             <p class="sn-admin-form-note">Les champs saisis seront utilises immediatement dans l'administration.</p>

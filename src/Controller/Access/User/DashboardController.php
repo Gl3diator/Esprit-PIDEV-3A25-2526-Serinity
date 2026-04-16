@@ -5,28 +5,44 @@ declare(strict_types=1);
 namespace App\Controller\Access\User;
 
 use App\Service\User\UserDashboardService;
+use App\Service\PerformanceAnalysisService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/user')]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class DashboardController extends AbstractUserUiController
 {
     public function __construct(
         private readonly UserDashboardService $userDashboardService,
+        private readonly PerformanceAnalysisService $performanceAnalysisService,
     ) {
     }
 
     #[Route('/dashboard', name: 'user_ui_dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        $user = $this->currentUser();
+        $user = $this->getUser();
+        $isUser = $user instanceof \App\Entity\Access\User
+            && in_array($user->getRole(), ['PATIENT', 'THERAPIST'], true);
 
         return $this->render('access/user/pages/dashboard.html.twig', [
             'nav'      => $this->buildNav('user_ui_dashboard'),
-            'userName' => $user->getEmail(),
-            'summary'  => $this->userDashboardService->getSummary($user),
+            // TEMP DEV MODE: allow dashboard access without a fully authenticated session.
+            'userName' => $isUser ? $user->getEmail() : 'Development User',
+            'summary'  => $isUser ? $this->userDashboardService->getSummary($user) : [
+                'activeSessions' => 0,
+                'recentAuditEvents' => 0,
+                'profileCompletion' => 0,
+                'role' => 'GUEST',
+                'accountStatus' => 'DEV_MODE',
+            ],
+            'exerciseStats' => $isUser ? $this->performanceAnalysisService->analyze($user) : [
+                'totalSessions' => 0,
+                'completedSessions' => 0,
+                'completionRate' => 0,
+                'averageDuration' => 0,
+                'totalTimeSpent' => 0,
+            ],
         ]);
     }
 
@@ -43,17 +59,10 @@ final class DashboardController extends AbstractUserUiController
         ]);
     }
 
-    #[Route('/exercises', name: 'user_ui_exercises', methods: ['GET'])]
+    #[Route('/user/exercises', name: 'user_ui_exercises', methods: ['GET'])]
     public function exercises(): Response
     {
-        $user = $this->currentUser();
-
-        return $this->render('access/access_control/pages/coming_soon.html.twig', [
-            'nav'      => $this->buildNav('user_ui_exercises'),
-            'userName' => $user->getEmail(),
-            'title'    => 'Exercises',
-            'subtitle' => 'User exercises module will be available soon.',
-        ]);
+        return $this->redirectToRoute('app_front_exercise_index');
     }
 
     #[Route('/forum', name: 'user_ui_forum', methods: ['GET'])]

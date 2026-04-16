@@ -31,7 +31,7 @@ class MoodEntry
         choices: ['MOMENT', 'DAY'],
         message: 'Type must be either MOMENT or DAY.'
     )]
-    #[ORM\Column(type: 'string', columnDefinition: "ENUM('MOMENT','DAY')", name: 'moment_type')]
+    #[ORM\Column(type: 'string', length: 10, name: 'moment_type')]
     private string $momentType;
 
     #[Assert\NotNull(message: 'Mood level is required.')]

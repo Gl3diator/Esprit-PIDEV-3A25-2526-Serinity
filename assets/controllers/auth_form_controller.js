@@ -7,6 +7,7 @@ export default class extends Controller {
     event.preventDefault();
 
     const form = event.currentTarget;
+    const isRegisterForm = /\/api\/auth\/(register|signup)$/.test(form.action);
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
@@ -37,7 +38,7 @@ export default class extends Controller {
       const payload = await response.json().catch(() => ({ success: false, message: 'Invalid server response.' }));
 
       if (!response.ok || !payload.success) {
-        this.showError(payload.message || 'Authentication failed.');
+        this.showError(this.buildErrorMessage(payload));
         // Reset button state on error
         if (submitBtn && btnText && btnSpinner) {
           submitBtn.disabled = false;
@@ -48,10 +49,10 @@ export default class extends Controller {
         return;
       }
 
-      // Store token
+      // TEMP DEV MODE: registration succeeds without automatic authentication.
       const token = payload?.data?.token || '';
-      localStorage.setItem('access_token', token);
       if (token) {
+        localStorage.setItem('access_token', token);
         document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
       }
       
@@ -62,11 +63,15 @@ export default class extends Controller {
         btnSpinner.innerHTML = '<span class="material-symbols-outlined">check_circle</span>';
       }
       
-      const role = String(payload?.data?.user?.role || '').toUpperCase();
-      const redirectPath = role === 'ADMIN' ? '/admin/dashboard' : '/user/dashboard';
-
       // Redirect after animation
       setTimeout(() => {
+        if (isRegisterForm) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const role = String(payload?.data?.user?.role || '').toUpperCase();
+        const redirectPath = role === 'ADMIN' ? '/admin/dashboard' : '/user/dashboard';
         window.location.href = redirectPath;
       }, 800);
       
@@ -80,6 +85,16 @@ export default class extends Controller {
         btnSpinner.hidden = true;
       }
     }
+  }
+
+  buildErrorMessage(payload) {
+    if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+      return payload.errors
+        .map(({ field, message }) => (field ? `${field}: ${message}` : message))
+        .join(' ');
+    }
+
+    return payload?.message || 'Authentication failed.';
   }
 
   showError(message) {

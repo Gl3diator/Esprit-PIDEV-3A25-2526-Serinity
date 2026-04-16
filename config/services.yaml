@@ -20,3 +20,8 @@ services:
         arguments:
             $imageRequestUrl: '%env(string:IMAGE_REQUEST_URL)%'
             $imageApiKey: '%env(string:IMAGE_API_KEY)%'
+
+    App\Service\WeatherService:
+        arguments:
+            $weatherApiKey: '%env(string:WEATHER_API_KEY)%'
+            $city: '%env(string:WEATHER_CITY)%'

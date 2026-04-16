@@ -7,7 +7,6 @@ use App\Form\Exercice\ExerciseType;
 use App\Repository\Exercice\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -44,20 +43,16 @@ final class ExerciseController extends AbstractController
         $form = $this->createForm(ExerciseType::class, $exercise);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($exercise);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'L exercice a ete cree avec succes.');
+
+            return $this->redirectToRoute('app_admin_exercise_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($form->isSubmitted()) {
-            if ($exercise->getLevel() !== null && $exercise->getLevel() > 10) {
-                $form->get('level')->addError(new FormError('Le niveau maximal autorise est 10.'));
-            }
-
-            if ($form->isValid()) {
-                $entityManager->persist($exercise);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'L exercice a ete cree avec succes.');
-
-                return $this->redirectToRoute('app_admin_exercise_index', [], Response::HTTP_SEE_OTHER);
-            }
-
             $this->addFlash('error', 'Le formulaire contient des erreurs. Merci de verifier les champs saisis.');
         }
 
@@ -81,19 +76,15 @@ final class ExerciseController extends AbstractController
         $form = $this->createForm(ExerciseType::class, $exercise);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'L exercice a ete mis a jour avec succes.');
+
+            return $this->redirectToRoute('app_admin_exercise_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($form->isSubmitted()) {
-            if ($exercise->getLevel() !== null && $exercise->getLevel() > 10) {
-                $form->get('level')->addError(new FormError('Le niveau maximal autorise est 10.'));
-            }
-
-            if ($form->isValid()) {
-                $entityManager->flush();
-
-                $this->addFlash('success', 'L exercice a ete mis a jour avec succes.');
-
-                return $this->redirectToRoute('app_admin_exercise_index', [], Response::HTTP_SEE_OTHER);
-            }
-
             $this->addFlash('error', 'Le formulaire contient des erreurs. Merci de verifier les champs saisis.');
         }
 

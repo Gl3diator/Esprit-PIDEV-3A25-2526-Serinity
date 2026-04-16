@@ -436,4 +436,12 @@ final class AccessControlUiController extends AbstractController
             $items,
         );
     }
+
+    #[Route('/logout', name: 'app_logout', methods: ['GET', 'POST'])]
+    public function logout(): Response
+    {
+        throw new \Symfony\Component\HttpFoundation\Exception\LogicException(
+            'This should never be reached - Symfony handles logout automatically.'
+        );
+    }
 }

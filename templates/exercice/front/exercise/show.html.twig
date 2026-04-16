@@ -8,9 +8,11 @@
     <section class="sn-exercise-shell">
         <div class="sn-exercise-hero">
             <div class="sn-exercise-panel sn-exercise-panel-main">
-                <p class="sn-exercise-kicker">{{ exercise.type }}</p>
-                <h1 class="sn-section-title">{{ exercise.title }}</h1>
-                <p class="sn-exercise-lead">Un exercice de niveau {{ exercise.level }} a realiser en environ {{ exercise.durationMinutes }} minutes.</p>
+                <div class="sn-exercise-hero-copy">
+                    <p class="sn-exercise-kicker">{{ exercise.type }}</p>
+                    <h1 class="sn-section-title">{{ exercise.title }}</h1>
+                    <p class="sn-exercise-lead">Un exercice de niveau {{ exercise.level }} a realiser en environ {{ exercise.durationMinutes }} minutes.</p>
+                </div>
 
                 <div class="sn-exercise-stats">
                     <div class="sn-exercise-stat">

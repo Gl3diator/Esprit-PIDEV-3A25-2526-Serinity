@@ -39,16 +39,16 @@ final class ResourceController extends AbstractController
         $form = $this->createForm(ResourceType::class, $resource);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($resource);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'La ressource a ete creee avec succes.');
+
+            return $this->redirectToRoute('app_admin_resource_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                $entityManager->persist($resource);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'La ressource a ete creee avec succes.');
-
-                return $this->redirectToRoute('app_admin_resource_index', [], Response::HTTP_SEE_OTHER);
-            }
-
             $this->addFlash('error', 'Le formulaire contient des erreurs. Merci de verifier les champs saisis.');
         }
 
@@ -72,15 +72,15 @@ final class ResourceController extends AbstractController
         $form = $this->createForm(ResourceType::class, $resource);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'La ressource a ete mise a jour avec succes.');
+
+            return $this->redirectToRoute('app_admin_resource_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                $entityManager->flush();
-
-                $this->addFlash('success', 'La ressource a ete mise a jour avec succes.');
-
-                return $this->redirectToRoute('app_admin_resource_index', [], Response::HTTP_SEE_OTHER);
-            }
-
             $this->addFlash('error', 'Le formulaire contient des erreurs. Merci de verifier les champs saisis.');
         }
 

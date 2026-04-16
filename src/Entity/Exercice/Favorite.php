@@ -2,6 +2,7 @@
 
 namespace App\Entity\Exercice;
 
+use App\Entity\Access\User;
 use App\Repository\Exercice\FavoriteRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -40,8 +41,6 @@ class Favorite
     {
         $this->createdAt = new \DateTime();
     }
-
-    // ─── Getters / Setters ───────────────────────────────────────────
 
     public function getId(): ?int
     {

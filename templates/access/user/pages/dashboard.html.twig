@@ -4,10 +4,10 @@
 
 {% block content %}
     <div class="ac-app-layout">
-        {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
+        {% include 'access/access_control/components/_sidebar.html.twig' with { items: nav } %}
 
         <div class="ac-main">
-            {% include 'access_control/components/_topbar.html.twig' with {
+            {% include 'access/access_control/components/_topbar.html.twig' with {
                 title: 'My Dashboard',
                 subtitle: 'Your personal overview',
                 username: userName
@@ -18,6 +18,13 @@
                 <article class="ac-stat-card"><h3>Recent Activity</h3><p>{{ summary.recentAuditEvents }}</p></article>
                 <article class="ac-stat-card"><h3>Profile Completion</h3><p>{{ summary.profileCompletion }}%</p></article>
                 <article class="ac-stat-card"><h3>Role</h3><p>{{ summary.role }}</p></article>
+            </section>
+
+            <section class="ac-cards">
+                <article class="ac-stat-card"><h3>Total Sessions</h3><p>{{ exerciseStats.totalSessions }}</p></article>
+                <article class="ac-stat-card"><h3>Completed</h3><p>{{ exerciseStats.completedSessions }}</p></article>
+                <article class="ac-stat-card"><h3>Completion Rate</h3><p>{{ exerciseStats.completionRate }}%</p></article>
+                <article class="ac-stat-card"><h3>Avg Duration</h3><p>{{ exerciseStats.averageDuration }}s</p></article>
             </section>
 
             <section class="ac-card">

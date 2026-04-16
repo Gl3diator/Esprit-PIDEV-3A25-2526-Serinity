@@ -3,383 +3,290 @@
 {% block title %}Session démarrée{% endblock %}
 
 {% block body %}
-    <section class="sn-exercise-shell">
-        <div class="sn-exercise-hero">
-            <div class="sn-exercise-panel sn-exercise-panel-main sn-session-live" data-session-target-seconds="{{ exercise.durationMinutes * 60 }}">
-                <div class="sn-session-live-head">
-                    <div>
-                        <p class="sn-exercise-kicker">Session active</p>
-                        <h1 class="sn-section-title">Votre session a commencé</h1>
-                        <p class="sn-exercise-lead">Vous êtes en train de travailler sur <strong>{{ exercise.title }}</strong>. Gardez un rythme régulier et adaptez l’intensité à votre énergie du moment.</p>
-                    </div>
-                    <div class="sn-session-status sn-session-status-live" data-session-status>En cours</div>
+<section class="sn-exercise-shell">
+    <div class="sn-exercise-hero">
+        <!-- Main Content Card -->
+        <div class="sn-exercise-panel sn-exercise-panel-main sn-session-live" data-session-target-seconds="{{ exercise.durationMinutes * 60 }}">
+            <!-- Header Row -->
+            <div class="sn-session-live-head">
+                <div>
+                    <p class="sn-exercise-kicker">Session active</p>
+                    <h1 class="sn-section-title">{{ exercise.title }}</h1>
+                    <p class="sn-exercise-lead">Respirez profondément et laissez-vous guider. Gardez un rythme régulier.</p>
                 </div>
+                <div class="sn-session-status sn-session-status-live" data-session-status>En cours</div>
+            </div>
 
-                <div class="sn-session-timer-card">
-                    <div class="sn-session-timer-focus">
-                        <p class="sn-session-timer-label">Temps écoulé</p>
-                        <p class="sn-session-timer" data-session-timer>00:00</p>
-                        <p class="sn-session-timer-hint" data-session-dynamic-copy>Continuez à votre rythme</p>
-                    </div>
-                    <div class="sn-session-target">
-                        <span>Objectif</span>
-                        <strong>{{ exercise.durationMinutes }} min</strong>
-                    </div>
+            <!-- Timer Card -->
+            <div class="sn-session-timer-card">
+                <div class="sn-session-timer-focus">
+                    <p class="sn-session-timer-label">Temps écoulé</p>
+                    <p class="sn-session-timer" data-session-timer>00:00</p>
+                    <p class="sn-session-timer-hint">Continuez à votre rythme</p>
                 </div>
-
-                <div class="sn-session-progress-card">
-                    <div class="sn-progress-row">
-                        <span>Progression de la séance</span>
-                        <strong data-session-progress-text>0%</strong>
-                    </div>
-                    <div class="sn-progress-bar sn-session-progress-bar" aria-hidden="true">
-                        <div class="sn-progress-fill sn-session-progress-fill" data-session-progress-fill style="width: 0%;"></div>
-                    </div>
-                    <p class="sn-session-progress-note" data-session-progress-note>La session vient de démarrer. Prenez quelques respirations et lancez votre mouvement.</p>
-                </div>
-
-                <div class="sn-session-breathing-card">
-                    <div class="sn-session-breathing-head">
-                        <div>
-                            <p class="sn-session-timer-label">Respiration guidée</p>
-                            <h2 class="sn-session-breathing-title">Un rythme doux pour accompagner votre séance</h2>
-                        </div>
-                        <span class="sn-session-breathing-cycle" data-breath-cycle>Cycle 1</span>
-                    </div>
-
-                    <div class="sn-session-breathing-stage">
-                        <div class="sn-session-breathing-orbit"></div>
-                        <div class="sn-session-breathing-circle breath-in" data-breath-circle>
-                            <div class="sn-session-breathing-inner">
-                                <span class="sn-session-breathing-label" data-breath-label>Inspirez profondément</span>
-                                <strong class="sn-session-breathing-count" data-breath-count>4s</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <p class="sn-session-breathing-note" data-breath-note>Inspirez lentement et laissez le mouvement s’installer.</p>
-                </div>
-
-                <div class="sn-exercise-stats">
-                    <div class="sn-exercise-stat">
-                        <p class="sn-exercise-stat-label">Exercice</p>
-                        <p class="sn-exercise-stat-value">{{ exercise.title }}</p>
-                    </div>
-                    <div class="sn-exercise-stat">
-                        <p class="sn-exercise-stat-label">Durée cible</p>
-                        <p class="sn-exercise-stat-value">{{ exercise.durationMinutes }} min</p>
-                    </div>
-                    <div class="sn-exercise-stat">
-                        <p class="sn-exercise-stat-label">État</p>
-                        <p class="sn-exercise-stat-value" data-session-state-copy>En cours</p>
-                    </div>
+                <div class="sn-session-target">
+                    <span>Objectif</span>
+                    <strong>{{ exercise.durationMinutes }} min</strong>
                 </div>
             </div>
 
-            <aside class="sn-exercise-panel sn-exercise-panel-side sn-session-actions-panel">
-                <div>
-                    <h2 class="sn-exercise-side-title">Pilotez votre séance</h2>
-                    <p class="sn-exercise-side-text">Mettez la session en pause si vous avez besoin de souffler, reprenez quand vous êtes prêt, puis terminez-la lorsque votre exercice est achevé.</p>
+            <!-- Progress Card -->
+            <div class="sn-session-progress-card">
+                <div class="sn-progress-row">
+                    <span>Progression</span>
+                    <strong data-session-progress-text>0%</strong>
+                </div>
+                <div class="sn-progress-bar" aria-hidden="true">
+                    <div class="sn-progress-fill" data-session-progress-fill style="width: 0%;"></div>
+                </div>
+                <p class="sn-session-progress-note">La session vient de démarrer.</p>
+            </div>
+
+            <!-- Breathing Card -->
+            <div class="sn-session-breathing-card">
+                <div class="sn-session-breathing-head">
+                    <div>
+                        <p class="sn-session-timer-label">Respiration guidée</p>
+                        <h2 class="sn-session-breathing-title">Un rythme doux pour accompagner votre séance</h2>
+                    </div>
+                    <span class="sn-session-breathing-cycle" data-breath-cycle>Cycle 1</span>
                 </div>
 
-                <div class="sn-session-action-grid">
-                    <button class="sn-btn sn-btn-outline sn-session-control" type="button" data-session-pause>Pause</button>
-                    <button class="sn-btn sn-btn-outline sn-session-control" type="button" data-session-resume hidden>Reprendre</button>
-                    <a class="sn-btn sn-btn-primary sn-session-control sn-session-finish" href="{{ path('app_front_session_end', {'id': session.id}) }}" data-session-finish>Terminer la session</a>
-                    <a class="sn-btn sn-btn-outline sn-session-control" href="{{ path('app_front_session_history') }}">Voir l'historique</a>
+                <div class="sn-session-breathing-stage">
+                    <div class="sn-session-breathing-orbit"></div>
+                    <div class="sn-session-breathing-circle breath-in" data-breath-circle>
+                        <div class="sn-session-breathing-inner">
+                            <span class="sn-session-breathing-label" data-breath-label>Inspirez profondément</span>
+                            <strong class="sn-session-breathing-count" data-breath-count>4s</strong>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="sn-session-feedback" data-session-feedback>
-                    La séance est en cours. Continuez à votre rythme et surveillez la progression.
+                <p class="sn-session-breathing-note" data-breath-note>Inspirez lentement et laissez le mouvement s'installer.</p>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="sn-exercise-stats">
+                <div class="sn-exercise-stat">
+                    <p class="sn-exercise-stat-label">Exercice</p>
+                    <p class="sn-exercise-stat-value">{{ exercise.title }}</p>
                 </div>
-            </aside>
+                <div class="sn-exercise-stat">
+                    <p class="sn-exercise-stat-label">Durée cible</p>
+                    <p class="sn-exercise-stat-value">{{ exercise.durationMinutes }} min</p>
+                </div>
+                <div class="sn-exercise-stat">
+                    <p class="sn-exercise-stat-label">État</p>
+                    <p class="sn-exercise-stat-value" data-session-state-copy>En cours</p>
+                </div>
+            </div>
         </div>
-    </section>
+
+        <!-- Sidebar Actions Panel -->
+        <aside class="sn-exercise-panel sn-exercise-panel-side">
+            <div>
+                <h2 class="sn-exercise-side-title">Pilotez votre séance</h2>
+                <p class="sn-exercise-side-text">Gérez votre session à votre rythme. Mettez en pause si nécessaire.</p>
+            </div>
+
+            <div class="sn-session-action-grid">
+                <button class="sn-btn sn-btn-outline" type="button" data-session-pause>Pause</button>
+                <button class="sn-btn sn-btn-outline" type="button" data-session-resume hidden>Reprendre</button>
+                <a class="sn-btn sn-btn-primary" href="{{ path('app_front_session_end', {'id': session.id}) }}" data-session-finish>Terminer</a>
+                <a class="sn-btn sn-btn-outline" href="{{ path('app_front_session_history') }}">Historique</a>
+            </div>
+
+            <div class="sn-session-feedback" data-session-feedback>
+                La séance est en cours. Continuez à votre rythme.
+            </div>
+        </aside>
+    </div>
+</section>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script>
-        (function () {
-            "use strict";
+{{ parent() }}
+<script>
+(function () {
+    "use strict";
 
-            var liveRoot = document.querySelector('.sn-session-live');
-            if (!liveRoot) {
-                return;
+    var liveRoot = document.querySelector('.sn-session-live');
+    if (!liveRoot) {
+        return;
+    }
+
+    var targetSeconds = parseInt(liveRoot.getAttribute('data-session-target-seconds') || '0', 10);
+    var timerNode = document.querySelector('[data-session-timer]');
+    var progressFillNode = document.querySelector('[data-session-progress-fill]');
+    var progressTextNode = document.querySelector('[data-session-progress-text]');
+    var progressNoteNode = document.querySelector('[data-session-progress-note]');
+    var statusNode = document.querySelector('[data-session-status]');
+    var stateCopyNode = document.querySelector('[data-session-state-copy]');
+    var feedbackNode = document.querySelector('[data-session-feedback]');
+    var pauseButton = document.querySelector('[data-session-pause]');
+    var resumeButton = document.querySelector('[data-session-resume]');
+    var finishButton = document.querySelector('[data-session-finish]');
+    var breathCircleNode = document.querySelector('[data-breath-circle]');
+    var breathLabelNode = document.querySelector('[data-breath-label]');
+    var breathCountNode = document.querySelector('[data-breath-count]');
+    var breathNoteNode = document.querySelector('[data-breath-note]');
+    var breathCycleNode = document.querySelector('[data-breath-cycle]');
+
+    var activeSeconds = 0;
+    var state = 'running';
+    var intervalId = null;
+    var breathIntervalId = null;
+    var breathElapsed = 0;
+    var breathCycles = 1;
+    var breathingStages = [
+        { key: 'inhale', className: 'breath-in', label: 'Inspirez profondément', note: 'Inspirez lentement et laissez le mouvement s\'installer.', duration: 4 },
+        { key: 'hold', className: 'breath-hold', label: 'Retenez votre souffle', note: 'Gardez le souffle et laissez le corps se stabiliser.', duration: 2 },
+        { key: 'exhale', className: 'breath-out', label: 'Expirez lentement', note: 'Relâchez doucement et revenez à un rythme fluide.', duration: 4 }
+    ];
+
+    function formatTime(totalSeconds) {
+        var hours = Math.floor(totalSeconds / 3600);
+        var minutes = Math.floor((totalSeconds % 3600) / 60);
+        var seconds = totalSeconds % 60;
+        var parts = [minutes, seconds].map(function (value) {
+            return String(value).padStart(2, '0');
+        });
+        if (hours > 0) {
+            parts.unshift(String(hours).padStart(2, '0'));
+        }
+        return parts.join(':');
+    }
+
+    function getProgressPercent() {
+        if (!targetSeconds || targetSeconds <= 0) {
+            return 0;
+        }
+        return Math.min(100, Math.round((activeSeconds / targetSeconds) * 100));
+    }
+
+    function getBreathingStage() {
+        var cycleDuration = breathingStages.reduce(function (sum, stage) {
+            return sum + stage.duration;
+        }, 0);
+        var cyclePosition = breathElapsed % cycleDuration;
+        var accumulated = 0;
+        for (var i = 0; i < breathingStages.length; i += 1) {
+            accumulated += breathingStages[i].duration;
+            if (cyclePosition < accumulated) {
+                return breathingStages[i];
             }
+        }
+        return breathingStages[0];
+    }
 
-            var targetSeconds = parseInt(liveRoot.getAttribute('data-session-target-seconds') || '0', 10);
-            var timerNode = document.querySelector('[data-session-timer]');
-            var progressFillNode = document.querySelector('[data-session-progress-fill]');
-            var progressTextNode = document.querySelector('[data-session-progress-text]');
-            var progressNoteNode = document.querySelector('[data-session-progress-note]');
-            var statusNode = document.querySelector('[data-session-status]');
-            var stateCopyNode = document.querySelector('[data-session-state-copy]');
-            var feedbackNode = document.querySelector('[data-session-feedback]');
-            var dynamicCopyNode = document.querySelector('[data-session-dynamic-copy]');
-            var pauseButton = document.querySelector('[data-session-pause]');
-            var resumeButton = document.querySelector('[data-session-resume]');
-            var finishButton = document.querySelector('[data-session-finish]');
-            var breathCircleNode = document.querySelector('[data-breath-circle]');
-            var breathLabelNode = document.querySelector('[data-breath-label]');
-            var breathCountNode = document.querySelector('[data-breath-count]');
-            var breathNoteNode = document.querySelector('[data-breath-note]');
-            var breathCycleNode = document.querySelector('[data-breath-cycle]');
+    function animateBreathLabel(text) {
+        if (!breathLabelNode) {
+            return;
+        }
+        breathLabelNode.classList.add('is-changing');
+        window.clearTimeout(breathLabelNode._fadeTimer);
+        breathLabelNode._fadeTimer = window.setTimeout(function () {
+            breathLabelNode.textContent = text;
+            breathLabelNode.classList.remove('is-changing');
+        }, 200);
+    }
 
-            var activeSeconds = 0;
-            var state = 'running';
-            var intervalId = null;
-            var breathIntervalId = null;
-            var breathElapsed = 0;
-            var breathCycles = 1;
-            var breathingStages = [
-                {
-                    key: 'inhale',
-                    className: 'breath-in',
-                    label: 'Inspirez profondément',
-                    note: 'Inspirez lentement et laissez le mouvement s’installer.',
-                    duration: 4
-                },
-                {
-                    key: 'hold',
-                    className: 'breath-hold',
-                    label: 'Retenez votre souffle',
-                    note: 'Gardez le souffle quelques instants et laissez le corps se stabiliser.',
-                    duration: 2
-                },
-                {
-                    key: 'exhale',
-                    className: 'breath-out',
-                    label: 'Expirez lentement',
-                    note: 'Relâchez doucement et revenez à un rythme fluide.',
-                    duration: 4
-                }
-            ];
+    function updateBreathingUI() {
+        var currentStage = getBreathingStage();
+        var cycleDuration = breathingStages.reduce(function (sum, stage) {
+            return sum + stage.duration;
+        }, 0);
 
-            function formatTime(totalSeconds) {
-                var hours = Math.floor(totalSeconds / 3600);
-                var minutes = Math.floor((totalSeconds % 3600) / 60);
-                var seconds = totalSeconds % 60;
-                var parts = [minutes, seconds].map(function (value) {
-                    return String(value).padStart(2, '0');
-                });
-
-                if (hours > 0) {
-                    parts.unshift(String(hours).padStart(2, '0'));
-                }
-
-                return parts.join(':');
+        if (breathLabelNode) {
+            animateBreathLabel(state === 'finished' ? 'Bravo!' : currentStage.label);
+        }
+        if (breathCountNode) {
+            breathCountNode.textContent = state === 'finished' ? '✓' : currentStage.duration + 's';
+        }
+        if (breathNoteNode) {
+            breathNoteNode.textContent = state === 'paused' ? 'En pause.' : (state === 'finished' ? 'Session terminée!' : currentStage.note);
+        }
+        if (breathCycleNode) {
+            breathCycles = Math.floor(breathElapsed / cycleDuration) + 1;
+            breathCycleNode.textContent = 'Cycle ' + breathCycles;
+        }
+        if (breathCircleNode) {
+            breathCircleNode.classList.toggle('is-paused', state === 'paused');
+            breathCircleNode.classList.toggle('is-finished', state === 'finished');
+            breathCircleNode.classList.remove('breath-in', 'breath-hold', 'breath-out', 'is-inhale', 'is-hold', 'is-exhale');
+            if (state === 'running') {
+                breathCircleNode.classList.add(currentStage.className);
             }
+        }
+    }
 
-            function getProgressPercent() {
-                if (!targetSeconds || targetSeconds <= 0) {
-                    return 0;
-                }
+    function getProgressMessage(progressPercent) {
+        if (state === 'paused') return 'En pause. Reprenez quand prêt.';
+        if (state === 'finished') return 'Bravo, session terminée!';
+        if (progressPercent >= 100) return 'Objectif atteint.';
+        if (progressPercent >= 75) return 'Très bon rythme.';
+        if (progressPercent >= 40) return 'Bien lancé.';
+        return 'La session vient de démarrer.';
+    }
 
-                return Math.min(100, Math.round((activeSeconds / targetSeconds) * 100));
-            }
+    function syncStateUI() {
+        var progressPercent = getProgressPercent();
+        var stateLabel = state === 'paused' ? 'Pause' : (state === 'finished' ? 'Terminé' : 'En cours');
+        var statusClass = state === 'running' ? 'sn-session-status-live' : (state === 'paused' ? 'sn-session-status-paused' : 'sn-session-status-finished');
 
-            function getBreathingStage() {
-                var cycleDuration = breathingStages.reduce(function (sum, stage) {
-                    return sum + stage.duration;
-                }, 0);
-                var cyclePosition = breathElapsed % cycleDuration;
-                var accumulated = 0;
+        if (timerNode) {
+            timerNode.textContent = formatTime(activeSeconds);
+            timerNode.classList.toggle('is-paused', state === 'paused');
+            timerNode.classList.toggle('is-finished', state === 'finished');
+        }
+        if (progressFillNode) {
+            progressFillNode.style.width = progressPercent + '%';
+            progressFillNode.classList.toggle('is-finished', state === 'finished');
+        }
+        if (progressTextNode) progressTextNode.textContent = progressPercent + '%';
+        if (statusNode) {
+            statusNode.textContent = stateLabel;
+            statusNode.className = 'sn-session-status ' + statusClass;
+        }
+        if (stateCopyNode) stateCopyNode.textContent = stateLabel;
+        if (progressNoteNode) progressNoteNode.textContent = getProgressMessage(progressPercent);
+        if (feedbackNode) {
+            feedbackNode.textContent = state === 'paused' ? 'En pause. Reprenez quand prêt.' : (state === 'finished' ? 'Session terminée!' : 'En cours...');
+        }
+        if (pauseButton) pauseButton.hidden = state !== 'running';
+        if (resumeButton) resumeButton.hidden = state !== 'paused';
 
-                for (var i = 0; i < breathingStages.length; i += 1) {
-                    accumulated += breathingStages[i].duration;
-                    if (cyclePosition < accumulated) {
-                        return breathingStages[i];
-                    }
-                }
+        updateBreathingUI();
+    }
 
-                return breathingStages[0];
-            }
+    function tick() {
+        if (state === 'running') activeSeconds += 1;
+        syncStateUI();
+    }
 
-            function animateBreathLabel(text) {
-                if (!breathLabelNode) {
-                    return;
-                }
+    function tickBreathing() {
+        if (state === 'running') {
+            breathElapsed += 1;
+            updateBreathingUI();
+        }
+    }
 
-                breathLabelNode.classList.add('is-changing');
-                window.clearTimeout(breathLabelNode._fadeTimer);
-                window.setTimeout(function () {
-                    breathLabelNode.textContent = text;
-                }, 120);
-                breathLabelNode._fadeTimer = window.setTimeout(function () {
-                    breathLabelNode.classList.remove('is-changing');
-                }, 320);
-            }
+    function setState(nextState) {
+        state = nextState;
+        syncStateUI();
+    }
 
-            function updateBreathingUI() {
-                var currentStage = getBreathingStage();
-                var cycleDuration = breathingStages.reduce(function (sum, stage) {
-                    return sum + stage.duration;
-                }, 0);
+    if (pauseButton) pauseButton.addEventListener('click', function () { setState('paused'); });
+    if (resumeButton) resumeButton.addEventListener('click', function () { setState('running'); });
+    if (finishButton) finishButton.addEventListener('click', function () {
+        setState('finished');
+        if (intervalId) window.clearInterval(intervalId);
+        if (breathIntervalId) window.clearInterval(breathIntervalId);
+    });
 
-                if (breathLabelNode) {
-                    animateBreathLabel(state === 'finished' ? 'Bravo, session terminée' : currentStage.label);
-                }
-
-                if (breathCountNode) {
-                    breathCountNode.textContent = state === 'finished' ? 'OK' : currentStage.duration + 's';
-                }
-
-                if (breathNoteNode) {
-                    breathNoteNode.textContent = state === 'paused'
-                        ? 'Respiration en pause. Reprenez quand vous êtes prêt.'
-                        : (state === 'finished'
-                            ? 'La respiration guidée est terminée. Bravo pour cette séance.'
-                            : currentStage.note);
-                }
-
-                if (breathCycleNode) {
-                    breathCycles = Math.floor(breathElapsed / cycleDuration) + 1;
-                    breathCycleNode.textContent = 'Cycle ' + breathCycles;
-                }
-
-                if (breathCircleNode) {
-                    breathCircleNode.classList.toggle('is-paused', state === 'paused');
-                    breathCircleNode.classList.toggle('is-finished', state === 'finished');
-                    breathCircleNode.classList.remove('is-inhale', 'is-hold', 'is-exhale', 'breath-in', 'breath-hold', 'breath-out');
-
-                    if (state === 'running') {
-                        breathCircleNode.classList.add('is-' + currentStage.key, currentStage.className);
-                    }
-                }
-            }
-
-            function getProgressMessage(progressPercent) {
-                if (state === 'paused') {
-                    return 'La séance est en pause. Reprenez quand vous êtes prêt.';
-                }
-
-                if (state === 'finished') {
-                    return 'Bravo, session terminée. Vos efforts sont enregistrés.';
-                }
-
-                if (progressPercent >= 100) {
-                    return 'Objectif atteint. Vous pouvez terminer la session quand vous le souhaitez.';
-                }
-
-                if (progressPercent >= 75) {
-                    return 'Très bon rythme. Vous approchez de la durée cible.';
-                }
-
-                if (progressPercent >= 40) {
-                    return 'Vous êtes bien lancé. Continuez avec régularité.';
-                }
-
-                return 'La session vient de démarrer. Prenez quelques respirations et lancez votre mouvement.';
-            }
-
-            function syncStateUI() {
-                var progressPercent = getProgressPercent();
-                var stateLabel = state === 'paused' ? 'Pause' : (state === 'finished' ? 'Terminé' : 'En cours');
-                var dynamicCopy = state === 'paused'
-                    ? 'Prenez votre temps'
-                    : (state === 'finished' ? 'Bravo, session terminée' : 'Continuez à votre rythme');
-
-                if (timerNode) {
-                    timerNode.textContent = formatTime(activeSeconds);
-                    timerNode.classList.toggle('is-paused', state === 'paused');
-                    timerNode.classList.toggle('is-finished', state === 'finished');
-                }
-
-                if (progressFillNode) {
-                    progressFillNode.style.width = progressPercent + '%';
-                    progressFillNode.classList.toggle('is-finished', state === 'finished');
-                }
-
-                if (progressTextNode) {
-                    progressTextNode.textContent = progressPercent + '%';
-                }
-
-                if (statusNode) {
-                    statusNode.textContent = stateLabel;
-                    statusNode.classList.toggle('sn-session-status-live', state === 'running');
-                    statusNode.classList.toggle('sn-session-status-paused', state === 'paused');
-                    statusNode.classList.toggle('sn-session-status-finished', state === 'finished');
-                }
-
-                if (stateCopyNode) {
-                    stateCopyNode.textContent = stateLabel;
-                }
-
-                if (dynamicCopyNode) {
-                    dynamicCopyNode.textContent = dynamicCopy;
-                }
-
-                if (progressNoteNode) {
-                    progressNoteNode.textContent = getProgressMessage(progressPercent);
-                }
-
-                if (feedbackNode) {
-                    feedbackNode.textContent = state === 'paused'
-                        ? 'La séance est en pause. Prenez le temps nécessaire avant de reprendre.'
-                        : (state === 'finished'
-                            ? 'Bravo, session terminée. Redirection vers la fin de session...'
-                            : 'La séance est en cours. Continuez à votre rythme et surveillez la progression.');
-                }
-
-                if (pauseButton) {
-                    pauseButton.hidden = state !== 'running';
-                }
-
-                if (resumeButton) {
-                    resumeButton.hidden = state !== 'paused';
-                }
-
-                updateBreathingUI();
-            }
-
-            function tick() {
-                if (state === 'running') {
-                    activeSeconds += 1;
-                }
-
-                syncStateUI();
-            }
-
-            function tickBreathing() {
-                if (state === 'running') {
-                    breathElapsed += 1;
-                    updateBreathingUI();
-                }
-            }
-
-            function setState(nextState) {
-                state = nextState;
-                syncStateUI();
-            }
-
-            if (pauseButton) {
-                pauseButton.addEventListener('click', function () {
-                    setState('paused');
-                });
-            }
-
-            if (resumeButton) {
-                resumeButton.addEventListener('click', function () {
-                    setState('running');
-                });
-            }
-
-            if (finishButton) {
-                finishButton.addEventListener('click', function () {
-                    setState('finished');
-                    if (intervalId) {
-                        window.clearInterval(intervalId);
-                    }
-                    if (breathIntervalId) {
-                        window.clearInterval(breathIntervalId);
-                    }
-                });
-            }
-
-            syncStateUI();
-            intervalId = window.setInterval(tick, 1000);
-            breathIntervalId = window.setInterval(tickBreathing, 1000);
-        }());
-    </script>
+    syncStateUI();
+    intervalId = window.setInterval(tick, 1000);
+    breathIntervalId = window.setInterval(tickBreathing, 1000);
+})();
+</script>
 {% endblock %}

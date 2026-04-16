@@ -1,62 +1,58 @@
 {{ form_start(form) }}
     <div class="sn-admin-form">
-        <div class="sn-admin-form-errors">{{ form_errors(form) }}</div>
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="sn-admin-form-errors">{{ form_errors(form) }}</div>
+        {% endif %}
 
         <div class="row">
             <div class="col-md-6">
-                {{ form_row(form.exercise, {
-                    label: 'Exercice associe',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.exercise, 'Exercice associe', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.exercise, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.exercise) }}</div>
+                </div>
             </div>
             <div class="col-md-6">
-                {{ form_row(form.title, {
-                    label: 'Titre de la ressource',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.title, 'Titre de la ressource', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.title, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.title) }}</div>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                {{ form_row(form.mediaType, {
-                    label: 'Type de ressource',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.mediaType, 'Type de ressource', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.mediaType, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.mediaType) }}</div>
+                </div>
             </div>
             <div class="col-md-6">
-                {{ form_row(form.url, {
-                    label: 'Lien externe',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.url, 'Lien externe', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.url, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.url) }}</div>
+                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                {{ form_row(form.durationSeconds, {
-                    label: 'Duree (secondes)',
-                    row_attr: {class: 'form-group sn-admin-field'},
-                    label_attr: {class: 'sn-admin-label'},
-                    attr: {class: 'form-control sn-admin-input'}
-                }) }}
+                <div class="form-group sn-admin-field">
+                    {{ form_label(form.durationSeconds, 'Duree (secondes)', {label_attr: {class: 'sn-admin-label'}}) }}
+                    {{ form_widget(form.durationSeconds, {attr: {class: 'form-control sn-admin-input'}}) }}
+                    <div class="sn-admin-form-errors">{{ form_errors(form.durationSeconds) }}</div>
+                </div>
             </div>
         </div>
 
-        {{ form_row(form.content, {
-            label: 'Contenu ou consignes',
-            row_attr: {class: 'form-group sn-admin-field'},
-            label_attr: {class: 'sn-admin-label'},
-            attr: {class: 'form-control sn-admin-input sn-admin-textarea'}
-        }) }}
+        <div class="form-group sn-admin-field">
+            {{ form_label(form.content, 'Contenu ou consignes', {label_attr: {class: 'sn-admin-label'}}) }}
+            {{ form_widget(form.content, {attr: {class: 'form-control sn-admin-input sn-admin-textarea'}}) }}
+            <div class="sn-admin-form-errors">{{ form_errors(form.content) }}</div>
+        </div>
 
         <div class="sn-admin-form-footer">
             <p class="sn-admin-form-note">Associez une ressource claire pour accompagner la pratique de l'exercice.</p>

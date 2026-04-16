@@ -240,7 +240,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @return list<string> */
     public function getRoles(): array
     {
-        return ['ROLE_' . strtoupper($this->role)];
+        return ['ROLE_USER', 'ROLE_' . strtoupper($this->role)];
     }
 
     public function eraseCredentials(): void {}

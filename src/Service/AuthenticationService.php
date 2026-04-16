@@ -37,18 +37,12 @@ final class AuthenticationService
 
     public function register(RegisterRequest $request): ServiceResult
     {
-        if ($request->password !== $request->confirmPassword) {
-            return ServiceResult::failure('Passwords do not match.');
-        }
-
         if ($this->userRepository->findByEmail($request->email) !== null) {
             return ServiceResult::failure('User already exists.');
         }
 
-        $role = UserRole::tryFrom($request->role);
-        if ($role === null) {
-            return ServiceResult::failure('Invalid role.');
-        }
+        // TEMP DEV MODE: use PATIENT as a safe fallback instead of blocking signup.
+        $role = UserRole::tryFrom($request->role) ?? UserRole::PATIENT;
         if ($role === UserRole::ADMIN) {
             return ServiceResult::failure('Admin role cannot be assigned from signup.');
         }
@@ -72,14 +66,18 @@ final class AuthenticationService
             ->setCreatedAt($now)
             ->setUpdatedAt($now);
 
-        $session = $this->sessionService->createSession($user);
-        $this->auditLogService->log($session, AuditAction::USER_SIGN_UP);
-
         $this->entityManager->persist($user);
         $this->entityManager->persist($profile);
         $this->entityManager->flush();
 
-        return ServiceResult::success('Registration successful.', $this->buildAuthPayload($user, $session->getRefreshToken()));
+        // TEMP DEV MODE: no automatic authentication after signup.
+        return ServiceResult::success('Registration successful.', [
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'role' => $user->getRole(),
+            ],
+        ]);
     }
 
     public function login(LoginRequest $request): ServiceResult

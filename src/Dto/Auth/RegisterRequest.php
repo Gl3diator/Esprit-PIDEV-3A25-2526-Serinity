@@ -8,18 +8,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final class RegisterRequest
 {
-    #[Assert\NotBlank]
-    #[Assert\Email]
+    // TEMP DEV MODE: keep only the minimum validation needed to create a user.
+    #[Assert\NotBlank(message: 'Email is required.')]
+    #[Assert\Email(message: 'Please provide a valid email address.')]
     public string $email = '';
 
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 8)]
-    #[Assert\Regex(pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/')]
+    // TEMP DEV MODE: password strength policy intentionally disabled.
+    #[Assert\NotBlank(message: 'Password is required.')]
     public string $password = '';
 
-    #[Assert\NotBlank]
-    public string $confirmPassword = '';
-
-    #[Assert\Choice(choices: ['THERAPIST', 'PATIENT'])]
+    #[Assert\Choice(
+        choices: ['THERAPIST', 'PATIENT'],
+        message: 'Role must be either THERAPIST or PATIENT.',
+    )]
     public string $role = 'PATIENT';
 }

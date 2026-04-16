@@ -23,6 +23,16 @@
         </div>
 
         <div class="sn-exercise-session-grid">
+            {% if stats.totalSessions > 0 %}
+            <div class="sn-stats-summary">
+                <div class="sn-stat-item"><span class="sn-stat-value">{{ stats.totalSessions }}</span><span class="sn-stat-label">Total</span></div>
+                <div class="sn-stat-item"><span class="sn-stat-value">{{ stats.completedSessions }}</span><span class="sn-stat-label">Terminées</span></div>
+                <div class="sn-stat-item"><span class="sn-stat-value">{{ stats.completionRate }}%</span><span class="sn-stat-label">Completion</span></div>
+                <div class="sn-stat-item"><span class="sn-stat-value">{{ stats.averageDuration }}s</span><span class="sn-stat-label">Moyenne</span></div>
+                <div class="sn-stat-item"><span class="sn-stat-value">{{ stats.totalMinutes }}</span><span class="sn-stat-label">Minutes</span></div>
+            </div>
+            {% endif %}
+
             {% for session in sessions %}
                 <article class="sn-session-card">
                     <div class="sn-feature-icon icon-exercice">
@@ -36,7 +46,7 @@
                     </div>
 
                     <div class="sn-session-meta">
-                        <p><strong>Exercice :</strong> {{ session.exerciseId }}</p>
+                        <p><strong>Exercice :</strong> {{ session.exercise.title }}</p>
                         <p><strong>Statut :</strong> {{ session.status }}</p>
                         <p><strong>Début :</strong> {{ session.startedAt ? session.startedAt|date('d/m/Y H:i') : 'Non renseigné' }}</p>
                         <p><strong>Fin :</strong> {{ session.completedAt ? session.completedAt|date('d/m/Y H:i') : 'Non renseignée' }}</p>

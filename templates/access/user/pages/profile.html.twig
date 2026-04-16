@@ -4,10 +4,10 @@
 
 {% block content %}
     <div class="ac-app-layout">
-        {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
+        {% include 'access/access_control/components/_sidebar.html.twig' with { items: nav } %}
 
         <div class="ac-main">
-            {% include 'access_control/components/_topbar.html.twig' with {
+            {% include 'access/access_control/components/_topbar.html.twig' with {
                 title: 'My Profile',
                 subtitle: 'Manage your personal details',
                 username: userName
