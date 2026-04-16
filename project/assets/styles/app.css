@@ -1619,6 +1619,31 @@ h1,h2,h3,p { margin: 0; }
     background: rgba(5, 10, 20, .35);
     backdrop-filter: blur(2px);
 }
+.ac-mood-charts-teaser h3 {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin: 0;
+}
+.ac-mood-charts-modal .ac-modal-content {
+    width: min(1180px, 96vw);
+}
+.ac-mood-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: .8rem;
+    margin-top: .8rem;
+}
+.ac-mood-chart-card {
+    padding: .7rem;
+}
+.ac-mood-chart-slot {
+    min-height: 280px;
+}
+.ac-mood-chart-empty {
+    margin: 1rem 0 0;
+    color: #5b7473;
+}
 
 [data-theme="dark"] .ac-mood-kpi-card,
 [data-theme="dark"] .ac-mood-highlights,
@@ -1643,6 +1668,7 @@ h1,h2,h3,p { margin: 0; }
 [data-theme="dark"] .ac-mood-highlight,
 [data-theme="dark"] .ac-mood-form-block,
 [data-theme="dark"] .ac-mood-history-group,
+[data-theme="dark"] .ac-mood-chart-card,
 [data-theme="dark"] .ac-journal-form-block,
 [data-theme="dark"] .ac-journal-group {
     background: #143748;
@@ -1653,6 +1679,7 @@ h1,h2,h3,p { margin: 0; }
 [data-theme="dark"] .ac-mood-history-meta,
 [data-theme="dark"] .ac-mood-tag-label,
 [data-theme="dark"] .ac-mood-history-empty,
+[data-theme="dark"] .ac-mood-chart-empty,
 [data-theme="dark"] .ac-journal-meta,
 [data-theme="dark"] .ac-journal-time {
     color: #9ac6d6;
