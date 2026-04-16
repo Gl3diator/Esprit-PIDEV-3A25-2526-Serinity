@@ -59,5 +59,9 @@ services:
             $rateLimitWindowSeconds: '%app.password_reset_rate_limit_window_seconds%'
             $maxResendAttempts: '%app.password_reset_max_resends%'
 
+    App\Service\User\JournalContentSanitizer:
+        arguments:
+            $sanitizer: '@html_sanitizer.sanitizer.journal_content'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
