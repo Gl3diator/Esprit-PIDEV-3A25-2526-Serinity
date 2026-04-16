@@ -6,6 +6,7 @@ namespace App\Controller\User;
 
 use App\Dto\Mood\MoodSummaryRequest;
 use App\Repository\MoodEntryRepository;
+use App\Service\Api\ZenQuotesClient;
 use App\Service\User\UserDashboardService;
 use App\Service\User\UserMoodService;
 use App\Service\User\RecoveryPlanService;
@@ -24,6 +25,7 @@ final class DashboardController extends AbstractUserUiController
         private readonly UserMoodService $userMoodService,
         private readonly RecoveryPlanService $recoveryPlanService,
         private readonly MoodEntryRepository $moodEntryRepository,
+        private readonly ZenQuotesClient $zenQuotesClient,
     ) {
     }
 
@@ -105,6 +107,10 @@ final class DashboardController extends AbstractUserUiController
         $influenceDistribution = $this->moodEntryRepository->findInfluenceDistributionWithinRange($user, $fromDate, $toDate);
         $dayTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'DAY');
         $momentTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'MOMENT');
+        $criticalStatus = (string) ($summary['criticalPeriod']['status'] ?? 'stable');
+        $supportiveQuote = in_array($criticalStatus, ['warning', 'critical'], true)
+            ? $this->zenQuotesClient->fetchRandomQuote()
+            : null;
 
         return $this->render('user/pages/mood_insights.html.twig', [
             'nav' => $this->buildNav('user_ui_mood_insights'),
@@ -118,6 +124,7 @@ final class DashboardController extends AbstractUserUiController
                 'day' => $dayTypeCount,
                 'moment' => $momentTypeCount,
             ],
+            'supportiveQuote' => $supportiveQuote,
         ]);
     }
 

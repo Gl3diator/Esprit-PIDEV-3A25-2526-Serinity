@@ -21,6 +21,8 @@ parameters:
     app.password_reset_rate_limit_attempts: '%env(int:PASSWORD_RESET_RATE_LIMIT_ATTEMPTS)%'
     app.password_reset_rate_limit_window_seconds: '%env(int:PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS)%'
     app.password_reset_max_resends: '%env(int:PASSWORD_RESET_MAX_RESENDS)%'
+    app.whatsapp_phone: '%env(string:WHATSAPP_PHONE)%'
+    app.whatsapp_api_key: '%env(string:WHATSAPP_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -62,6 +64,11 @@ services:
     App\Service\User\JournalContentSanitizer:
         arguments:
             $sanitizer: '@html_sanitizer.sanitizer.journal_content'
+
+    App\Service\Api\CallMeBotClient:
+        arguments:
+            $phone: '%app.whatsapp_phone%'
+            $apiKey: '%app.whatsapp_api_key%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
