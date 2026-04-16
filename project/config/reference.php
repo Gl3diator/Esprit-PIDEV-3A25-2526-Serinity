@@ -1459,6 +1459,33 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     version?: scalar|Param|null, // Default: "current"
  *     language?: scalar|Param|null, // Default: ""
  * }
+ * @psalm-type TinymceConfig = array{
+ *     skin?: scalar|Param|null,
+ *     config?: scalar|Param|null,
+ *     content_css?: scalar|Param|null,
+ *     content_style?: scalar|Param|null,
+ *     plugins?: scalar|Param|null,
+ *     toolbar?: scalar|Param|null,
+ *     toolbar_mode?: scalar|Param|null,
+ *     menubar?: scalar|Param|null,
+ *     contextmenu?: scalar|Param|null,
+ *     quickbars_insert_toolbar?: scalar|Param|null,
+ *     quickbars_selection_toolbar?: scalar|Param|null,
+ *     resize?: scalar|Param|null,
+ *     icons?: scalar|Param|null,
+ *     icons_url?: scalar|Param|null,
+ *     setup?: scalar|Param|null,
+ *     images_upload_url?: scalar|Param|null,
+ *     images_upload_route?: scalar|Param|null,
+ *     images_upload_route_params?: array<mixed>,
+ *     images_upload_handler?: scalar|Param|null,
+ *     images_upload_base_path?: scalar|Param|null,
+ *     images_upload_credentials?: scalar|Param|null,
+ *     images_reuse_filename?: scalar|Param|null,
+ *     powerpaste_word_import?: scalar|Param|null,
+ *     powerpaste_html_import?: scalar|Param|null,
+ *     powerpaste_allow_local_images?: scalar|Param|null,
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1473,6 +1500,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
  *     cmen_google_charts?: CmenGoogleChartsConfig,
+ *     tinymce?: TinymceConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1490,6 +1518,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
  *         cmen_google_charts?: CmenGoogleChartsConfig,
+ *         tinymce?: TinymceConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1505,6 +1534,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         cmen_google_charts?: CmenGoogleChartsConfig,
+ *         tinymce?: TinymceConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1521,6 +1551,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         cmen_google_charts?: CmenGoogleChartsConfig,
+ *         tinymce?: TinymceConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
