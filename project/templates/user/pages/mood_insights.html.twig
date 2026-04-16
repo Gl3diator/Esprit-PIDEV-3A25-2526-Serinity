@@ -62,6 +62,16 @@
                 </div>
                 <p class="ac-muted">{{ criticalPeriod.summary }}</p>
 
+                {% if supportiveQuote %}
+                    <article class="ac-journal-card">
+                        <div class="ac-row-between">
+                            <h5><span class="material-symbols-outlined">auto_awesome</span> Supportive quote</h5>
+                        </div>
+                        <p>"{{ supportiveQuote.text }}"</p>
+                        <small class="ac-muted">— {{ supportiveQuote.author }} · Source: ZenQuotes</small>
+                    </article>
+                {% endif %}
+
                 <div class="ac-journal-list">
                     {% for reason in criticalPeriod.reasons %}
                         <article class="ac-journal-card">
