@@ -1,0 +1,10 @@
+tinymce:
+    skin: appstack
+    content_css: appstack
+    plugins: "autolink lists"
+    toolbar: "undo redo | blocks | bold italic underline | bullist numlist | removeformat"
+    menubar: ""
+    contextmenu: ""
+    quickbars_insert_toolbar: ""
+    quickbars_selection_toolbar: ""
+    resize: "vertical"
