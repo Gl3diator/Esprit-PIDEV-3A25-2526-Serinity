@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\User;
 
 use App\Dto\Mood\MoodSummaryRequest;
+use App\Repository\MoodEntryRepository;
 use App\Service\User\UserDashboardService;
 use App\Service\User\UserMoodService;
 use App\Service\User\RecoveryPlanService;
@@ -22,6 +23,7 @@ final class DashboardController extends AbstractUserUiController
         private readonly UserDashboardService $userDashboardService,
         private readonly UserMoodService $userMoodService,
         private readonly RecoveryPlanService $recoveryPlanService,
+        private readonly MoodEntryRepository $moodEntryRepository,
     ) {
     }
 
@@ -96,6 +98,13 @@ final class DashboardController extends AbstractUserUiController
         $summaryRequest = new MoodSummaryRequest();
         $summaryRequest->days = 7;
         $summary = $this->userMoodService->getSummary($user, $summaryRequest);
+        $fromDate = new \DateTimeImmutable($summary['fromDate'] . ' 00:00:00');
+        $toDate = new \DateTimeImmutable($summary['toDate'] . ' 23:59:59');
+
+        $emotionDistribution = $this->moodEntryRepository->findEmotionDistributionWithinRange($user, $fromDate, $toDate);
+        $influenceDistribution = $this->moodEntryRepository->findInfluenceDistributionWithinRange($user, $fromDate, $toDate);
+        $dayTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'DAY');
+        $momentTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'MOMENT');
 
         return $this->render('user/pages/mood_insights.html.twig', [
             'nav' => $this->buildNav('user_ui_mood_insights'),
@@ -103,6 +112,12 @@ final class DashboardController extends AbstractUserUiController
             'criticalPeriod' => $summary['criticalPeriod'],
             'resilienceScore' => $summary['resilienceScore'],
             'weeklyTrendReviewed' => $this->isWeeklyTrendReviewed($request),
+            'emotionDistribution' => $emotionDistribution,
+            'influenceDistribution' => $influenceDistribution,
+            'entryTypeBalance' => [
+                'day' => $dayTypeCount,
+                'moment' => $momentTypeCount,
+            ],
         ]);
     }
 

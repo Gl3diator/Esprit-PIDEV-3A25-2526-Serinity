@@ -4,9 +4,17 @@
 {% block content %}
 <div class="ac-app-layout">
     {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
-    <div class="ac-main">
+    <div
+        class="ac-main"
+        data-controller="modal flash-toast mood-charts"
+        data-action="ac:modal:opened@window->mood-charts#onModalOpened"
+        data-mood-charts-modal-id-value="mood-charts-modal"
+        data-mood-charts-emotion-data-value="{{ emotionDistribution|json_encode|e('html_attr') }}"
+        data-mood-charts-influence-data-value="{{ influenceDistribution|json_encode|e('html_attr') }}"
+        data-mood-charts-entry-type-data-value="{{ entryTypeBalance|json_encode|e('html_attr') }}"
+    >
         {% include 'access_control/components/_topbar.html.twig' with { title: 'Mood insights', subtitle: 'Advanced emotional signals', username: userName } %}
-        <div data-controller="flash-toast">
+        <div>
             {% for message in app.flashes('success') %}
                 <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
             {% endfor %}
@@ -16,6 +24,18 @@
         </div>
 
         <div class="ac-journal-shell">
+            <section class="ac-card ac-mood-charts-teaser">
+                <div class="ac-row-between">
+                    <div>
+                        <h3><span class="material-symbols-outlined">bar_chart</span> Mood chart exploration</h3>
+                        <p class="ac-muted">Open a visual breakdown of emotions, influences, and entry types for this mood window.</p>
+                    </div>
+                    <button class="ac-btn ac-btn-primary" type="button" data-action="modal#open" data-modal-id-param="mood-charts-modal">
+                        Mood charts
+                    </button>
+                </div>
+            </section>
+
             <section class="ac-cards ac-journal-kpis">
                 <article class="ac-stat-card ac-journal-kpi-card">
                     <h3><span class="material-symbols-outlined">warning</span> Critical status</h3>
@@ -103,6 +123,41 @@
                     {% endif %}
                 </div>
             </section>
+        </div>
+
+        <div class="ac-modal ac-journal-modal ac-mood-charts-modal" id="mood-charts-modal" hidden>
+            <div class="ac-modal-content">
+                <div class="ac-row-between">
+                    <h3><span class="material-symbols-outlined">bar_chart</span> Mood charts</h3>
+                    <button class="ac-ghost-btn" type="button" data-action="modal#close" aria-label="Close mood charts">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p class="ac-muted">Weekly-based charts for Emotion,Influence and mood entries.</p>
+
+                <div class="ac-mood-charts-grid">
+                    <article class="ac-card ac-mood-chart-card">
+                        <div id="mood-emotion-distribution-chart" class="ac-mood-chart-slot" data-mood-charts-target="emotionContainer"></div>
+                        <p class="ac-mood-chart-empty" data-mood-charts-target="emotionFallback" hidden>
+                            Unable to render emotion distribution right now.
+                        </p>
+                    </article>
+
+                    <article class="ac-card ac-mood-chart-card">
+                        <div id="mood-influence-distribution-chart" class="ac-mood-chart-slot" data-mood-charts-target="influenceContainer"></div>
+                        <p class="ac-mood-chart-empty" data-mood-charts-target="influenceFallback" hidden>
+                            Unable to render influence distribution right now.
+                        </p>
+                    </article>
+
+                    <article class="ac-card ac-mood-chart-card">
+                        <div id="mood-entry-type-distribution-chart" class="ac-mood-chart-slot" data-mood-charts-target="entryTypeContainer"></div>
+                        <p class="ac-mood-chart-empty" data-mood-charts-target="entryTypeFallback" hidden>
+                            Unable to render entry type balance right now.
+                        </p>
+                    </article>
+                </div>
+            </div>
         </div>
     </div>
 </div>
