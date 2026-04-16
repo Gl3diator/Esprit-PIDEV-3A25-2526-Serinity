@@ -20,6 +20,7 @@ use App\Service\Admin\AdminExerciceService;
 use App\Service\Admin\DashboardService;
 use App\Service\Admin\UserManagementService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,6 +45,7 @@ final class AccessControlUiController extends AbstractController
         private readonly AdminExerciceService $adminExerciceService,
         private readonly ImageUploadService $imageUploadService,
         private readonly EntityManagerInterface $entityManager,
+        private readonly PaginatorInterface $paginator,
     ) {
     }
 
@@ -538,13 +540,24 @@ final class AccessControlUiController extends AbstractController
                 }
             }
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
+
+        $emotionQuery = $this->moodEmotionRepository->createQueryBuilder('emotion')
+            ->orderBy('emotion.name', 'ASC')
+            ->getQuery();
+        $emotions = $this->paginator->paginate(
+            $emotionQuery,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('access_control/pages/emotion_management.html.twig', [
             'nav' => $this->buildNav('ac_ui_emotion'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
-            'emotions' => $this->moodEmotionRepository->createQueryBuilder('emotion')->orderBy('emotion.name', 'ASC')->getQuery()->getResult(),
+            'emotions' => $emotions,
         ]);
     }
 
@@ -556,12 +569,16 @@ final class AccessControlUiController extends AbstractController
         if (!$emotion instanceof MoodEmotion) {
             $this->addFlash('error', 'Emotion not found.');
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
         if (!$this->isCsrfTokenValid('emotion_edit_' . $emotion->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid edit token.');
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $name = trim((string) $request->request->get('name', ''));
@@ -569,7 +586,9 @@ final class AccessControlUiController extends AbstractController
         if ($error !== null) {
             $this->addFlash('error', $error);
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $exists = $this->moodEmotionRepository->createQueryBuilder('emotion')
@@ -584,14 +603,18 @@ final class AccessControlUiController extends AbstractController
         if ((int) $exists > 0) {
             $this->addFlash('error', 'This emotion already exists.');
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $emotion->setName($name);
         $this->entityManager->flush();
         $this->addFlash('success', 'Emotion updated successfully.');
 
-        return $this->redirectToRoute('ac_ui_emotion');
+        return $this->redirectToRoute('ac_ui_emotion', [
+            'page' => max(1, $request->query->getInt('page', 1)),
+        ]);
     }
 
     #[Route('/admin/emotion/{id}/delete', name: 'ac_ui_emotion_delete', methods: ['POST'])]
@@ -602,19 +625,25 @@ final class AccessControlUiController extends AbstractController
         if (!$emotion instanceof MoodEmotion) {
             $this->addFlash('error', 'Emotion not found.');
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
         if (!$this->isCsrfTokenValid('emotion_delete_' . $emotion->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid delete token.');
 
-            return $this->redirectToRoute('ac_ui_emotion');
+            return $this->redirectToRoute('ac_ui_emotion', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $this->entityManager->remove($emotion);
         $this->entityManager->flush();
         $this->addFlash('success', 'Emotion deleted successfully.');
 
-        return $this->redirectToRoute('ac_ui_emotion');
+        return $this->redirectToRoute('ac_ui_emotion', [
+            'page' => max(1, $request->query->getInt('page', 1)),
+        ]);
     }
 
     #[Route('/admin/influence', name: 'ac_ui_influence', methods: ['GET', 'POST'])]
@@ -648,13 +677,24 @@ final class AccessControlUiController extends AbstractController
                 }
             }
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
+
+        $influenceQuery = $this->moodInfluenceRepository->createQueryBuilder('influence')
+            ->orderBy('influence.name', 'ASC')
+            ->getQuery();
+        $influences = $this->paginator->paginate(
+            $influenceQuery,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('access_control/pages/influence_management.html.twig', [
             'nav' => $this->buildNav('ac_ui_influence'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
-            'influences' => $this->moodInfluenceRepository->createQueryBuilder('influence')->orderBy('influence.name', 'ASC')->getQuery()->getResult(),
+            'influences' => $influences,
         ]);
     }
 
@@ -666,12 +706,16 @@ final class AccessControlUiController extends AbstractController
         if (!$influence instanceof MoodInfluence) {
             $this->addFlash('error', 'Influence not found.');
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
         if (!$this->isCsrfTokenValid('influence_edit_' . $influence->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid edit token.');
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $name = trim((string) $request->request->get('name', ''));
@@ -679,7 +723,9 @@ final class AccessControlUiController extends AbstractController
         if ($error !== null) {
             $this->addFlash('error', $error);
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $exists = $this->moodInfluenceRepository->createQueryBuilder('influence')
@@ -694,14 +740,18 @@ final class AccessControlUiController extends AbstractController
         if ((int) $exists > 0) {
             $this->addFlash('error', 'This influence already exists.');
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $influence->setName($name);
         $this->entityManager->flush();
         $this->addFlash('success', 'Influence updated successfully.');
 
-        return $this->redirectToRoute('ac_ui_influence');
+        return $this->redirectToRoute('ac_ui_influence', [
+            'page' => max(1, $request->query->getInt('page', 1)),
+        ]);
     }
 
     #[Route('/admin/influence/{id}/delete', name: 'ac_ui_influence_delete', methods: ['POST'])]
@@ -712,19 +762,25 @@ final class AccessControlUiController extends AbstractController
         if (!$influence instanceof MoodInfluence) {
             $this->addFlash('error', 'Influence not found.');
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
         if (!$this->isCsrfTokenValid('influence_delete_' . $influence->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid delete token.');
 
-            return $this->redirectToRoute('ac_ui_influence');
+            return $this->redirectToRoute('ac_ui_influence', [
+                'page' => max(1, $request->query->getInt('page', 1)),
+            ]);
         }
 
         $this->entityManager->remove($influence);
         $this->entityManager->flush();
         $this->addFlash('success', 'Influence deleted successfully.');
 
-        return $this->redirectToRoute('ac_ui_influence');
+        return $this->redirectToRoute('ac_ui_influence', [
+            'page' => max(1, $request->query->getInt('page', 1)),
+        ]);
     }
 
     /** @return list<array{section: string, label: string, route: string, icon: string, active: bool, children?: list<array{label: string, route: string, icon: string, active: bool}>}> */

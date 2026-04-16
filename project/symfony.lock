@@ -41,6 +41,9 @@
     "emileperron/tinymce-bundle": {
         "version": "v3.3.0"
     },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.10.0"
+    },
     "phpunit/phpunit": {
         "version": "13.0",
         "recipe": {
