@@ -123,9 +123,27 @@ export default class extends Controller {
         const header = document.createElement('div');
         header.className = 'ac-row-between';
 
+        const titleRow = document.createElement('div');
+        titleRow.className = 'ac-journal-title-row';
+
         const title = document.createElement('h5');
         title.textContent = entry.entryTitle || '';
-        header.appendChild(title);
+        titleRow.appendChild(title);
+
+        if (entry.entryTopEmotion) {
+            const emotionTag = document.createElement('span');
+            emotionTag.className = 'ac-journal-emotion-tag';
+            emotionTag.textContent = this.formatEmotionLabel(entry.entryTopEmotion);
+
+            const score = Number.parseFloat(entry.entryTopEmotionScore || '');
+            if (!Number.isNaN(score)) {
+                emotionTag.title = `Score: ${score.toFixed(2)}`;
+            }
+
+            titleRow.appendChild(emotionTag);
+        }
+
+        header.appendChild(titleRow);
 
         const time = document.createElement('small');
         time.className = 'ac-journal-time';
@@ -177,6 +195,13 @@ export default class extends Controller {
         card.appendChild(actions);
 
         return card;
+    }
+
+    formatEmotionLabel(label) {
+        return String(label || '')
+            .replace(/[_-]+/g, ' ')
+            .trim()
+            .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 
     formatDateLabel(dateValue) {
