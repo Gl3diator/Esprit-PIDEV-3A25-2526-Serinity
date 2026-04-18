@@ -114,11 +114,22 @@
                     {% for day, entries in entries_by_day %}
                         <div data-journal-editor-target="dayData" data-date="{{ day }}">
                             {% for journal_entry in entries %}
+                                {% set decodedAiTags = journal_entry.getDecodedAiTags() %}
+                                {% set topEmotionLabel = journal_entry.getTopEmotionLabel() %}
+                                {% set topEmotionScore = null %}
+                                {% if decodedAiTags and decodedAiTags.labels is defined and decodedAiTags.labels is iterable and decodedAiTags.labels is not empty %}
+                                    {% set firstEmotion = decodedAiTags.labels|first %}
+                                    {% if firstEmotion is iterable and firstEmotion.score is defined and firstEmotion.score is not null %}
+                                        {% set topEmotionScore = firstEmotion.score %}
+                                    {% endif %}
+                                {% endif %}
                                 <article
                                     data-entry-id="{{ journal_entry.id }}"
                                     data-entry-title="{{ journal_entry.title|e('html_attr') }}"
                                     data-entry-content="{{ journal_entry.content|sanitize_html('journal_content')|e('html_attr') }}"
                                     data-entry-time="{{ journal_entry.createdAt|date('H:i') }}"
+                                    data-entry-top-emotion="{{ topEmotionLabel ? topEmotionLabel|e('html_attr') : '' }}"
+                                    data-entry-top-emotion-score="{{ topEmotionScore is not null ? topEmotionScore : '' }}"
                                     data-edit-url="{{ path('user_ui_journal_entry_edit', {'id': journal_entry.id}) }}"
                                     data-delete-url="{{ path('user_ui_journal_entry_delete', {'id': journal_entry.id}) }}"
                                     data-edit-csrf="{{ csrf_token('journal_edit_' ~ journal_entry.id) }}"

@@ -6,6 +6,7 @@ namespace App\Controller\User;
 
 use App\Entity\JournalEntry;
 use App\Repository\JournalEntryRepository;
+use App\Service\AI\JournalEmotionTagger;
 use App\Service\Api\CallMeBotClient;
 use App\Service\User\JournalContentSanitizer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +26,7 @@ final class JournalEntryController extends AbstractUserUiController
         private readonly EntityManagerInterface $entityManager,
         private readonly JournalContentSanitizer $journalContentSanitizer,
         private readonly CallMeBotClient $callMeBotClient,
+        private readonly JournalEmotionTagger $journalEmotionTagger,
     ) {
     }
 
@@ -84,6 +86,7 @@ final class JournalEntryController extends AbstractUserUiController
 
         $this->entityManager->persist($entry);
         $this->entityManager->flush();
+        $this->applyEmotionTaggingSafely($entry);
         $this->callMeBotClient->sendJournalSavedNotification(
             $entry->getTitle() ?? '',
             $entry->getCreatedAt(),
@@ -113,9 +116,12 @@ final class JournalEntryController extends AbstractUserUiController
             return $this->redirectToJournalIndex($month);
         }
 
+        $sanitizedContent = $this->journalContentSanitizer->sanitize((string) $request->request->get('content', ''));
+        $contentChanged = $entry->getContent() !== $sanitizedContent;
+
         $entry
             ->setTitle(trim((string) $request->request->get('title', '')))
-            ->setContent($this->journalContentSanitizer->sanitize((string) $request->request->get('content', '')))
+            ->setContent($sanitizedContent)
             ->setUpdatedAt(new \DateTimeImmutable());
 
         $violations = $validator->validate($entry);
@@ -126,6 +132,9 @@ final class JournalEntryController extends AbstractUserUiController
         }
 
         $this->entityManager->flush();
+        if ($contentChanged) {
+            $this->applyEmotionTaggingSafely($entry);
+        }
         $this->addFlash('success', 'Journal entry updated successfully.');
 
         return $this->redirectToJournalIndex($month);
@@ -327,5 +336,18 @@ final class JournalEntryController extends AbstractUserUiController
         }
 
         return $entriesPerDay === [] ? 0 : max($entriesPerDay);
+    }
+
+    private function applyEmotionTaggingSafely(JournalEntry $entry): void
+    {
+        try {
+            if (!$this->journalEmotionTagger->apply($entry)) {
+                return;
+            }
+
+            $this->entityManager->flush();
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Journal entry was saved, but emotion tagging is currently unavailable.');
+        }
     }
 }
