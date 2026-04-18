@@ -391,6 +391,25 @@ button.ac-journal-day:hover {
     box-shadow: 0 8px 20px rgba(47, 111, 109, .08);
 }
 .ac-journal-card h5 { margin: 0; font-size: 1rem; color: #2F6F6D; }
+.ac-journal-title-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+.ac-journal-emotion-tag {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #b8d5d4;
+    border-radius: 999px;
+    background: #E6F2F1;
+    color: #2F6F6D;
+    font-size: .72rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: .24rem .5rem;
+    text-transform: capitalize;
+}
 .ac-journal-time { color: #5b7473; font-weight: 600; }
 .ac-journal-card p { white-space: pre-line; color: #2f3e3d; line-height: 1.5; }
 .ac-journal-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
@@ -1932,6 +1951,11 @@ button.ac-journal-day:hover {
 }
 [data-theme="dark"] .ac-mood-tags .ac-badge,
 [data-theme="dark"] .ac-journal-actions .ac-ghost-btn {
+    background: #143748;
+    border-color: #2a657b;
+    color: #9bd5d3;
+}
+[data-theme="dark"] .ac-journal-emotion-tag {
     background: #143748;
     border-color: #2a657b;
     color: #9bd5d3;
