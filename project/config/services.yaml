@@ -42,6 +42,9 @@ parameters:
     app.ai_emotion_api_timeout: '%env(float:AI_EMOTION_API_TIMEOUT)%'
     app.ai_emotion_api_threshold: '%env(float:AI_EMOTION_API_THRESHOLD)%'
     app.ai_emotion_api_top_k: '%env(int:AI_EMOTION_API_TOP_K)%'
+    app.youtube_api_key: '%env(string:YOUTUBE_API_KEY)%'
+    app.user_lat: '%env(float:USER_LAT)%'
+    app.user_lon: '%env(float:USER_LON)%'
 
 services:
     # default configuration for services in *this* file
@@ -137,6 +140,15 @@ services:
     App\Controller\Api\AuthController:
         arguments:
             $googleRedirectUri: '%app.google_redirect_uri%'
+
+    App\Controller\User\ExerciceController:
+        arguments:
+            $defaultLatitude: '%app.user_lat%'
+            $defaultLongitude: '%app.user_lon%'
+
+    App\Service\User\YouTubeRecommendationService:
+        arguments:
+            $apiKey: '%app.youtube_api_key%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
