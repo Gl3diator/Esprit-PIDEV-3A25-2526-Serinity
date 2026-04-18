@@ -116,7 +116,14 @@
                             {% for journal_entry in entries %}
                                 {% set decodedAiTags = journal_entry.getDecodedAiTags() %}
                                 {% set topEmotionLabel = journal_entry.getTopEmotionLabel() %}
+                                {% set topEmotionClass = 'emotion-neutral' %}
                                 {% set topEmotionScore = null %}
+                                {% if topEmotionLabel %}
+                                    {% set normalizedEmotionLabel = topEmotionLabel|lower|replace({' ': '_', '-': '_'}) %}
+                                    {% if normalizedEmotionLabel in ['joy', 'sadness', 'nervousness', 'relief'] %}
+                                        {% set topEmotionClass = 'emotion-' ~ normalizedEmotionLabel %}
+                                    {% endif %}
+                                {% endif %}
                                 {% if decodedAiTags and decodedAiTags.labels is defined and decodedAiTags.labels is iterable and decodedAiTags.labels is not empty %}
                                     {% set firstEmotion = decodedAiTags.labels|first %}
                                     {% if firstEmotion is iterable and firstEmotion.score is defined and firstEmotion.score is not null %}
@@ -129,6 +136,7 @@
                                     data-entry-content="{{ journal_entry.content|sanitize_html('journal_content')|e('html_attr') }}"
                                     data-entry-time="{{ journal_entry.createdAt|date('H:i') }}"
                                     data-entry-top-emotion="{{ topEmotionLabel ? topEmotionLabel|e('html_attr') : '' }}"
+                                    data-entry-top-emotion-class="{{ topEmotionClass }}"
                                     data-entry-top-emotion-score="{{ topEmotionScore is not null ? topEmotionScore : '' }}"
                                     data-edit-url="{{ path('user_ui_journal_entry_edit', {'id': journal_entry.id}) }}"
                                     data-delete-url="{{ path('user_ui_journal_entry_delete', {'id': journal_entry.id}) }}"
@@ -144,11 +152,11 @@
 
         <div class="ac-modal" data-journal-editor-target="dayModal" data-action="click->journal-editor#closeDayOnBackdrop" hidden>
             <div class="ac-modal-content ac-journal-modal">
-                <div class="ac-row-between">
+                <div class="ac-row-between ac-journal-modal-header">
                     <h3 data-journal-editor-target="dayTitle">Day entries</h3>
                     <button type="button" class="ac-ghost-btn" data-action="journal-editor#closeDay">Close</button>
                 </div>
-                <div class="ac-journal-day-modal-list" data-journal-editor-target="dayEntries"></div>
+                <div class="ac-journal-day-modal-list ac-journal-entry-list" data-journal-editor-target="dayEntries"></div>
             </div>
         </div>
 
