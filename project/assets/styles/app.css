@@ -385,6 +385,8 @@ button.ac-journal-day:hover {
     display: grid;
     gap: .95rem;
     margin-top: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
 }
 .ac-journal-card {
     border: 1px solid #d4e6e4;
