@@ -16,4 +16,5 @@ return [
     CMEN\GoogleChartsBundle\CMENGoogleChartsBundle::class => ['all' => true],
     EmilePerron\TinymceBundle\TinymceBundle::class => ['all' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
+    Endroid\QrCodeBundle\EndroidQrCodeBundle::class => ['all' => true],
 ];

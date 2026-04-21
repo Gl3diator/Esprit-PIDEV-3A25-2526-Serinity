@@ -70,5 +70,8 @@ services:
             $phone: '%app.whatsapp_phone%'
             $apiKey: '%app.whatsapp_api_key%'
 
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -1,0 +1,297 @@
+{% extends 'access_control/layout.html.twig' %}
+
+{% block title %}Détail Rendez-vous | Serinity{% endblock %}
+
+{% block content %}
+<div class="ac-app-layout">
+
+    {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
+
+    <div class="ac-main" data-controller="flash-toast">
+
+        {% include 'access_control/components/_topbar.html.twig' with {
+            title: 'Dossier Rendez-vous',
+            subtitle: 'Consultation et gestion de la demande',
+            username: userName
+        } %}
+
+        {% for message in app.flashes('success') %}
+            <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <span data-flash-toast-target="message" data-type="error" hidden>{{ message }}</span>
+        {% endfor %}
+
+        <section class="ac-card rdv-shell">
+
+<style>
+.rdv-shell{
+    max-width:900px;
+    margin:auto;
+    padding:1.4rem;
+}
+
+.rdv-header{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    margin-bottom:1.4rem;
+    padding-bottom:1rem;
+    border-bottom:1px solid #eef2f7;
+}
+
+.rdv-avatar{
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:1.2rem;
+    font-weight:800;
+    background:linear-gradient(135deg,#2F6F6D,#57a7a3);
+    flex-shrink:0;
+}
+
+.rdv-name{
+    margin:0;
+    font-size:1.15rem;
+    font-weight:800;
+    color:#0f172a;
+}
+
+.rdv-sub{
+    color:#64748b;
+    margin-top:.2rem;
+    font-size:.9rem;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:.9rem;
+    margin-bottom:1rem;
+}
+
+.info-card{
+    background:#f8fafc;
+    border:1px solid #eef2f7;
+    border-radius:18px;
+    padding:1rem;
+}
+
+.info-label{
+    font-size:.75rem;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:700;
+    margin-bottom:.35rem;
+}
+
+.info-value{
+    color:#0f172a;
+    font-weight:700;
+}
+
+.box{
+    background:#ffffff;
+    border:1px solid #eef2f7;
+    border-radius:18px;
+    padding:1rem;
+    margin-bottom:.9rem;
+}
+
+.box-title{
+    font-size:.78rem;
+    color:#94a3b8;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:700;
+    margin-bottom:.45rem;
+}
+
+.box-content{
+    color:#0f172a;
+    font-weight:600;
+    line-height:1.55;
+}
+
+.badge-status{
+    display:inline-flex;
+    align-items:center;
+    padding:.45rem .85rem;
+    border-radius:999px;
+    font-size:.74rem;
+    font-weight:800;
+}
+
+.status-attente{
+    background:#fff7ed;
+    color:#ea580c;
+}
+
+.status-valide{
+    background:#ecfdf5;
+    color:#16a34a;
+}
+
+.status-refuse{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.action-row{
+    display:flex;
+    gap:.8rem;
+    flex-wrap:wrap;
+    margin-top:1.2rem;
+}
+
+.btn-main{
+    border:none;
+    padding:.92rem 1.15rem;
+    border-radius:14px;
+    font-weight:800;
+    text-decoration:none;
+    color:#fff;
+    transition:.2s;
+}
+
+.btn-green{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
+    box-shadow:0 10px 25px rgba(34,197,94,.18);
+}
+
+.btn-red{
+    background:linear-gradient(135deg,#dc2626,#ef4444);
+    box-shadow:0 10px 25px rgba(239,68,68,.18);
+}
+
+.btn-back{
+    padding:.92rem 1.15rem;
+    border-radius:14px;
+    font-weight:700;
+    text-decoration:none;
+    color:#334155;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+}
+
+.btn-main:hover,
+.btn-back:hover{
+    transform:translateY(-2px);
+}
+</style>
+
+{% set patientName = rdv.patient.fullName is defined and rdv.patient.fullName ? rdv.patient.fullName : rdv.patient.email %}
+
+<div class="rdv-header">
+
+    <div class="rdv-avatar">
+        {{ patientName|slice(0,1)|upper }}
+    </div>
+
+    <div>
+        <h3 class="rdv-name">{{ patientName }}</h3>
+        <div class="rdv-sub">
+            Demande de consultation médicale
+        </div>
+    </div>
+
+</div>
+
+<div class="info-grid">
+
+    <div class="info-card">
+        <div class="info-label">Date demandée</div>
+        <div class="info-value">
+            {{ rdv.dateTime|date('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Créé le</div>
+        <div class="info-value">
+            {{ rdv.createdAt|date('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Statut</div>
+        <div class="info-value">
+
+            <span class="badge-status
+                {% if rdv.status == 'EN_ATTENTE' %}status-attente
+                {% elseif rdv.status == 'VALIDE' %}status-valide
+                {% else %}status-refuse{% endif %}
+            ">
+                {{ rdv.status }}
+            </span>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="box">
+    <div class="box-title">Motif</div>
+    <div class="box-content">
+        {{ rdv.motif ?: 'Sans motif' }}
+    </div>
+</div>
+
+<div class="box">
+    <div class="box-title">Description du patient</div>
+    <div class="box-content">
+        {{ rdv.description ?: 'Aucune description fournie.' }}
+    </div>
+</div>
+
+{% if rdv.proposedDateTime %}
+<div class="box">
+    <div class="box-title">Date proposée</div>
+    <div class="box-content">
+        {{ rdv.proposedDateTime|date('d/m/Y H:i') }}
+    </div>
+</div>
+{% endif %}
+
+{% if rdv.doctorNote %}
+<div class="box">
+    <div class="box-title">Note thérapeute</div>
+    <div class="box-content">
+        {{ rdv.doctorNote }}
+    </div>
+</div>
+{% endif %}
+
+<div class="action-row">
+
+    {% if rdv.status == 'EN_ATTENTE' %}
+
+        <a href="{{ path('app_rdv_accept', {id: rdv.id}) }}" class="btn-main btn-green">
+            <i class="bi bi-check-circle"></i>
+            Accepter
+        </a>
+
+        <a href="{{ path('app_rdv_refuse', {id: rdv.id}) }}" class="btn-main btn-red">
+            <i class="bi bi-x-circle"></i>
+            Refuser
+        </a>
+
+    {% endif %}
+
+    <a href="{{ path('app_therapist_rdv') }}" class="btn-back">
+        Retour dashboard
+    </a>
+
+</div>
+
+        </section>
+
+    </div>
+</div>
+{% endblock %}
