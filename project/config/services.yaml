@@ -23,6 +23,25 @@ parameters:
     app.password_reset_max_resends: '%env(int:PASSWORD_RESET_MAX_RESENDS)%'
     app.whatsapp_phone: '%env(string:WHATSAPP_PHONE)%'
     app.whatsapp_api_key: '%env(string:WHATSAPP_API_KEY)%'
+    app.face_auth_similarity_threshold: '%env(float:FACE_AUTH_SIMILARITY_THRESHOLD)%'
+    app.face_auth_rate_limit_attempts: '%env(int:FACE_AUTH_RATE_LIMIT_ATTEMPTS)%'
+    app.face_auth_rate_limit_window_seconds: '%env(int:FACE_AUTH_RATE_LIMIT_WINDOW_SECONDS)%'
+    app.face_auth_recognition_model_path: '%env(string:FACE_AUTH_RECOGNITION_MODEL_PATH)%'
+    app.face_auth_onnx_runtime_library_path: '%env(string:FACE_AUTH_ONNX_RUNTIME_LIBRARY_PATH)%'
+    app.face_auth_python_command: '%env(string:FACE_AUTH_PYTHON_COMMAND)%'
+    app.face_auth_python_script_path: '%env(string:FACE_AUTH_PYTHON_SCRIPT_PATH)%'
+    app.face_auth_input_width: '%env(int:FACE_AUTH_INPUT_WIDTH)%'
+    app.face_auth_input_height: '%env(int:FACE_AUTH_INPUT_HEIGHT)%'
+    app.google_redirect_uri: '%env(string:GOOGLE_REDIRECT_URI)%'
+    app.two_factor_challenge_ttl_seconds: '%env(int:TWO_FACTOR_CHALLENGE_TTL_SECONDS)%'
+    app.two_factor_rate_limit_attempts: '%env(int:TWO_FACTOR_RATE_LIMIT_ATTEMPTS)%'
+    app.two_factor_rate_limit_window_seconds: '%env(int:TWO_FACTOR_RATE_LIMIT_WINDOW_SECONDS)%'
+    app.ai_emotion_api_enabled: '%env(bool:AI_EMOTION_API_ENABLED)%'
+    app.ai_emotion_api_base_url: '%env(string:AI_EMOTION_API_BASE_URL)%'
+    app.ai_emotion_api_route: '%env(string:AI_EMOTION_API_ROUTE)%'
+    app.ai_emotion_api_timeout: '%env(float:AI_EMOTION_API_TIMEOUT)%'
+    app.ai_emotion_api_threshold: '%env(float:AI_EMOTION_API_THRESHOLD)%'
+    app.ai_emotion_api_top_k: '%env(int:AI_EMOTION_API_TOP_K)%'
 
 services:
     # default configuration for services in *this* file
@@ -36,6 +55,10 @@ services:
         resource: '../src/'
 
     App\Service\JwtService:
+        arguments:
+            $appSecret: '%app.jwt_secret%'
+
+    App\Service\TwoFactorCryptoService:
         arguments:
             $appSecret: '%app.jwt_secret%'
 
@@ -73,5 +96,50 @@ services:
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
+    App\Service\AI\FaceRecognitionService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $recognitionModelPath: '%kernel.project_dir%/%app.face_auth_recognition_model_path%'
+            $onnxRuntimeLibraryPath: '%app.face_auth_onnx_runtime_library_path%'
+            $pythonCommand: '%app.face_auth_python_command%'
+            $pythonScriptPath: '%app.face_auth_python_script_path%'
+            $similarityThreshold: '%app.face_auth_similarity_threshold%'
+            $inputWidth: '%app.face_auth_input_width%'
+            $inputHeight: '%app.face_auth_input_height%'
+
+    App\Service\AI\JournalEmotionClient:
+        arguments:
+            $enabled: '%app.ai_emotion_api_enabled%'
+            $baseUrl: '%app.ai_emotion_api_base_url%'
+            $route: '%app.ai_emotion_api_route%'
+            $timeout: '%app.ai_emotion_api_timeout%'
+            $threshold: '%app.ai_emotion_api_threshold%'
+            $topK: '%app.ai_emotion_api_top_k%'
+
+    App\Service\AI\JournalEmotionTagger:
+        arguments:
+            $journalEmotionClient: '@App\Service\AI\JournalEmotionClient'
+
+    App\Service\Security\FaceLoginRateLimiter:
+        arguments:
+            $cachePool: '@cache.app'
+            $maxAttempts: '%app.face_auth_rate_limit_attempts%'
+            $windowSeconds: '%app.face_auth_rate_limit_window_seconds%'
+
+    App\Service\Security\TwoFactorCheckRateLimiter:
+        arguments:
+            $cachePool: '@cache.app'
+            $maxAttempts: '%app.two_factor_rate_limit_attempts%'
+            $windowSeconds: '%app.two_factor_rate_limit_window_seconds%'
+
+    App\Service\Security\TwoFactorPendingLoginStore:
+        arguments:
+            $cachePool: '@cache.app'
+            $ttlSeconds: '%app.two_factor_challenge_ttl_seconds%'
+
+    App\Controller\Api\AuthController:
+        arguments:
+            $googleRedirectUri: '%app.google_redirect_uri%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
