@@ -53,6 +53,18 @@
             <div class="ac-row-end" style="margin-top: 1rem;">
                 <a class="ac-btn ac-btn-primary" href="{{ path('user_ui_exercises_coach_pdf') }}">Download PDF</a>
             </div>
+
+            {{ form_start(emailForm, { action: path('user_exercise_coach_email'), attr: { class: 'ac-form', style: 'margin-top: 1rem;' } }) }}
+                <h4 style="margin: 0;">Send your plan by email</h4>
+                <label>
+                    Recipient email
+                    {{ form_widget(emailForm.recipientEmail, { attr: { class: 'ac-input', autocomplete: 'email' } }) }}
+                </label>
+                {{ form_errors(emailForm.recipientEmail) }}
+                <div class="ac-row-end">
+                    {{ form_widget(emailForm.send, { attr: { class: 'ac-btn ac-btn-primary' } }) }}
+                </div>
+            {{ form_end(emailForm) }}
         </section>
 
         <section class="ac-grid-two">

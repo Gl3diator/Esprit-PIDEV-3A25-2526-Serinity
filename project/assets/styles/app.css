@@ -2128,6 +2128,15 @@ button.ac-journal-day:hover {
     display: grid;
     gap: .65rem;
 }
+.ac-plan-actions {
+    display: grid;
+    gap: .5rem;
+    justify-items: stretch;
+    min-width: 138px;
+}
+.ac-plan-actions .ac-ghost-btn {
+    width: 100%;
+}
 .ac-plan-fatigue-group {
     display: flex;
     gap: .55rem;
@@ -2234,6 +2243,44 @@ button.ac-journal-day:hover {
 }
 .ac-plan-support-card p {
     margin: 0;
+}
+.ac-coach-shell {
+    border-color: #cfe1df;
+    background:
+        radial-gradient(circle at top right, rgba(136, 189, 188, 0.14), transparent 34%),
+        linear-gradient(180deg, #ffffff 0%, #f6fbfb 100%);
+}
+.ac-coach-head {
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.ac-coach-summary {
+    color: #1f4746;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin: 0;
+}
+.ac-coach-list-card {
+    align-content: start;
+}
+.ac-coach-list {
+    display: grid;
+    gap: .75rem;
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--text);
+}
+.ac-coach-list li::marker {
+    color: #2f6f6d;
+}
+.ac-coach-list-grid,
+.ac-coach-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: .8rem;
+}
+.ac-coach-plan-grid .ac-plan-support-card {
+    align-content: start;
 }
 .ac-plan-video-section {
     display: grid;
