@@ -282,7 +282,35 @@
             <i class="bi bi-plus-circle"></i>
             Ajouter Consultation
         </a>
+{# ===== ADD INSIDE .panel-head AFTER Ajouter Consultation BUTTON ===== #}
 
+<div style="display:flex; gap:.6rem; flex-wrap:wrap; align-items:center;">
+
+    <select id="translateLang" class="btn-smx"
+            style="border:1px solid #e5e7eb;background:#fff;">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="it">Italiano</option>
+        <option value="es">Español</option>
+        <option value="de">Deutsch</option>
+        <option value="tr">Türkçe</option>
+    </select>
+
+    <button type="button"
+            class="btn-add"
+            onclick="translateConsultations()">
+        <i class="bi bi-translate"></i>
+        Traduire
+    </button>
+
+    <button type="button"
+            class="btn-smx btn-edit"
+            onclick="restoreOriginal()">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        Original
+    </button>
+
+</div>
     </div>
 
     <div class="consultation-list">
@@ -306,23 +334,26 @@
 
                 <div class="field">
                     <div class="field-title">Diagnostic</div>
-                    <div class="field-content">
-                        {{ c.diagnostic ?: 'Non renseigné' }}
-                    </div>
+                   <div class="field-content translatable"
+     data-original="{{ c.diagnostic ?: 'Non renseigné' }}">
+    {{ c.diagnostic ?: 'Non renseigné' }}
+</div>
                 </div>
 
                 <div class="field">
                     <div class="field-title">Prescription</div>
-                    <div class="field-content">
-                        {{ c.prescription ?: 'Non renseigné' }}
-                    </div>
+                <div class="field-content translatable"
+     data-original="{{ c.prescription ?: 'Non renseigné' }}">
+    {{ c.prescription ?: 'Non renseigné' }}
+</div>
                 </div>
 
                 <div class="field">
                     <div class="field-title">Notes</div>
-                    <div class="field-content">
-                        {{ c.notes ?: 'Aucune note' }}
-                    </div>
+                <div class="field-content translatable"
+     data-original="{{ c.notes ?: 'Aucune note' }}">
+    {{ c.notes ?: 'Aucune note' }}
+</div>
                 </div>
 
                 <div class="action-row">
@@ -362,4 +393,55 @@
 
     </div>
 </div>
+
+
+{# ===== ADD BEFORE {% endblock %} ===== #}
+
+<script>
+async function translateConsultations()
+{
+    let lang = document.getElementById('translateLang').value;
+    let items = document.querySelectorAll('.translatable');
+
+    for (let el of items)
+    {
+        let text = el.dataset.original;
+
+        if(!text || text.trim() === '') continue;
+
+        el.innerHTML = '...';
+
+        let form = new FormData();
+        form.append('text', text);
+        form.append('lang', lang);
+
+        try{
+            let res = await fetch('{{ path("app_consultation_translate") }}', {
+                method:'POST',
+                body:form
+            });
+
+            let data = await res.json();
+
+            if(data.success){
+                el.innerHTML = data.translated;
+            }else{
+                el.innerHTML = text;
+            }
+
+        }catch(e){
+            el.innerHTML = text;
+        }
+    }
+}
+
+function restoreOriginal()
+{
+    let items = document.querySelectorAll('.translatable');
+
+    items.forEach(el => {
+        el.innerHTML = el.dataset.original;
+    });
+}
+</script>
 {% endblock %}

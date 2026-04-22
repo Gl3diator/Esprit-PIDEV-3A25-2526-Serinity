@@ -128,81 +128,81 @@ public function new(
      * GOOGLE CALENDAR DIRECT DOWNLOAD (.ics)
      * no preview
      */
-    #[Route('/rdv/google-calendar/{id}', name: 'app_rdv_google_calendar', methods: ['GET'])]
-    public function addGoogleCalendar(
-        int $id,
-        EntityManagerInterface $em
-    ): Response {
-        $user = $this->getUser();
+   #[Route('/rdv/google-calendar/{id}', name: 'app_rdv_google_calendar', methods: ['GET'])]
+public function addGoogleCalendar(
+    int $id,
+    EntityManagerInterface $em
+): Response {
+    $user = $this->getUser();
 
-        if (!$user instanceof User) {
-            return $this->redirectToRoute('ac_ui_login');
-        }
-
-        $conn = $em->getConnection();
-
-        $sql = "
-            SELECT 
-                r.id,
-                r.motif,
-                r.description,
-                r.date_time,
-                u.email AS doctor_email,
-                p.firstName,
-                p.lastName
-            FROM rendez_vous r
-            INNER JOIN users u ON u.id = r.doctor_id
-            LEFT JOIN profiles p ON p.user_id = u.id
-            WHERE r.id = :id
-            AND r.patient_id = :patientId
-            LIMIT 1
-        ";
-
-        $rdv = $conn->executeQuery($sql, [
-            'id'        => $id,
-            'patientId' => $user->getId()
-        ])->fetchAssociative();
-
-        if (!$rdv) {
-            throw $this->createNotFoundException('Rendez-vous introuvable');
-        }
-
-        $start = new \DateTime($rdv['date_time']);
-        $end   = (clone $start)->modify('+30 minutes');
-
-        $doctorName = trim(($rdv['firstName'] ?? '') . ' ' . ($rdv['lastName'] ?? ''));
-
-        $title = 'Rendez-vous médical';
-        $desc  = ($rdv['motif'] ?? '') . ' - ' . ($rdv['description'] ?? '');
-        $loc   = 'Cabinet Dr ' . $doctorName;
-
-        $ics = "BEGIN:VCALENDAR\r\n";
-        $ics .= "VERSION:2.0\r\n";
-        $ics .= "PRODID:-//Medical App//RDV//FR\r\n";
-        $ics .= "CALSCALE:GREGORIAN\r\n";
-        $ics .= "METHOD:PUBLISH\r\n";
-        $ics .= "BEGIN:VEVENT\r\n";
-        $ics .= "UID:rdv-" . $rdv['id'] . "@medicalapp.com\r\n";
-        $ics .= "DTSTAMP:" . gmdate('Ymd\THis\Z') . "\r\n";
-        $ics .= "DTSTART:" . $start->format('Ymd\THis') . "\r\n";
-        $ics .= "DTEND:" . $end->format('Ymd\THis') . "\r\n";
-        $ics .= "SUMMARY:" . $title . "\r\n";
-        $ics .= "DESCRIPTION:" . str_replace("\n", " ", $desc) . "\r\n";
-        $ics .= "LOCATION:" . $loc . "\r\n";
-        $ics .= "STATUS:CONFIRMED\r\n";
-        $ics .= "END:VEVENT\r\n";
-        $ics .= "END:VCALENDAR";
-
-        return new Response(
-            $ics,
-            200,
-            [
-                'Content-Type' => 'text/calendar; charset=utf-8',
-                'Content-Disposition' => 'attachment; filename="rendezvous-'.$rdv['id'].'.ics"',
-            ]
-        );
+    if (!$user instanceof User) {
+        return $this->redirectToRoute('ac_ui_login');
     }
 
+    $conn = $em->getConnection();
+
+    $sql = "
+        SELECT 
+            r.id,
+            r.motif,
+            r.description,
+            r.date_time,
+            u.email AS doctor_email,
+            p.firstName,
+            p.lastName,
+            p.country,
+            p.state
+        FROM rendez_vous r
+        INNER JOIN users u ON u.id = r.doctor_id
+        LEFT JOIN profiles p ON p.user_id = u.id
+        WHERE r.id = :id
+        AND r.patient_id = :patientId
+        LIMIT 1
+    ";
+
+    $rdv = $conn->executeQuery($sql, [
+        'id'        => $id,
+        'patientId' => $user->getId()
+    ])->fetchAssociative();
+
+    if (!$rdv) {
+        throw $this->createNotFoundException('Rendez-vous introuvable');
+    }
+
+    $start = new \DateTime($rdv['date_time']);
+    $end   = (clone $start)->modify('+30 minutes');
+
+    $doctorName = trim(($rdv['firstName'] ?? '') . ' ' . ($rdv['lastName'] ?? ''));
+
+    $title = 'Consultation médicale avec Dr ' . $doctorName;
+
+    $details = [];
+    $details[] = 'Motif : ' . ($rdv['motif'] ?: 'Consultation');
+    $details[] = 'Description : ' . ($rdv['description'] ?: 'Aucune');
+    $details[] = 'Médecin : Dr ' . $doctorName;
+    $details[] = 'Email : ' . ($rdv['doctor_email'] ?: '');
+
+    $desc = implode("\n", $details);
+
+    $location = trim(
+        ($rdv['state'] ?? '') . ' ' .
+        ($rdv['country'] ?? '')
+    );
+
+    if ($location === '') {
+        $location = 'Cabinet médical';
+    }
+
+    $googleUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        . '&text=' . urlencode($title)
+        . '&dates=' . $start->format('Ymd\THis') . '/' . $end->format('Ymd\THis')
+        . '&details=' . urlencode($desc)
+        . '&location=' . urlencode($location)
+        . '&sf=true'
+        . '&output=xml';
+
+    return $this->redirect($googleUrl);
+}
 
 #[Route('/rdv/edit/{id}', name: 'app_rdv_edit', methods: ['GET', 'POST'])]
 public function edit(
@@ -263,17 +263,62 @@ public function delete(RendezVous $rdv, EntityManagerInterface $em): Response
 }
 
 
-
-
 #[Route('/rdv/show/rdv/{id}', name: 'app_rdv_show')]
-public function show(RendezVous $rdv, EntityManagerInterface $em): Response
-{
-    // Implementation for showing rendez-vous details
+public function show(
+    RendezVous $rdv,
+    EntityManagerInterface $em
+): Response {
 
+    $patient = $this->getUser();
+
+    if (!$patient instanceof User) {
+        return $this->redirectToRoute('ac_ui_login');
+    }
+
+    if ($rdv->getPatient()?->getId() !== $patient->getId()) {
+        throw $this->createAccessDeniedException();
+    }
+
+    $now = new \DateTime();
+
+    /**
+     * USE ONLY proposedDateTime
+     */
+    if (!$rdv->getProposedDateTime()) {
+        throw $this->createNotFoundException('Date du rendez-vous non disponible.');
+    }
+
+    $rdvDate = \DateTime::createFromInterface(
+        $rdv->getProposedDateTime()
+    );
+
+    /**
+     * OPEN 1 HOUR BEFORE
+     */
+    $meetingStart = (clone $rdvDate)->modify('-1 hour');
+
+    /**
+     * CLOSE 45 MIN AFTER
+     */
+    $meetingEnd = (clone $rdvDate)->modify('+45 minutes');
+
+    $canJoinMeet = $now >= $meetingStart && $now <= $meetingEnd;
+
+    $secondsLeft = max(0, $meetingStart->getTimestamp() - $now->getTimestamp());
+    $minutesLeft = (int) ceil($secondsLeft / 60);
+
+    $roomName = 'serinity-rdv-' . $rdv->getId();
 
     return $this->render('rdv/show.html.twig', [
-        'rdv' => $rdv
-    ]);}
+        'rdv'          => $rdv,
+        'canJoinMeet'  => $canJoinMeet,
+        'roomName'     => $roomName,
+        'minutesLeft'  => $minutesLeft,
+        'meetingStart' => $meetingStart,
 
+        'nav'          => $this->buildNav('app_patient_rdv'),
+        'userName'     => $patient->getEmail(),
+    ]);
+}
  
 }

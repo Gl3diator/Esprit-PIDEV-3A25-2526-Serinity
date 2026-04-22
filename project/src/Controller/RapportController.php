@@ -11,9 +11,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class RapportController extends AbstractController
 {
@@ -104,7 +106,8 @@ final class RapportController extends AbstractController
         );
     }
 
-   #[Route('/rapport/{id}', name: 'app_rapport_show', methods: ['GET'])]
+
+#[Route('/rapport/{id}', name: 'app_rapport_show', methods: ['GET'])]
 public function show(
     string $id,
     ConsultationRepository $consultationRepository,
@@ -113,9 +116,6 @@ public function show(
     $user = $this->currentUser();
     $conn = $em->getConnection();
 
-    /**
-     * patient + profile join
-     */
     $sql = "
         SELECT 
             u.id,
@@ -161,6 +161,53 @@ public function show(
         'nav'           => $this->buildNav('app_therapist_rdv'),
         'userName'      => $user->getEmail(),
     ]);
+}
+
+
+/* =========================================
+   TRANSLATE API MYMEMORY
+========================================= */
+#[Route('/consultation/translate', name: 'app_consultation_translate', methods: ['POST'])]
+public function translateConsultation(
+    Request $request,
+    HttpClientInterface $httpClient
+): JsonResponse {
+
+    $text = trim((string) $request->request->get('text'));
+    $lang = trim((string) $request->request->get('lang', 'en'));
+
+    if ($text === '') {
+        return $this->json([
+            'success' => false,
+            'message' => 'Empty text'
+        ]);
+    }
+
+    try {
+        $response = $httpClient->request(
+            'GET',
+            'https://api.mymemory.translated.net/get',
+            [
+                'query' => [
+                    'q' => $text,
+                    'langpair' => 'fr|' . $lang
+                ]
+            ]
+        );
+
+        $data = $response->toArray(false);
+
+        return $this->json([
+            'success' => true,
+            'translated' => $data['responseData']['translatedText'] ?? $text
+        ]);
+
+    } catch (\Throwable $e) {
+        return $this->json([
+            'success' => false,
+            'translated' => $text
+        ]);
+    }
 }
 
 

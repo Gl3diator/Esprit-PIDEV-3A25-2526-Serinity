@@ -1,6 +1,6 @@
 {% extends 'access_control/layout.html.twig' %}
 
-{% block title %}Détail du Rendez-vous | Serinity{% endblock %}
+{% block title %}Consultation Live | Serinity{% endblock %}
 
 {% block content %}
 <div class="ac-app-layout">
@@ -10,266 +10,313 @@
     <div class="ac-main" data-controller="flash-toast">
 
         {% include 'access_control/components/_topbar.html.twig' with {
-            title: 'Détail Rendez-vous',
-            subtitle: 'Suivi de votre consultation',
+            title: 'Rendez-vous en ligne',
+            subtitle: 'Consultation & vidéo meeting sécurisé',
             username: userName
         } %}
 
-        {% for message in app.flashes('success') %}
-            <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
-        {% endfor %}
-
-        {% for message in app.flashes('error') %}
-            <span data-flash-toast-target="message" data-type="error" hidden>{{ message }}</span>
-        {% endfor %}
-
-        <section class="ac-card rdv-shell">
+<section class="rdv-wrapper">
 
 <style>
-.rdv-shell{
-    max-width:820px;
+.rdv-wrapper{
+    max-width:1400px;
     margin:auto;
+    padding:1.2rem;
+}
+
+.hero-card{
+    background:linear-gradient(135deg,#0f172a,#1e293b,#2F6F6D);
+    color:#fff;
+    border-radius:24px;
     padding:1.4rem;
+    margin-bottom:1.2rem;
+    box-shadow:0 25px 50px rgba(0,0,0,.18);
 }
 
-.rdv-header{
+.hero-top{
     display:flex;
-    align-items:center;
+    justify-content:space-between;
     gap:1rem;
-    margin-bottom:1.4rem;
-    padding-bottom:1rem;
-    border-bottom:1px solid #eef2f7;
+    flex-wrap:wrap;
+    align-items:center;
 }
 
-.rdv-avatar{
-    width:68px;
-    height:68px;
+.doc-box{
+    display:flex;
+    gap:1rem;
+    align-items:center;
+}
+
+.avatar{
+    width:70px;
+    height:70px;
     border-radius:50%;
+    background:rgba(255,255,255,.15);
     display:flex;
     align-items:center;
     justify-content:center;
-    color:#fff;
+    font-size:1.4rem;
+    font-weight:800;
+}
+
+.doc-name{
+    margin:0;
     font-size:1.2rem;
     font-weight:800;
-    background:linear-gradient(135deg,#2F6F6D,#57a7a3);
-    flex-shrink:0;
 }
 
-.rdv-name{
-    margin:0;
-    font-size:1.15rem;
-    font-weight:800;
-    color:#0f172a;
+.doc-sub{
+    margin-top:.35rem;
+    opacity:.85;
 }
 
-.rdv-sub{
-    color:#64748b;
-    margin-top:.2rem;
-    font-size:.9rem;
-}
-
-.status-wrap{
-    margin-bottom:1rem;
-}
-
-.badge-status{
-    display:inline-flex;
-    align-items:center;
-    gap:.45rem;
-    padding:.55rem .9rem;
+.live-badge{
+    padding:.65rem 1rem;
     border-radius:999px;
-    font-size:.74rem;
     font-weight:800;
+    font-size:.82rem;
+    background:#16a34a;
+    color:#fff;
 }
 
-.status-wait{
-    background:#fff7ed;
-    color:#ea580c;
+.wait-badge{
+    padding:.65rem 1rem;
+    border-radius:999px;
+    font-weight:800;
+    font-size:.82rem;
+    background:#f59e0b;
+    color:#fff;
 }
 
-.status-ok{
-    background:#ecfdf5;
-    color:#16a34a;
-}
-
-.status-refused{
-    background:#fef2f2;
-    color:#dc2626;
-}
-
-.info-grid{
+.main-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-    gap:.9rem;
-    margin-bottom:1rem;
+    grid-template-columns:390px 1fr;
+    gap:1rem;
 }
 
-.info-card{
+.side-panel{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    padding:1rem;
+}
+
+.info-box{
     background:#f8fafc;
     border:1px solid #eef2f7;
     border-radius:18px;
     padding:1rem;
+    margin-bottom:.8rem;
 }
 
-.info-label{
+.label{
     font-size:.75rem;
-    color:#94a3b8;
     text-transform:uppercase;
-    letter-spacing:.04em;
-    font-weight:700;
-    margin-bottom:.35rem;
+    color:#94a3b8;
+    font-weight:800;
+    margin-bottom:.4rem;
 }
 
-.info-value{
+.value{
+    font-weight:700;
     color:#0f172a;
-    font-weight:700;
+    line-height:1.5;
 }
 
-.box{
+.meet-card{
     background:#fff;
-    border:1px solid #eef2f7;
-    border-radius:18px;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
     padding:1rem;
-    margin-bottom:.9rem;
+    min-height:760px;
 }
 
-.box-title{
-    font-size:.76rem;
-    color:#94a3b8;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    font-weight:700;
-    margin-bottom:.45rem;
+.jitsi-box{
+    overflow:hidden;
+    border-radius:18px;
+    height:720px;
+    border:1px solid #e2e8f0;
 }
 
-.box-content{
-    color:#0f172a;
-    font-weight:600;
-    line-height:1.55;
-}
-
-.action-row{
+.empty-state{
+    height:720px;
     display:flex;
-    gap:.8rem;
-    flex-wrap:wrap;
-    margin-top:1.2rem;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    background:#f8fafc;
+    border-radius:18px;
+}
+
+.empty-state h3{
+    margin:.8rem 0 .35rem;
 }
 
 .btn-back{
-    padding:.92rem 1.15rem;
-    border-radius:14px;
-    font-weight:700;
+    margin-top:1rem;
+    display:inline-flex;
+    gap:.6rem;
+    align-items:center;
     text-decoration:none;
-    color:#334155;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    transition:.2s;
+    padding:.9rem 1.2rem;
+    border-radius:14px;
+    background:#0f172a;
+    color:#fff;
+    font-weight:700;
 }
 
-.btn-back:hover{
-    transform:translateY(-2px);
+@media(max-width:1100px){
+    .main-grid{
+        grid-template-columns:1fr;
+    }
+
+    .jitsi-box,
+    .empty-state{
+        height:620px;
+    }
 }
 </style>
 
 {% set doctorName = rdv.doctor.fullName is defined and rdv.doctor.fullName ? rdv.doctor.fullName : rdv.doctor.email %}
 
-<div class="rdv-header">
+<div class="hero-card">
 
-    <div class="rdv-avatar">
-        {{ doctorName|slice(0,1)|upper }}
-    </div>
+    <div class="hero-top">
 
-    <div>
-        <h3 class="rdv-name">{{ doctorName }}</h3>
-        <div class="rdv-sub">
-            Informations de votre rendez-vous
+        <div class="doc-box">
+
+            <div class="avatar">
+                {{ doctorName|slice(0,1)|upper }}
+            </div>
+
+            <div>
+                <h2 class="doc-name">{{ doctorName }}</h2>
+                <div class="doc-sub">
+                    Consultation médicale digitale sécurisée
+                </div>
+            </div>
+
         </div>
-    </div>
 
-</div>
-
-<div class="status-wrap">
-
-    <span class="badge-status
-        {% if rdv.status == 'EN_ATTENTE' %}status-wait
-        {% elseif rdv.status == 'VALIDE' %}status-ok
-        {% else %}status-refused{% endif %}
-    ">
-
-        {% if rdv.status == 'EN_ATTENTE' %}
-            <i class="bi bi-hourglass-split"></i>
-        {% elseif rdv.status == 'VALIDE' %}
-            <i class="bi bi-check-circle-fill"></i>
+        {% if canJoinMeet %}
+            <div class="live-badge">
+                ● Live Meeting Available
+            </div>
         {% else %}
-            <i class="bi bi-x-circle-fill"></i>
+            <div class="wait-badge">
+                Starts at {{ rdv.proposedDateTime|date('H:i') }}
+            </div>
         {% endif %}
 
-        {{ rdv.status }}
-
-    </span>
+    </div>
 
 </div>
 
-<div class="info-grid">
+<div class="main-grid">
 
-    <div class="info-card">
-        <div class="info-label">Date du rendez-vous</div>
-        <div class="info-value">
-            {{ rdv.dateTime|date('d/m/Y H:i') }}
+    <div class="side-panel">
+
+        <div class="info-box">
+            <div class="label">Date proposé</div>
+            <div class="value">
+                {{ rdv.proposedDateTime|date('d/m/Y H:i') }}
+            </div>
         </div>
-    </div>
 
-    <div class="info-card">
-        <div class="info-label">Médecin / Thérapeute</div>
-        <div class="info-value">
-            {{ doctorName }}
+        <div class="info-box">
+            <div class="label">Status</div>
+            <div class="value">{{ rdv.status }}</div>
         </div>
+
+        <div class="info-box">
+            <div class="label">Motif</div>
+            <div class="value">
+                {{ rdv.motif ?: 'Consultation générale' }}
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="label">Description</div>
+            <div class="value">
+                {{ rdv.description ?: 'Aucune description.' }}
+            </div>
+        </div>
+
+        {% if rdv.doctorNote %}
+        <div class="info-box">
+            <div class="label">Doctor Note</div>
+            <div class="value">{{ rdv.doctorNote }}</div>
+        </div>
+        {% endif %}
+
+        <a href="{{ path('app_patient_rdv') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Retour
+        </a>
+
+    </div>
+
+
+    <div class="meet-card">
+
+        {% if canJoinMeet %}
+
+            <div id="jitsi-container" class="jitsi-box"></div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <i class="bi bi-camera-video-off" style="font-size:3rem;color:#94a3b8;"></i>
+                <h3>Meeting not available yet</h3>
+                <p>
+                    Your secure consultation room opens automatically
+                    at the appointment time.
+                </p>
+            </div>
+
+        {% endif %}
+
     </div>
 
 </div>
 
-<div class="box">
-    <div class="box-title">Motif</div>
-    <div class="box-content">
-        {{ rdv.motif ?: 'Sans motif' }}
-    </div>
-</div>
+</section>
 
-<div class="box">
-    <div class="box-title">Description</div>
-    <div class="box-content">
-        {{ rdv.description ?: 'Aucune description fournie.' }}
-    </div>
-</div>
+{% if canJoinMeet %}
+<script src="https://meet.jit.si/external_api.js"></script>
 
-{% if rdv.proposedDateTime %}
-<div class="box">
-    <div class="box-title">Nouvelle date proposée</div>
-    <div class="box-content">
-        {{ rdv.proposedDateTime|date('d/m/Y H:i') }}
-    </div>
-</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const domain = "meet.jit.si";
+
+    const options = {
+        roomName: "{{ roomName }}",
+        width: "100%",
+        height: "100%",
+        parentNode: document.querySelector('#jitsi-container'),
+
+        userInfo: {
+            displayName: "{{ userName|e('js') }}"
+        },
+
+        configOverwrite: {
+            prejoinPageEnabled: false,
+            startWithAudioMuted: false,
+            startWithVideoMuted: false
+        },
+
+        interfaceConfigOverwrite: {
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_BRAND_WATERMARK: false
+        }
+    };
+
+    new JitsiMeetExternalAPI(domain, options);
+});
+</script>
 {% endif %}
-
-{% if rdv.doctorNote %}
-<div class="box">
-    <div class="box-title">Note du thérapeute</div>
-    <div class="box-content">
-        {{ rdv.doctorNote }}
-    </div>
-</div>
-{% endif %}
-
-<div class="action-row">
-
-    <a href="{{ path('app_patient_rdv') }}" class="btn-back">
-        <i class="bi bi-arrow-left"></i>
-        Retour
-    </a>
-
-</div>
-
-        </section>
 
     </div>
 </div>

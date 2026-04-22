@@ -1,297 +1,335 @@
 {% extends 'access_control/layout.html.twig' %}
 
-{% block title %}Détail Rendez-vous | Serinity{% endblock %}
+{% block title %}Consultation Live Admin | Serinity{% endblock %}
 
 {% block content %}
 <div class="ac-app-layout">
 
-    {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
+{% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
 
-    <div class="ac-main" data-controller="flash-toast">
+<div class="ac-main" data-controller="flash-toast">
 
-        {% include 'access_control/components/_topbar.html.twig' with {
-            title: 'Dossier Rendez-vous',
-            subtitle: 'Consultation et gestion de la demande',
-            username: userName
-        } %}
+{% include 'access_control/components/_topbar.html.twig' with {
+    title: 'Gestion Consultation',
+    subtitle: 'Patient dossier + vidéo meeting sécurisé',
+    username: userName
+} %}
 
-        {% for message in app.flashes('success') %}
-            <span data-flash-toast-target="message" data-type="success" hidden>{{ message }}</span>
-        {% endfor %}
-
-        {% for message in app.flashes('error') %}
-            <span data-flash-toast-target="message" data-type="error" hidden>{{ message }}</span>
-        {% endfor %}
-
-        <section class="ac-card rdv-shell">
+<section class="rdv-wrapper">
 
 <style>
-.rdv-shell{
-    max-width:900px;
+.rdv-wrapper{
+    max-width:1450px;
     margin:auto;
+    padding:1.2rem;
+}
+
+.hero{
+    background:linear-gradient(135deg,#0f172a,#1e293b,#2F6F6D);
+    color:#fff;
+    border-radius:24px;
     padding:1.4rem;
+    margin-bottom:1rem;
+    box-shadow:0 25px 45px rgba(0,0,0,.18);
 }
 
-.rdv-header{
+.hero-top{
     display:flex;
-    align-items:center;
+    justify-content:space-between;
     gap:1rem;
-    margin-bottom:1.4rem;
-    padding-bottom:1rem;
-    border-bottom:1px solid #eef2f7;
+    flex-wrap:wrap;
+    align-items:center;
 }
 
-.rdv-avatar{
-    width:68px;
-    height:68px;
+.patient-box{
+    display:flex;
+    gap:1rem;
+    align-items:center;
+}
+
+.avatar{
+    width:72px;
+    height:72px;
     border-radius:50%;
+    background:rgba(255,255,255,.14);
     display:flex;
     align-items:center;
     justify-content:center;
-    color:#fff;
-    font-size:1.2rem;
+    font-size:1.35rem;
     font-weight:800;
-    background:linear-gradient(135deg,#2F6F6D,#57a7a3);
-    flex-shrink:0;
 }
 
-.rdv-name{
+.name{
     margin:0;
     font-size:1.15rem;
     font-weight:800;
-    color:#0f172a;
 }
 
-.rdv-sub{
-    color:#64748b;
-    margin-top:.2rem;
-    font-size:.9rem;
+.sub{
+    margin-top:.3rem;
+    opacity:.85;
 }
 
-.info-grid{
+.live{
+    background:#16a34a;
+    color:#fff;
+    padding:.7rem 1rem;
+    border-radius:999px;
+    font-weight:800;
+}
+
+.wait{
+    background:#f59e0b;
+    color:#fff;
+    padding:.7rem 1rem;
+    border-radius:999px;
+    font-weight:800;
+}
+
+.grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:.9rem;
-    margin-bottom:1rem;
+    grid-template-columns:390px 1fr;
+    gap:1rem;
 }
 
-.info-card{
+.side{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    padding:1rem;
+}
+
+.info{
     background:#f8fafc;
     border:1px solid #eef2f7;
     border-radius:18px;
     padding:1rem;
+    margin-bottom:.8rem;
 }
 
-.info-label{
-    font-size:.75rem;
-    color:#94a3b8;
+.label{
+    font-size:.74rem;
     text-transform:uppercase;
-    letter-spacing:.04em;
-    font-weight:700;
+    color:#94a3b8;
+    font-weight:800;
     margin-bottom:.35rem;
 }
 
-.info-value{
-    color:#0f172a;
+.value{
     font-weight:700;
-}
-
-.box{
-    background:#ffffff;
-    border:1px solid #eef2f7;
-    border-radius:18px;
-    padding:1rem;
-    margin-bottom:.9rem;
-}
-
-.box-title{
-    font-size:.78rem;
-    color:#94a3b8;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    font-weight:700;
-    margin-bottom:.45rem;
-}
-
-.box-content{
     color:#0f172a;
-    font-weight:600;
-    line-height:1.55;
+    line-height:1.5;
 }
 
-.badge-status{
-    display:inline-flex;
-    align-items:center;
-    padding:.45rem .85rem;
-    border-radius:999px;
-    font-size:.74rem;
-    font-weight:800;
-}
-
-.status-attente{
-    background:#fff7ed;
-    color:#ea580c;
-}
-
-.status-valide{
-    background:#ecfdf5;
-    color:#16a34a;
-}
-
-.status-refuse{
-    background:#fef2f2;
-    color:#dc2626;
-}
-
-.action-row{
+.actions{
     display:flex;
-    gap:.8rem;
+    gap:.7rem;
     flex-wrap:wrap;
-    margin-top:1.2rem;
+    margin-top:1rem;
 }
 
-.btn-main{
-    border:none;
-    padding:.92rem 1.15rem;
+.btn{
+    text-decoration:none;
+    padding:.9rem 1rem;
     border-radius:14px;
     font-weight:800;
-    text-decoration:none;
-    color:#fff;
-    transition:.2s;
+    border:none;
 }
 
 .btn-green{
-    background:linear-gradient(135deg,#16a34a,#22c55e);
-    box-shadow:0 10px 25px rgba(34,197,94,.18);
+    background:#16a34a;
+    color:#fff;
 }
 
 .btn-red{
-    background:linear-gradient(135deg,#dc2626,#ef4444);
-    box-shadow:0 10px 25px rgba(239,68,68,.18);
+    background:#dc2626;
+    color:#fff;
 }
 
 .btn-back{
-    padding:.92rem 1.15rem;
-    border-radius:14px;
-    font-weight:700;
-    text-decoration:none;
-    color:#334155;
-    background:#f8fafc;
+    background:#0f172a;
+    color:#fff;
+}
+
+.meet{
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:22px;
+    padding:1rem;
+    min-height:760px;
+}
+
+.jitsi{
+    height:720px;
+    overflow:hidden;
+    border-radius:18px;
     border:1px solid #e2e8f0;
 }
 
-.btn-main:hover,
-.btn-back:hover{
-    transform:translateY(-2px);
+.empty{
+    height:720px;
+    border-radius:18px;
+    background:#f8fafc;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+}
+
+@media(max-width:1100px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .jitsi,.empty{
+        height:620px;
+    }
 }
 </style>
 
 {% set patientName = rdv.patient.fullName is defined and rdv.patient.fullName ? rdv.patient.fullName : rdv.patient.email %}
 
-<div class="rdv-header">
+<div class="hero">
 
-    <div class="rdv-avatar">
-        {{ patientName|slice(0,1)|upper }}
-    </div>
+<div class="hero-top">
 
-    <div>
-        <h3 class="rdv-name">{{ patientName }}</h3>
-        <div class="rdv-sub">
-            Demande de consultation médicale
-        </div>
-    </div>
+<div class="patient-box">
+
+<div class="avatar">
+{{ patientName|slice(0,1)|upper }}
+</div>
+
+<div>
+<h2 class="name">{{ patientName }}</h2>
+<div class="sub">Consultation vidéo thérapeute</div>
+</div>
 
 </div>
 
-<div class="info-grid">
-
-    <div class="info-card">
-        <div class="info-label">Date demandée</div>
-        <div class="info-value">
-            {{ rdv.dateTime|date('d/m/Y H:i') }}
-        </div>
-    </div>
-
-    <div class="info-card">
-        <div class="info-label">Créé le</div>
-        <div class="info-value">
-            {{ rdv.createdAt|date('d/m/Y H:i') }}
-        </div>
-    </div>
-
-    <div class="info-card">
-        <div class="info-label">Statut</div>
-        <div class="info-value">
-
-            <span class="badge-status
-                {% if rdv.status == 'EN_ATTENTE' %}status-attente
-                {% elseif rdv.status == 'VALIDE' %}status-valide
-                {% else %}status-refuse{% endif %}
-            ">
-                {{ rdv.status }}
-            </span>
-
-        </div>
-    </div>
+{% if canJoinMeet %}
+<div class="live">● Meeting Ouvert</div>
+{% else %}
+<div class="wait">Disponible dans {{ minutesLeft }} min</div>
+{% endif %}
 
 </div>
-
-<div class="box">
-    <div class="box-title">Motif</div>
-    <div class="box-content">
-        {{ rdv.motif ?: 'Sans motif' }}
-    </div>
 </div>
 
-<div class="box">
-    <div class="box-title">Description du patient</div>
-    <div class="box-content">
-        {{ rdv.description ?: 'Aucune description fournie.' }}
-    </div>
+
+<div class="grid">
+
+<div class="side">
+
+<div class="info">
+<div class="label">Date demandée</div>
+<div class="value">{{ rdv.dateTime|date('d/m/Y H:i') }}</div>
 </div>
 
 {% if rdv.proposedDateTime %}
-<div class="box">
-    <div class="box-title">Date proposée</div>
-    <div class="box-content">
-        {{ rdv.proposedDateTime|date('d/m/Y H:i') }}
-    </div>
+<div class="info">
+<div class="label">Date proposée</div>
+<div class="value">{{ rdv.proposedDateTime|date('d/m/Y H:i') }}</div>
 </div>
 {% endif %}
+
+<div class="info">
+<div class="label">Statut</div>
+<div class="value">{{ rdv.status }}</div>
+</div>
+
+<div class="info">
+<div class="label">Motif</div>
+<div class="value">{{ rdv.motif ?: 'Consultation générale' }}</div>
+</div>
+
+<div class="info">
+<div class="label">Description</div>
+<div class="value">{{ rdv.description ?: 'Aucune description.' }}</div>
+</div>
 
 {% if rdv.doctorNote %}
-<div class="box">
-    <div class="box-title">Note thérapeute</div>
-    <div class="box-content">
-        {{ rdv.doctorNote }}
-    </div>
+<div class="info">
+<div class="label">Note thérapeute</div>
+<div class="value">{{ rdv.doctorNote }}</div>
 </div>
 {% endif %}
 
-<div class="action-row">
+<div class="actions">
 
-    {% if rdv.status == 'EN_ATTENTE' %}
+{% if rdv.status == 'EN_ATTENTE' %}
+<a href="{{ path('app_rdv_accept',{id:rdv.id}) }}" class="btn btn-green">
+Accepter
+</a>
 
-        <a href="{{ path('app_rdv_accept', {id: rdv.id}) }}" class="btn-main btn-green">
-            <i class="bi bi-check-circle"></i>
-            Accepter
-        </a>
+<a href="{{ path('app_rdv_refuse',{id:rdv.id}) }}" class="btn btn-red">
+Refuser
+</a>
+{% endif %}
 
-        <a href="{{ path('app_rdv_refuse', {id: rdv.id}) }}" class="btn-main btn-red">
-            <i class="bi bi-x-circle"></i>
-            Refuser
-        </a>
-
-    {% endif %}
-
-    <a href="{{ path('app_therapist_rdv') }}" class="btn-back">
-        Retour dashboard
-    </a>
+<a href="{{ path('app_therapist_rdv') }}" class="btn btn-back">
+Retour
+</a>
 
 </div>
 
-        </section>
+</div>
 
-    </div>
+
+<div class="meet">
+
+{% if canJoinMeet %}
+
+<div id="jitsi-container" class="jitsi"></div>
+
+{% else %}
+
+<div class="empty">
+<i class="bi bi-camera-video-off" style="font-size:3rem;color:#94a3b8;"></i>
+<h3>Meeting fermé</h3>
+<p>Le salon vidéo ouvre 1 heure avant le rendez-vous.</p>
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+</section>
+
+{% if canJoinMeet %}
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+    const api = new JitsiMeetExternalAPI("meet.jit.si", {
+        roomName: "{{ roomName }}",
+        parentNode: document.querySelector('#jitsi-container'),
+        width: "100%",
+        height: "100%",
+
+        userInfo:{
+            displayName:"Dr {{ userName|e('js') }}"
+        },
+
+        configOverwrite:{
+            prejoinPageEnabled:false,
+            startWithAudioMuted:false,
+            startWithVideoMuted:false
+        },
+
+        interfaceConfigOverwrite:{
+            SHOW_JITSI_WATERMARK:false,
+            SHOW_BRAND_WATERMARK:false
+        }
+    });
+
+});
+</script>
+{% endif %}
+
+</div>
 </div>
 {% endblock %}

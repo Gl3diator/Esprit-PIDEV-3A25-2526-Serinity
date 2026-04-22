@@ -62,7 +62,7 @@ Rules:
                 'headers' => [
                     //////api iciiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
                  /////   'Authorization' => 'Bearer ' . 'iiiiiiiicccccccciiiiiiiiiiiiii',
-                    'Authorization' => 'Bearer ' . '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',
+        'Authorization' => 'Bearer ' . $_ENV['OPENROUTER_API_KEY'],
                     'Content-Type'  => 'application/json',
                     'HTTP-Referer'  => 'http://localhost',
                     'X-Title'       => 'Serinity Medical AI'
