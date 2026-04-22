@@ -12,6 +12,8 @@ use App\Service\User\FatigueResolver;
 use App\Service\User\YouTubeRecommendationService;
 use App\Service\User\UserExerciceService;
 use App\Service\WeatherService;
+use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,6 +33,7 @@ final class ExerciceController extends AbstractUserUiController
         private readonly ContextAwarePlanner $contextAwarePlanner,
         private readonly FatigueResolver $fatigueResolver,
         private readonly YouTubeRecommendationService $youTubeRecommendationService,
+        private readonly PaginatorInterface $paginator,
         private readonly float $defaultLatitude,
         private readonly float $defaultLongitude,
     ) {
@@ -110,7 +113,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->render('user/pages/exercises.html.twig', [
             'nav' => $this->buildNav('user_ui_exercises'),
             'userName' => $user->getEmail(),
-            'catalog' => $catalog,
+            'catalog' => $this->paginator->paginate($catalog, max(1, $request->query->getInt('page', 1)), 9),
             'availableTypes' => $availableTypes,
             'availableLevels' => $availableLevels,
             'filters' => [
@@ -125,6 +128,8 @@ final class ExerciceController extends AbstractUserUiController
             'weather' => $weather,
             'plan' => $plan,
             'fatigueOptions' => $this->fatigueResolver->options(),
+            'progressDistributionChart' => $this->buildProgressDistributionChart($summary),
+            'completionRateChart' => $this->buildCompletionRateChart($summary),
         ]);
     }
 
@@ -143,7 +148,7 @@ final class ExerciceController extends AbstractUserUiController
         ]);
     }
 
-    #[Route('/session/{id}/start', name: 'user_ui_exercises_session_start', methods: ['GET'])]
+    #[Route('/session/{id}/start', name: 'user_ui_exercises_session_start', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function sessionStart(int $id, Request $request): Response
     {
         $user = $this->currentUser();
@@ -157,7 +162,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->renderSessionPage($user->getEmail(), $result->data, $this->fatigueResolver->resolve($request->query->get('fatigue')));
     }
 
-    #[Route('/session/{id}/finish', name: 'user_ui_exercises_session_finish', methods: ['POST'])]
+    #[Route('/session/{id}/finish', name: 'user_ui_exercises_session_finish', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function sessionFinish(int $id, Request $request, ValidatorInterface $validator): Response
     {
         $user = $this->currentUser();
@@ -182,7 +187,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->redirectToRoute('user_ui_exercises_sessions');
     }
 
-    #[Route('/{id}/start', name: 'user_ui_exercises_start', methods: ['POST'])]
+    #[Route('/{id}/start', name: 'user_ui_exercises_start', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function startLegacy(int $id, Request $request): Response
     {
         $user = $this->currentUser();
@@ -196,7 +201,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->renderSessionPage($user->getEmail(), $result->data, $this->fatigueResolver->resolve($request->query->get('fatigue')));
     }
 
-    #[Route('/{id}/complete', name: 'user_ui_exercises_complete', methods: ['POST'])]
+    #[Route('/{id}/complete', name: 'user_ui_exercises_complete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function completeLegacy(int $id, Request $request, ValidatorInterface $validator): Response
     {
         return $this->sessionFinish($id, $request, $validator);
@@ -214,7 +219,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->redirectToRoute('user_ui_exercises');
     }
 
-    #[Route('/{id}', name: 'user_ui_exercises_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'user_ui_exercises_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): Response
     {
         $user = $this->currentUser();
@@ -276,5 +281,64 @@ final class ExerciceController extends AbstractUserUiController
             $hour >= 12 => 'afternoon',
             default => 'morning',
         };
+    }
+
+    /**
+     * @param array<string,mixed> $summary
+     */
+    private function buildProgressDistributionChart(array $summary): PieChart
+    {
+        $rows = [];
+        foreach ([
+            'Assigned' => (int) ($summary['assigned'] ?? 0),
+            'In progress' => (int) ($summary['inProgress'] ?? 0),
+            'Completed' => (int) ($summary['completed'] ?? 0),
+        ] as $label => $count) {
+            if ($count > 0) {
+                $rows[] = [$label, $count];
+            }
+        }
+
+        $chart = new PieChart();
+        $chart->getData()->setArrayToDataTable([
+            ['Status', 'Sessions'],
+            ...($rows !== [] ? $rows : [['No sessions yet', 0]]),
+        ]);
+        $chart->getOptions()
+            ->setTitle('Session status')
+            ->setHeight(320)
+            ->setWidth(520)
+            ->setPieHole(0.45)
+            ->setPieSliceText('value')
+            ->setColors(['#cfe1df', '#88bdbc', '#2f6f6d']);
+        $chart->getOptions()->getLegend()->setPosition('bottom');
+
+        return $chart;
+    }
+
+    /**
+     * @param array<string,mixed> $summary
+     */
+    private function buildCompletionRateChart(array $summary): PieChart
+    {
+        $completionRate = max(0.0, min(100.0, (float) ($summary['completionRate'] ?? 0.0)));
+        $remainingRate = max(0.0, 100.0 - $completionRate);
+
+        $chart = new PieChart();
+        $chart->getData()->setArrayToDataTable([
+            ['Progress', 'Percent'],
+            ['Completed', $completionRate],
+            ['Remaining', $remainingRate],
+        ]);
+        $chart->getOptions()
+            ->setTitle('Completion rate')
+            ->setHeight(320)
+            ->setWidth(520)
+            ->setPieHole(0.62)
+            ->setPieSliceText('percentage')
+            ->setColors(['#2f6f6d', '#e4eeee']);
+        $chart->getOptions()->getLegend()->setPosition('bottom');
+
+        return $chart;
     }
 }
