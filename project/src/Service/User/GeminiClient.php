@@ -224,6 +224,63 @@ final readonly class GeminiClient
         return null;
     }
 
+    public function generateCoachChatReply(string $prompt): ?string
+    {
+        $this->logger->info('Gemini coach chat client invoked.', [
+            'model' => $this->model,
+            'has_api_key' => trim($this->apiKey) !== '',
+        ]);
+
+        if (trim($this->apiKey) === '' || trim($this->model) === '' || trim($prompt) === '') {
+            return null;
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', sprintf(self::BASE_URL, rawurlencode($this->model)), [
+                'query' => ['key' => $this->apiKey],
+                'json' => [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt],
+                            ],
+                        ],
+                    ],
+                ],
+                'timeout' => self::REQUEST_TIMEOUT_SECONDS,
+                'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $rawBody = $response->getContent(false);
+            if ($statusCode !== 200 || trim($rawBody) === '') {
+                $this->logger->warning('Gemini coach chat request returned an unusable response.', [
+                    'status_code' => $statusCode,
+                    'raw_body' => $rawBody,
+                ]);
+
+                return null;
+            }
+
+            $payload = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($payload)) {
+                return null;
+            }
+
+            $reply = $this->extractCandidateText($payload);
+
+            return $reply !== '' ? $reply : null;
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Gemini coach chat request failed.', [
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
+                'model' => $this->model,
+            ]);
+
+            return null;
+        }
+    }
+
     /** @param array<string,mixed> $report */
     private function buildPrompt(array $report): string
     {
