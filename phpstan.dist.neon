@@ -1,0 +1,44 @@
+parameters:
+    level: 5
+    paths:
+        - src
+
+    ignoreErrors:
+        # ── Collègues : AccessControlUiController ──
+        - path: src/Controller/Access/Web/AccessControlUiController.php
+          message: '#.*#'
+
+        # ── Collègues : ExerciseController Admin ──
+        - path: src/Controller/Exercice/Admin/ExerciseController.php
+          message: '#.*#'
+
+        # ── Collègues : ExerciseController Front ──
+        - path: src/Controller/Exercice/Front/ExerciseController.php
+          message: '#.*#'
+
+        # ── Collègues : ExerciseSessionController ──
+        - path: src/Controller/Exercice/Front/ExerciseSessionController.php
+          message: '#.*#'
+
+        # ── Collègues : JournalEntryController ──
+        - path: src/Controller/Mood/JournalEntryController.php
+          message: '#.*#'
+
+
+
+        # ── Collègues : Entities Mood ──
+        - path: src/Entity/Mood/JournalEntry.php
+          message: '#.*#'
+        - path: src/Entity/Mood/MoodEntry.php
+          message: '#.*#'
+
+
+        # ── Collègues : Security ──
+        - path: src/Security/AuthSessionAuthenticator.php
+          message: '#.*#'
+        - path: src/Security/Jwt/JwtAuthenticator.php
+          message: '#.*#'
+
+        # ── Collègues : ResetPasswordService ──
+        - path: src/Service/ResetPasswordService.php
+          message: '#.*#'

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau rêve — Sleep Tracker{% endblock %}
+
+{% block body %}
+    <nav class="breadcrumb">
+        {{ path('app_reve_index') }}Rêves</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">Nouveau rêve</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">💭 Nouveau rêve</h1>
+            <p class="page-header__subtitle">Décrivez votre rêve avec le plus de détails possible</p>
+        </div>
+    </header>
+
+    {% include 'sleep/reve/components/_form_modal.html.twig' with {
+        form: form,
+        modal_mode: false
+    } %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ reve.titre }} — Sleep Tracker
+{% endblock %}
+
+{% block body %}
+
+    {# ==========================
+   BREADCRUMB
+========================== #}
+    <nav class="breadcrumb">
+        <a href="{{ path('app_reve_index') }}">Rêves</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">{{ reve.titre }}</span>
+    </nav>
+
+    {# ==========================
+   HEADER PAGE
+========================== #}
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">💭 {{ reve.titre }}</h1>
+
+            <p class="page-header__subtitle">
+                {% if reve.sommeil %}
+                    <a
+                            href="{{ path('sommeil_show', { id: reve.sommeil.id }) }}"
+                            class="link-muted"
+                    >
+                        Nuit du {{ reve.sommeil.dateNuit
+                        ? reve.sommeil.dateNuit|date('d/m/Y')
+                        : '—'
+                        }}
+                    </a>
+                {% else %}
+                    <span class="text-muted">Aucune nuit associée</span>
+                {% endif %}
+            </p>
+        </div>
+    </header>
+
+    {# ==========================
+   CONTENU DU RÊVE
+========================== #}
+    {% include 'sleep/reve/components/_show_modal.html.twig' with {
+        reve: reve,
+        modal_mode: false
+    } %}
+
+    {# ==========================
+   MODAL SUPPRESSION
+========================== #}
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h2 class="modal__title">Supprimer ce rêve ?</h2>
+
+            <p class="modal__body">
+                « {{ reve.titre }} » sera définitivement supprimé.
+            </p>
+
+            <div class="modal__actions">
+                <button
+                        type="button"
+                        class="btn btn--secondary"
+                        onclick="document.getElementById('deleteModal').classList.remove('open')"
+                >
+                    Annuler
+                </button>
+
+                <form
+                        method="post"
+                        action="{{ path('app_reve_delete', { id: reve.id }) }}"
+                >
+                    <input
+                            type="hidden"
+                            name="_token"
+                            value="{{ csrf_token('delete' ~ reve.id) }}"
+                    >
+
+                    <button type="submit" class="btn btn--danger">
+                        Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle nuit — Sleep Tracker{% endblock %}
+
+{% block body %}
+    <nav class="breadcrumb">
+        <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
+        <span>›</span>
+        <span>Nouvelle nuit</span>
+    </nav>
+
+    <header class="page-header">
+        <h1 class="page-title">🌙 Nouvelle nuit</h1>
+        <p class="page-subtitle">Enregistrez votre nuit de sommeil</p>
+    </header>
+
+    {% include 'sleep/sommeil/components/_form_modal.html.twig' with {
+        form: form,
+        modal_mode: false
+    } %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{
+  "name": "serinity_sleep",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production",
+    "dev-server": "encore dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gl3diator/Esprit-PIDEV-3A25-2526-Serinity.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gl3diator/Esprit-PIDEV-3A25-2526-Serinity/issues"
+  },
+  "homepage": "https://github.com/Gl3diator/Esprit-PIDEV-3A25-2526-Serinity#readme",
+  "dependencies": {
+    "@symfony/ux-turbo": "^2.34.0"
+  },
+  "devDependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "@symfony/stimulus-bridge": "^4.0.1",
+    "@symfony/webpack-encore": "^5.2.0",
+    "core-js": "^3.46.0",
+    "regenerator-runtime": "^0.14.1",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
+  }
+}

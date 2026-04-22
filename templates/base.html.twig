@@ -1,24 +1,660 @@
+{#
+templates/base.html.twig — Serinity
+Layout principal unifié : Sleep + Exercice — Navbar fixe + Footer complet
+#}
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Serinity — Suivez vos nuits, analysez vos rêves et vos activités de bien-être.{% endblock %}">
+    <title>{% block title %}Serinity{% endblock %}</title>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
+    {# Icônes Material Symbols pour bedtime / exercise / mood / shield_lock / translate #}
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" />
+
+    {# CSS principal Serinity — ordre obligatoire : tokens → serinity → custom #}
+    <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/front.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+        {# Si tu veux retirer complètement la liste à gauche sur le login, dé-commente : #}
+        {# <style>.ac-brand-list{display:none!important;}</style> #}
+    {% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% set current_route = app.request.attributes.get('_route') %}
+
+{% block site_navigation %}
+    {# IMPORTANT : sn-navbar--original pour garder le style d’origine de cette navbar #}
+    <nav class="sn-navbar sn-navbar--original" id="sn-navbar" role="navigation" aria-label="Navigation principale">
+        <div class="container">
+
+            <a href="{{ path('app_home') }}" class="sn-brand" aria-label="Serinity — Accueil">
+                <img src="{{ asset('assets/img/logo2.png') }}"
+                     alt="Serinity logo"
+                     width="40" height="40"
+                     loading="lazy"
+                     class="sn-brand-logo">
+                <span class="sn-brand-name">Serinity</span>
+            </a>
+
+            <ul class="sn-nav" role="list">
+                <li>
+                    <a href="{{ path('app_sommeil_index') }}"
+                       class="sn-nav-link {% if current_route starts with 'app_sommeil' or current_route starts with 'app_reve' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        Sommeil
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#"
+                       class="sn-nav-link {% if current_route starts with 'app_front_exercise' or current_route starts with 'app_exercice' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Exercice
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#"
+                       class="sn-nav-link {% if current_route starts with 'app_mood' or current_route starts with 'app_journal' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                        Humeur
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#" class="sn-nav-link {% if current_route starts with 'app_consultation' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.08 6.08l1.15-1.15a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                        Consultation
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#" class="sn-nav-link {% if current_route starts with 'app_forum' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Forum
+                    </a>
+                </li>
+            </ul>
+
+            <form class="sn-search" action="{{ path('app_home') }}" method="get" role="search" aria-label="Recherche">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="search"
+                       name="q"
+                       placeholder="Rechercher…"
+                       value="{{ app.request.query.get('q')|default('') }}"
+                       aria-label="Rechercher dans Serinity">
+            </form>
+
+            <div class="sn-user-btn" role="navigation" aria-label="Menu utilisateur">
+                <button class="sn-user-avatar"
+                        id="sn-user-toggle"
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="sn-dropdown"
+                        aria-label="Mon compte">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </button>
+
+                <div class="sn-dropdown" id="sn-dropdown" role="menu" aria-labelledby="sn-user-toggle">
+                    {% if app.user %}
+                        <a href="#" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Mon profil
+                        </a>
+
+                        <a href="#" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                                <path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+                            </svg>
+                            Paramètres
+                        </a>
+
+                        <a href="{{ path('app_admin_dashboard') }}" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            Dashboard
+                        </a>
+
+                        <a href="#" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            Gestion des exercices
+                        </a>
+
+                        <a href="#" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <path d="M12 8v4l3 3"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                            Historique des sessions
+                        </a>
+
+                        <hr role="separator">
+
+                        <a href="#" class="danger" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            Déconnexion
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_admin_dashboard') }}" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            Dashboard
+                        </a>
+
+                        <a href="#" role="menuitem">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                <polyline points="10 17 15 12 10 7"/>
+                                <line x1="15" y1="12" x2="3" y2="12"/>
+                            </svg>
+                            Se connecter
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button class="sn-mobile-toggle" id="sn-mobile-toggle"
+                    type="button"
+                    aria-label="Ouvrir le menu" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     width="24" height="24" aria-hidden="true">
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+
+        </div>
+    </nav>
+{% endblock %}
+
+<div class="sn-page-offset" aria-hidden="true"></div>
+
+{% block flash_messages %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="container sn-flash-wrapper" role="alert" aria-live="polite">
+                <div class="sn-flash sn-flash--{{ label }} {{ label }}">
+                    {% if label == 'success' %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    {% elseif label == 'warning' %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    <button class="sn-flash-close" type="button" onclick="this.closest('.sn-flash').remove()" aria-label="Fermer ce message">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block page_main %}
+    <main id="main-content" role="main" tabindex="-1">
         {% block body %}{% endblock %}
-    </body>
+    </main>
+{% endblock %}
+
+{% block site_footer %}
+    <footer class="sn-footer" role="contentinfo">
+        <div class="sn-footer-grid">
+
+            <div class="sn-footer-brand">
+                <a href="{{ path('app_home') }}" class="sn-brand" style="margin-bottom:1rem;display:inline-flex;">
+                    <img src="{{ asset('assets/img/logo2.png') }}"
+                         alt="Serinity logo"
+                         width="40" height="40"
+                         loading="lazy"
+                         class="sn-brand-logo">
+                    <span class="sn-brand-name">Serinity</span>
+                </a>
+                <p class="sn-footer-tagline">
+                    Suivez vos nuits, analysez vos rêves et améliorez votre bien-être
+                    grâce à des outils intelligents et bienveillants.
+                </p>
+                <div class="sn-footer-socials" aria-label="Réseaux sociaux">
+                    <a href="#" class="sn-social-btn" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="sn-social-btn" aria-label="Facebook">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="sn-social-btn" aria-label="Twitter">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <nav aria-label="Navigation footer">
+                <p class="sn-footer-heading">Navigation</p>
+                <ul class="sn-footer-links" role="list">
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('app_sommeil_index') }}">Sommeil</a></li>
+                    <li><a href="#">Exercice</a></li>
+                    <li><a href="#">Humeur</a></li>
+                    <li><a href="#">Consultation</a></li>
+                    <li><a href="#">Forum</a></li>
+                    <li><a href="#">Historique des sessions</a></li>
+                    <li><a href="{{ path('app_admin_dashboard') }}">Dashboard admin</a></li>
+                    <li><a href="#">Gestion des exercices</a></li>
+                </ul>
+            </nav>
+
+            <nav aria-label="Liens utiles">
+                <p class="sn-footer-heading">Liens utiles</p>
+                <ul class="sn-footer-links" role="list">
+                    <li><a href="#">Besoin d'aide ?</a></li>
+                    <li><a href="#">Contacter l'administrateur</a></li>
+                    <li><a href="#">Politique de confidentialité</a></li>
+                    <li><a href="#">Conditions d'utilisation</a></li>
+                    <li><a href="#">À propos de nous</a></li>
+                </ul>
+            </nav>
+
+            <address style="font-style:normal;">
+                <p class="sn-footer-heading">Contact</p>
+
+                <div class="sn-contact-item">
+                    <div class="sn-contact-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.08 6.08l1.15-1.15a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="sn-contact-label">Téléphone</p>
+                        <p class="sn-contact-value"><a href="tel:+21699999999">+216 99 999 999</a></p>
+                    </div>
+                </div>
+
+                <div class="sn-contact-item">
+                    <div class="sn-contact-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="sn-contact-label">Email</p>
+                        <p class="sn-contact-value"><a href="mailto:serenity@serenity.com">serenity@serenity.com</a></p>
+                    </div>
+                </div>
+
+                <div class="sn-contact-item">
+                    <div class="sn-contact-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="sn-contact-label">Adresse</p>
+                        <p class="sn-contact-value">Ghazela, Technopole<br>Ariana, Tunisie</p>
+                    </div>
+                </div>
+            </address>
+
+        </div>
+
+        <div class="sn-footer-bottom">
+            <p class="sn-footer-copy">
+                &copy; {{ "now"|date("Y") }}
+                <a href="{{ path('app_home') }}">Serinity</a>.
+                Tous droits réservés.
+            </p>
+            <nav class="sn-footer-legal" aria-label="Liens légaux">
+                <a href="#">Confidentialité</a>
+                <a href="#">Conditions</a>
+                <a href="#">Cookies</a>
+            </nav>
+        </div>
+    </footer>
+{% endblock %}
+
+{# =========================================================
+   Bouton flottant traduction — uniquement Sommeil / Rêves
+========================================================= #}
+{% if current_route starts with 'app_sommeil' or current_route starts with 'app_reve' %}
+    {% include 'sleep/_translate_fab.html.twig' %}
+{% endif %}
+
+<script>
+    (function () {
+        "use strict";
+
+        var navbar = document.getElementById('sn-navbar');
+        if (navbar) {
+            var onScroll = function () {
+                navbar.classList.toggle('scrolled', window.scrollY > 20);
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        }
+
+        var mobileToggle = document.getElementById('sn-mobile-toggle');
+        var navList = document.querySelector('.sn-nav');
+        var searchBar = document.querySelector('.sn-search');
+
+        if (mobileToggle && navList) {
+            mobileToggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', String(!isOpen));
+                navList.classList.toggle('open', !isOpen);
+
+                if (searchBar) {
+                    searchBar.classList.toggle('sn-search--open', !isOpen);
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.sn-navbar')) {
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                    navList.classList.remove('open');
+
+                    if (searchBar) {
+                        searchBar.classList.remove('sn-search--open');
+                    }
+                }
+            });
+        }
+
+        var userToggle = document.getElementById('sn-user-toggle');
+        var dropdown = document.getElementById('sn-dropdown');
+
+        if (userToggle && dropdown) {
+            userToggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var isOpen = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', String(!isOpen));
+                dropdown.classList.toggle('sn-dropdown--open', !isOpen);
+            });
+
+            dropdown.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+
+            document.addEventListener('click', function () {
+                userToggle.setAttribute('aria-expanded', 'false');
+                dropdown.classList.remove('sn-dropdown--open');
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    userToggle.setAttribute('aria-expanded', 'false');
+                    dropdown.classList.remove('sn-dropdown--open');
+                    userToggle.focus();
+                }
+            });
+        }
+
+        document.querySelectorAll('.sn-flash').forEach(function (el) {
+            setTimeout(function () {
+                el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(-6px)';
+                setTimeout(function () { el.remove(); }, 420);
+            }, 5000);
+        });
+
+        // =========================================================
+        // Translation FAB — Sommeil / Rêves
+        // =========================================================
+        var trFabBtn = document.getElementById('trFabBtn');
+        var trPanel = document.getElementById('trPanel');
+        var trPanelClose = document.getElementById('trPanelClose');
+        var trRunBtn = document.getElementById('trRunBtn');
+        var trResetBtn = document.getElementById('trResetBtn');
+        var trTargetLang = document.getElementById('trTargetLang');
+        var trStatus = document.getElementById('trStatus');
+
+        function trSetStatus(message, isError) {
+            if (!trStatus) return;
+            trStatus.hidden = false;
+            trStatus.textContent = message || '';
+            trStatus.classList.toggle('is-error', !!isError);
+        }
+
+        function trClearStatus() {
+            if (!trStatus) return;
+            trStatus.hidden = true;
+            trStatus.textContent = '';
+            trStatus.classList.remove('is-error');
+        }
+
+        function trOpenPanel() {
+            if (!trPanel) return;
+            trPanel.hidden = false;
+            trPanel.classList.add('open');
+        }
+
+        function trClosePanel() {
+            if (!trPanel) return;
+            trPanel.classList.remove('open');
+            trPanel.hidden = true;
+            trClearStatus();
+        }
+
+        function trCollectNodes() {
+            var container = document.getElementById('main-content');
+            if (!container) return [];
+
+            var selector = [
+                'h1', 'h2', 'h3', 'h4',
+                'p',
+                'label',
+                'th',
+                'td',
+                'button',
+                'a',
+                '.badge',
+                '.rv-pill',
+                '.detail-item__label',
+                '.detail-item__value',
+                '.page-header__title',
+                '.page-header__subtitle',
+                '.sl-title',
+                '.sl-hero__subtitle',
+                '.rv-title',
+                '.rv-subtitle'
+            ].join(',');
+
+            var elements = Array.prototype.slice.call(container.querySelectorAll(selector));
+
+            return elements.filter(function (el) {
+                if (!el) return false;
+                if (el.closest('#trFabWrap')) return false;
+                if (el.closest('script, style, svg, canvas')) return false;
+                if (el.hasAttribute('data-no-translate')) return false;
+
+                var text = (el.textContent || '').trim();
+
+                if (!text || text.length < 2) return false;
+                if (/^[\d\s\-–—:/.%+]+$/.test(text)) return false;
+                if (text === '×') return false;
+
+                return true;
+            });
+        }
+
+        async function trTranslatePage() {
+            var nodes = trCollectNodes();
+            if (!nodes.length) {
+                trSetStatus('Aucun texte à traduire sur cette page.', true);
+                return;
+            }
+
+            var texts = nodes.map(function (node) {
+                return node.dataset.originalText || node.textContent.trim();
+            });
+
+            var targetLang = trTargetLang ? trTargetLang.value : 'en';
+
+            trSetStatus('Traduction en cours...', false);
+            if (trRunBtn) trRunBtn.disabled = true;
+            if (trResetBtn) trResetBtn.disabled = true;
+
+            try {
+                var response = await fetch('/api/sleep/translate/batch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        texts: texts,
+                        sourceLang: 'fr',
+                        targetLang: targetLang
+                    })
+                });
+
+                var data = await response.json();
+
+                if (!data.success || !Array.isArray(data.translations)) {
+                    trSetStatus(data.error || 'Erreur de traduction.', true);
+                    return;
+                }
+
+                nodes.forEach(function (node, index) {
+                    if (!node.dataset.originalText) {
+                        node.dataset.originalText = node.textContent.trim();
+                    }
+                    node.textContent = data.translations[index] || node.dataset.originalText;
+                });
+
+                trSetStatus('Traduction terminée.', false);
+            } catch (e) {
+                trSetStatus('Impossible de traduire pour le moment.', true);
+            } finally {
+                if (trRunBtn) trRunBtn.disabled = false;
+                if (trResetBtn) trResetBtn.disabled = false;
+            }
+        }
+
+        function trResetPage() {
+            var nodes = trCollectNodes();
+
+            nodes.forEach(function (node) {
+                if (node.dataset.originalText) {
+                    node.textContent = node.dataset.originalText;
+                }
+            });
+
+            trSetStatus('Texte original restauré.', false);
+        }
+
+        if (trFabBtn && trPanel) {
+            trFabBtn.addEventListener('click', function () {
+                if (trPanel.hidden) {
+                    trOpenPanel();
+                } else {
+                    trClosePanel();
+                }
+            });
+        }
+
+        if (trPanelClose) {
+            trPanelClose.addEventListener('click', trClosePanel);
+        }
+
+        if (trRunBtn) {
+            trRunBtn.addEventListener('click', trTranslatePage);
+        }
+
+        if (trResetBtn) {
+            trResetBtn.addEventListener('click', trResetPage);
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                trClosePanel();
+            }
+        });
+    }());
+</script>
+
+{% block javascripts %}{% endblock %}
+{{ encore_entry_script_tags('app') }}
+</body>
 </html>

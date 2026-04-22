@@ -1,0 +1,405 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes rêves — Sleep Tracker{% endblock %}
+{% block meta_description %}
+    Explorez votre journal des rêves, vos émotions nocturnes et les récurrences de vos nuits.
+{% endblock %}
+
+{% block body %}
+    <section class="rv-page">
+        <div class="rv-shell">
+
+            {# HERO #}
+            {% include 'sleep/reve/components/_hero.html.twig' %}
+
+            {% if stats.attention %}
+                <div class="alert alert-warning mb-3">
+                    <strong>Attention :</strong> plusieurs cauchemars ont été détectés.
+                </div>
+            {% endif %}
+
+            <div class="rv-dashboard-grid">
+                <div class="rv-dashboard-main">
+
+                    {# POWER BI — remplace _stats.html.twig + _chart.html.twig #}
+                    <div class="powerbi-wrapper">
+                        <iframe
+                                title="reve"
+                                src="https://app.powerbi.com/reportEmbed?reportId=44ad7526-3b99-41e9-982b-426507d7ff64&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
+                                frameborder="0"
+                                allowFullScreen="true"
+                                loading="lazy">
+                        </iframe>
+                    </div>
+
+                    {# FILTRES #}
+                    {% include 'sleep/reve/components/_filters.html.twig' with {
+                        filters: filters
+                    } %}
+
+                    {# TABLE DES RÊVES #}
+                    {% include 'sleep/reve/components/_table.html.twig' with {
+                        reves: reves,
+                        filters: filters
+                    } %}
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    {# MODAL SUPPRESSION #}
+    {% include 'sleep/reve/components/_delete_modal.html.twig' %}
+
+    {# MODAL GÉNÉRIQUE (voir / modifier / ajouter) #}
+    <div class="rv-modal-overlay" id="reveModal" hidden>
+        <div class="rv-modal-dialog">
+            <button type="button"
+                    class="rv-modal-close"
+                    onclick="closeReveModal()"
+                    aria-label="Fermer la fenêtre">
+                ×
+            </button>
+
+            <div class="rv-modal-content" id="reveModalContent">
+                <div class="rv-modal-loading">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    {# WIDGET ANALYSE HUMEUR #}
+    {% include 'sleep/reve/components/_analysis_humeur_widget.html.twig' %}
+
+    {# WIDGET ANALYSE IA #}
+    {% include 'sleep/reve/components/_analysis_ia_widget.html.twig' %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .powerbi-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1140 / 541.25;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            background: var(--color-surface, #f9f8f5);
+        }
+
+        .powerbi-wrapper iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        /* ========================
+           HELPER
+        ======================== */
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /* ========================
+           MODAL SUPPRESSION
+        ======================== */
+        function openDeleteModal(url, label, token) {
+            const form = document.getElementById('deleteForm');
+            const body = document.getElementById('deleteModalBody');
+            const modal = document.getElementById('deleteModal');
+
+            if (!form || !body || !modal) return;
+
+            form.action = url;
+            form.querySelector('[name="_token"]').value = token;
+            body.textContent = 'Supprimer "' + label + '" ? Action irréversible.';
+            modal.classList.add('open');
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        /* ========================
+           MODAL RÊVE (CRUD)
+        ======================== */
+        function openReveModal(url) {
+            const modal = document.getElementById('reveModal');
+            const content = document.getElementById('reveModalContent');
+
+            if (!modal || !content) return false;
+
+            modal.hidden = false;
+            modal.classList.add('open');
+            content.innerHTML = '<div class="rv-modal-loading">Chargement...</div>';
+
+            fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(r => r.text())
+                .then(html => { content.innerHTML = html; })
+                .catch(() => {
+                    content.innerHTML = '<div class="rv-modal-error">Erreur de chargement</div>';
+                });
+
+            return false;
+        }
+
+        function closeReveModal() {
+            const modal = document.getElementById('reveModal');
+            if (!modal) return;
+            modal.classList.remove('open');
+            modal.hidden = true;
+        }
+
+        /* ========================
+           ANALYSE HUMEUR
+        ======================== */
+        function closeMoodAnalysisWidget() {
+            const widget = document.getElementById('moodAnalysisWidget');
+            if (widget) widget.hidden = true;
+        }
+
+        function openMoodAnalysisWidget(reveId) {
+            const widget = document.getElementById('moodAnalysisWidget');
+            const content = document.getElementById('moodAnalysisContent');
+            const title = document.getElementById('moodAnalysisTitle');
+
+            if (!widget || !content || !title) return;
+
+            title.textContent = 'Analyse émotionnelle du rêve';
+            widget.hidden = false;
+            content.innerHTML = '<div class="rv-modal-loading">Analyse en cours…</div>';
+
+            fetch(`/sleep/api/reve/${reveId}/analysis`)
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Erreur backend');
+                    return data;
+                })
+                .then(data => { renderMoodResult(data); })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="rv-analysis-error">
+                            <p><strong>Impossible de charger l'analyse d'humeur.</strong></p>
+                            <pre style="white-space: pre-wrap;">${escapeHtml(error.message)}</pre>
+                        </div>`;
+                });
+        }
+
+        function renderMoodResult(data) {
+            const content = document.getElementById('moodAnalysisContent');
+            if (!content) return;
+
+            const analysis = data.analysis ?? {};
+            const advice = data.advice ?? {};
+            const sentiment = analysis.sentiment ?? '—';
+            const confiance = analysis.confiance ?? 0;
+            const humeurOriginale = analysis.humeur_originale ?? '—';
+            const humeurNormalisee = analysis.humeur_normalisee ?? '—';
+            const source = analysis.source ?? '—';
+            const erreur = analysis.erreur ?? null;
+            const warning = analysis.warning ?? null;
+            const adviceEmoji = advice.emoji ?? '🌿';
+            const adviceTitre = advice.titre ?? 'Conseil bien-être';
+            const conseils = Array.isArray(advice.conseils) ? advice.conseils : [];
+            const confidenceNote = advice.confidenceNote ?? null;
+
+            content.innerHTML = `
+                <div class="rv-analysis-result rv-analysis-result--mood">
+                    <div class="rv-analysis-top">
+                        <div class="rv-analysis-badge">
+                            <span class="rv-analysis-emoji">💭</span>
+                            <div>
+                                <strong>Sentiment détecté</strong>
+                                <p>${escapeHtml(sentiment)}</p>
+                            </div>
+                        </div>
+                        <div class="rv-analysis-score">
+                            <strong>Confiance</strong>
+                            <p>${escapeHtml(confiance)}%</p>
+                        </div>
+                    </div>
+                    <div class="rv-analysis-section">
+                        <h5>Détails</h5>
+                        <ul class="rv-analysis-list">
+                            <li><strong>Humeur originale :</strong> ${escapeHtml(humeurOriginale)}</li>
+                            <li><strong>Humeur normalisée :</strong> ${escapeHtml(humeurNormalisee)}</li>
+                            <li><strong>Source :</strong> ${escapeHtml(source)}</li>
+                        </ul>
+                    </div>
+                    <div class="rv-analysis-section">
+                        <h5>${escapeHtml(adviceEmoji)} ${escapeHtml(adviceTitre)}</h5>
+                        ${conseils.length
+                ? `<ul class="rv-analysis-list">${conseils.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`
+                : `<p>Aucun conseil disponible.</p>`}
+                        ${confidenceNote ? `<p class="rv-analysis-note">${escapeHtml(confidenceNote)}</p>` : ''}
+                    </div>
+                    ${warning ? `<div class="rv-analysis-warning"><strong>Info :</strong> ${escapeHtml(warning)}</div>` : ''}
+                    ${erreur ? `<div class="rv-analysis-error"><strong>Erreur technique :</strong><pre style="white-space: pre-wrap;">${escapeHtml(erreur)}</pre></div>` : ''}
+                </div>`;
+        }
+
+        /* ========================
+           ANALYSE IA
+        ======================== */
+        function closeIaAnalysisWidget() {
+            const widget = document.getElementById('iaAnalysisWidget');
+            if (widget) widget.hidden = true;
+        }
+
+        function analyzeReve(reveId) {
+            const widget = document.getElementById('iaAnalysisWidget');
+            const content = document.getElementById('iaAnalysisContent');
+            const title = document.getElementById('iaAnalysisTitle');
+
+            if (!widget || !content || !title) return;
+
+            title.textContent = 'Analyse psychologique du rêve';
+            widget.hidden = false;
+            content.innerHTML = '<div class="rv-modal-loading">Analyse IA en cours…</div>';
+
+            fetch(`/sleep/api/ai/reve/${reveId}`)
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Erreur backend');
+                    return data;
+                })
+                .then(data => { renderIaResult(data); })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="rv-analysis-error">
+                            <p><strong>Erreur lors de l'analyse IA du rêve.</strong></p>
+                            <pre style="white-space: pre-wrap;">${escapeHtml(error.message)}</pre>
+                        </div>`;
+                });
+        }
+
+        function analyzeGlobal() {
+            const widget = document.getElementById('iaAnalysisWidget');
+            const content = document.getElementById('iaAnalysisContent');
+            const title = document.getElementById('iaAnalysisTitle');
+
+            if (!widget || !content || !title) return;
+
+            title.textContent = 'Analyse psychologique globale';
+            widget.hidden = false;
+            content.innerHTML = '<div class="rv-modal-loading">Analyse globale en cours…</div>';
+
+            fetch('/sleep/api/ai/reves/global')
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || ('HTTP ' + response.status));
+                    return data;
+                })
+                .then(data => { renderIaResult(data); })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="rv-analysis-error">
+                            <p><strong>Erreur lors de l'analyse globale.</strong></p>
+                            <pre style="white-space: pre-wrap;">${escapeHtml(error.message)}</pre>
+                        </div>`;
+                });
+        }
+
+        function renderIaResult(data) {
+            const content = document.getElementById('iaAnalysisContent');
+            if (!content) return;
+
+            const symboles = Array.isArray(data.symbolesDetectes)
+                ? data.symbolesDetectes.map(item => `
+                    <li><strong>${escapeHtml(item.nom ?? '—')}</strong> : ${escapeHtml(item.signification ?? '—')}</li>`).join('')
+                : '';
+
+            const recommandations = Array.isArray(data.recommandations)
+                ? data.recommandations.map(item => `<li>${escapeHtml(item)}</li>`).join('')
+                : '';
+
+            content.innerHTML = `
+                <div class="rv-analysis-result rv-analysis-result--ia">
+                    <div class="rv-analysis-top">
+                        <div class="rv-analysis-badge">
+                            <span class="rv-analysis-emoji">🧠</span>
+                            <div>
+                                <strong>Profil dominant</strong>
+                                <p>${escapeHtml(data.profilDominant ?? '—')}</p>
+                            </div>
+                        </div>
+                        <div class="rv-analysis-score">
+                            <strong>Score psychologique</strong>
+                            <p>${escapeHtml(data.scorePsychologique ?? '—')}/100</p>
+                        </div>
+                    </div>
+                    <div class="rv-analysis-section">
+                        <h5>Impact émotionnel</h5>
+                        <p>${escapeHtml(data.impactEmotionnel ?? 'Non disponible.')}</p>
+                    </div>
+                    <div class="rv-analysis-section">
+                        <h5>Conclusion</h5>
+                        <p>${escapeHtml(data.conclusion ?? 'Aucune conclusion générée.')}</p>
+                    </div>
+                    ${symboles ? `<div class="rv-analysis-section"><h5>Symboles détectés</h5><ul class="rv-analysis-list">${symboles}</ul></div>` : ''}
+                    ${recommandations ? `<div class="rv-analysis-section"><h5>Recommandations</h5><ul class="rv-analysis-list">${recommandations}</ul></div>` : ''}
+                    <div class="rv-analysis-section">
+                        <h5>Niveau d'alerte</h5>
+                        <p>${escapeHtml(data.niveauAlerte ?? '—')}</p>
+                    </div>
+                </div>`;
+        }
+
+        /* ========================
+           AUTO DESCRIPTION LM STUDIO
+        ======================== */
+        document.addEventListener('blur', async function (e) {
+            if (!e.target.matches('[name$="[titre]"]')) return;
+
+            const form = e.target.closest('form');
+            if (!form) return;
+
+            const titleInput = e.target;
+            const descriptionInput = form.querySelector('[name$="[description]"]');
+
+            if (!descriptionInput) return;
+
+            const title = titleInput.value.trim();
+
+            if (title.length < 5) return;
+            if (descriptionInput.value.trim() !== '') return;
+
+            try {
+                const response = await fetch('/reve/generate-description', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ title })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.description) {
+                    descriptionInput.value = data.description;
+                }
+            } catch (error) {
+                console.error('Erreur génération description rêve :', error);
+            }
+        }, true);
+    </script>
+{% endblock %}

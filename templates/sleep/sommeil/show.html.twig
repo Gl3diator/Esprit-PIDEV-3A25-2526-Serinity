@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }} — Sleep Tracker{% endblock %}
+
+{% block body %}
+    <nav class="breadcrumb">
+        <a href="{{ path('app_sommeil_index') }}">Sommeil</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '#' ~ sommeil.id }}</span>
+    </nav>
+
+    <header class="page-header">
+        <div class="page-header__left">
+            <h1 class="page-header__title">🌙 Nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '' }}</h1>
+            {% if sommeil.qualite %}
+                <p class="page-header__subtitle">Qualité : {{ sommeil.qualite }}</p>
+            {% endif %}
+        </div>
+    </header>
+
+    {% include 'sleep/sommeil/components/_show_modal.html.twig' with {
+        sommeil: sommeil,
+        modal_mode: false
+    } %}
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h2 class="modal__title">Supprimer cette nuit ?</h2>
+            <p class="modal__body">Les rêves associés seront également supprimés.</p>
+            <div class="modal__actions">
+                <button type="button" class="btn btn--secondary" onclick="document.getElementById('deleteModal').classList.remove('open')">Annuler</button>
+                <form method="post" action="{{ path('app_sommeil_delete', {id: sommeil.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sommeil.id) }}">
+                    <button type="submit" class="btn btn--danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% set isEdit = reve is defined and reve is not null %}
+{% set modalTitle = isEdit ? 'Modifier le rêve' : 'Nouveau rêve' %}
+{% set modalSubtitle = isEdit ? (reve.titre ?? 'Édition') : 'Décrivez votre rêve avec le plus de détails possible' %}
+{% set formAction = isEdit ? path('app_reve_edit', {id: reve.id}) : path('app_reve_new') %}
+
+<div class="rv-modal-sheet">
+    <div class="rv-modal-sheet__header">
+        <div>
+            <h2 class="rv-modal-sheet__title">{{ modalTitle }}</h2>
+            <p class="rv-modal-sheet__subtitle">{{ modalSubtitle }}</p>
+        </div>
+    </div>
+
+    <div class="card sleep-form-shell rv-modal-sheet__card">
+
+        {{ form_start(form, {
+            'action': formAction,
+            'attr': {
+                'novalidate': 'novalidate'
+            }
+        }) }}
+
+        {% if show_errors|default(false) or (form.vars.submitted and not form.vars.valid) %}
+            <div class="alert alert-warning mb-3">
+                <strong>⚠ Veuillez corriger les erreurs suivantes :</strong>
+                <ul class="mb-0 mt-2">
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+
+                    {% for child in form %}
+                        {% for error in child.vars.errors %}
+                            <li>{{ error.message }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {{ form_errors(form) }}
+
+        <div class="form-section">
+            <div class="form-section__title">🌙 Général</div>
+            <div class="form-grid">
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.sommeil) }}
+                    {{ form_widget(form.sommeil, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.sommeil) }}
+                </div>
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.titre) }}
+                    {{ form_widget(form.titre, {
+                        'attr': {
+                            'class': 'form-control',
+                            'id': 'reve_titre'
+                        }
+                    }) }}
+                    {{ form_errors(form.titre) }}
+                </div>
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'class': 'form-control',
+                            'id': 'reve_description'
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+
+                    <div style="margin-top: 8px;">
+                        <button
+                                type="button"
+                                id="generateDreamDescriptionBtn"
+                                class="btn btn--secondary"
+                        >
+                            ✨ Générer automatiquement
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🏷️ Classification</div>
+            <div class="form-grid">
+
+                <div class="form-group">
+                    {{ form_label(form.typeReve) }}
+                    {{ form_widget(form.typeReve, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.typeReve) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.humeur) }}
+                    {{ form_widget(form.humeur, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.humeur) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.intensite) }}
+                    {{ form_widget(form.intensite, {'attr': {'class': 'form-control', 'id': 'intensite_input'}}) }}
+                    {{ form_errors(form.intensite) }}
+
+                    <div class="intensity-bar" id="intensite_preview">
+                        {% set currentIntensity = isEdit and reve.intensite is not null ? reve.intensite : 0 %}
+                        {% for i in 1..10 %}
+                            <div class="intensity-dot {% if i <= currentIntensity %}filled{% endif %}" data-val="{{ i }}"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.emotions) }}
+                    {{ form_widget(form.emotions, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.emotions) }}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section__title">🔍 Détails</div>
+            <div class="form-grid">
+
+                <div class="form-group form-group--full">
+                    {{ form_label(form.symboles) }}
+                    {{ form_widget(form.symboles, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.symboles) }}
+                </div>
+
+                <div class="form-group checkbox-group">
+                    {{ form_widget(form.couleur) }}
+                    {{ form_label(form.couleur) }}
+                    {{ form_errors(form.couleur) }}
+                </div>
+
+                <div class="form-group checkbox-group">
+                    {{ form_widget(form.recurrent) }}
+                    {{ form_label(form.recurrent) }}
+                    {{ form_errors(form.recurrent) }}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">
+                {{ isEdit ? '✔ Sauvegarder' : '✔ Enregistrer' }}
+            </button>
+
+            {% if modal_mode|default(false) %}
+                <button type="button" class="btn btn--secondary" onclick="closeReveModal()">
+                    Annuler
+                </button>
+            {% else %}
+                {% if isEdit %}
+                    <a href="{{ path('app_reve_show', {id: reve.id}) }}" class="btn btn--secondary">Annuler</a>
+                {% else %}
+                    <a href="{{ path('app_reve_index') }}" class="btn btn--secondary">Annuler</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', async function (e) {
+        if (e.target.id !== 'generateDreamDescriptionBtn') return;
+
+        const titleInput = document.getElementById('reve_titre');
+        const descriptionInput = document.getElementById('reve_description');
+
+        if (!titleInput || !descriptionInput) return;
+
+        const title = titleInput.value.trim();
+
+        if (title.length < 5) {
+            alert('Veuillez saisir un titre plus détaillé');
+            return;
+        }
+
+        try {
+            const response = await fetch('/reve/generate-description', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.description) {
+                descriptionInput.value = data.description;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
+    document.addEventListener('blur', async function (e) {
+        if (!e.target.matches('#reve_titre')) return;
+
+        const titleInput = e.target;
+        const descriptionInput = document.getElementById('reve_description');
+
+        if (!descriptionInput) return;
+
+        const title = titleInput.value.trim();
+
+        if (title.length < 5) return;
+        if (descriptionInput.value.trim() !== '') return;
+
+        try {
+            const response = await fetch('/reve/generate-description', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.description) {
+                descriptionInput.value = data.description;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }, true);
+</script>
