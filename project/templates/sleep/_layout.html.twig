@@ -1,0 +1,461 @@
+{#
+templates/sleep/_layout.html.twig — Serinity
+Layout du module Sleep
+Même structure visuelle que les autres pages avec sidebar + topbar
++ groupe Sleep ouvert sur les routes Sommeil / Rêves
++ bouton flottant de traduction pour les pages Sommeil / Rêves
+#}
+{% extends 'base.html.twig' %}
+
+{% block title %}Serinity — Sleep{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    {# Ordre CSS : tokens → global → front → custom #}
+    <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/front.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/serinity-custom.css') }}">
+
+    <style>
+        .sleep-sidebar-group {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+        }
+
+        .sleep-sidebar-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            padding: .95rem 1rem;
+            border: 0;
+            border-radius: 16px;
+            background: transparent;
+            color: #244b57;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+        .sleep-sidebar-toggle:hover {
+            background: rgba(173, 235, 242, 0.28);
+        }
+
+        .sleep-sidebar-toggle.is-active,
+        .sleep-sidebar-toggle[aria-expanded="true"] {
+            background: #c9f7fb;
+            color: #1d6671;
+        }
+
+        .sleep-sidebar-toggle-left {
+            display: inline-flex;
+            align-items: center;
+            gap: .85rem;
+            min-width: 0;
+        }
+
+        .sleep-sidebar-toggle .material-symbols-outlined {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .sleep-sidebar-chevron {
+            transition: transform .2s ease;
+        }
+
+        .sleep-sidebar-toggle[aria-expanded="true"] .sleep-sidebar-chevron {
+            transform: rotate(180deg);
+        }
+
+        .sleep-sidebar-submenu {
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+            padding-left: 2.9rem;
+            margin-top: .15rem;
+            margin-bottom: .35rem;
+        }
+
+        .sleep-sidebar-sublink {
+            display: inline-flex;
+            align-items: center;
+            gap: .7rem;
+            padding: .72rem .9rem;
+            border-radius: 14px;
+            text-decoration: none;
+            color: #4a5f69;
+            font-weight: 500;
+            transition: all .2s ease;
+        }
+
+        .sleep-sidebar-sublink:hover {
+            background: rgba(173, 235, 242, 0.18);
+            color: #1d6671;
+        }
+
+        .sleep-sidebar-sublink.is-active {
+            background: #c9f7fb;
+            color: #1d6671;
+        }
+
+        .sleep-sidebar-sublink .material-symbols-outlined {
+            font-size: 19px;
+        }
+
+        .sleep-page-header h1 {
+            margin: 0;
+        }
+
+        .sleep-page-header p {
+            margin: .2rem 0 0;
+        }
+
+        @media (max-width: 991.98px) {
+            .sleep-sidebar-submenu {
+                padding-left: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% set is_sleep_section = current_route starts with 'app_sommeil' or current_route starts with 'app_reve' %}
+    {% set is_admin_section = current_route starts with 'app_admin' %}
+
+    <div class="ac-shell" data-controller="ui-theme">
+        <div class="ac-app-layout">
+
+            {# ========== SIDEBAR ========== #}
+            <aside class="ac-sidebar" data-controller="home-session">
+                <div class="ac-brand">
+                    <div class="ac-brand-badge">S</div>
+                    <div>
+                        <p class="ac-brand-name">Serinity</p>
+                        <p class="ac-brand-sub">Sleep</p>
+                    </div>
+                </div>
+
+                <nav class="ac-nav" aria-label="Primary navigation">
+                    <a class="ac-nav-link" href="{{ path('home') }}">
+                        <span class="material-symbols-outlined">home</span>
+                        <span>Accueil</span>
+                    </a>
+
+                    <div class="ac-nav-divider" aria-hidden="true"></div>
+
+                    {# Groupe Sleep comme dans les autres pages avec sous-menu visible #}
+                    <div class="sleep-sidebar-group">
+                        <button type="button"
+                                class="sleep-sidebar-toggle {% if is_sleep_section %}is-active{% endif %}"
+                                id="sleepSidebarToggle"
+                                aria-expanded="{{ is_sleep_section ? 'true' : 'false' }}"
+                                aria-controls="sleepSidebarSubmenu">
+                            <span class="sleep-sidebar-toggle-left">
+                                <span class="material-symbols-outlined">bedtime</span>
+                                <span>Sleep</span>
+                            </span>
+                            <span class="material-symbols-outlined sleep-sidebar-chevron">expand_more</span>
+                        </button>
+
+                        <div id="sleepSidebarSubmenu"
+                             class="sleep-sidebar-submenu"
+                             {% if not is_sleep_section %}hidden{% endif %}>
+                            <a class="sleep-sidebar-sublink {% if current_route starts with 'app_sommeil' %}is-active{% endif %}"
+                               href="{{ path('app_sommeil_list') }}">
+                                <span class="material-symbols-outlined">bed</span>
+                                <span>Sommeil</span>
+                            </a>
+
+                            <a class="sleep-sidebar-sublink {% if current_route starts with 'app_reve' %}is-active{% endif %}"
+                               href="{{ path('app_reve_index') }}">
+                                <span class="material-symbols-outlined">nights_stay</span>
+                                <span>Rêves management</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    {% if app.user %}
+                        <div class="ac-nav-divider" aria-hidden="true"></div>
+
+                        <a class="ac-nav-link {% if is_admin_section %}is-active{% endif %}"
+                           href="{{ path('app_admin_dashboard') }}">
+                            <span class="material-symbols-outlined">space_dashboard</span>
+                            <span>Dashboard admin</span>
+                        </a>
+                    {% endif %}
+                </nav>
+
+                <div class="ac-sidebar-footer">
+                    {% if app.user %}
+                        <button type="button"
+                                class="ac-nav-link ac-nav-link-danger"
+                                data-action="click->home-session#logout">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Déconnexion</span>
+                        </button>
+                    {% else %}
+                        <a class="ac-nav-link" href="{{ path('home') }}">
+                            <span class="material-symbols-outlined">login</span>
+                            <span>Se connecter</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </aside>
+
+            {# ========== MAIN ========== #}
+            <div class="ac-main" data-controller="flash-toast">
+                <header class="ac-topbar" data-controller="sidebar-toggle">
+                    <div class="ac-topbar-left">
+                        <button type="button"
+                                class="ac-icon-btn"
+                                title="Toggle sidebar"
+                                aria-label="Toggle sidebar"
+                                data-action="click->sidebar-toggle#toggle">
+                            <span class="material-symbols-outlined">menu</span>
+                        </button>
+
+                        <div class="sleep-page-header">
+                            <h1>
+                                {% if current_route starts with 'app_reve' %}
+                                    Rêves
+                                {% else %}
+                                    Sommeil
+                                {% endif %}
+                            </h1>
+                            <p>
+                                {% if current_route starts with 'app_reve' %}
+                                    Gestion et analyse des rêves
+                                {% else %}
+                                    Suivi des nuits et de la récupération
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="ac-topbar-user">
+                        <span>{{ app.user ? app.user.email : 'Guest' }}</span>
+
+                        <button type="button"
+                                class="ac-icon-btn"
+                                title="Toggle theme"
+                                aria-label="Toggle theme"
+                                data-action="ui-theme#toggle">
+                            <span class="material-symbols-outlined">dark_mode</span>
+                        </button>
+
+                        {% set profileImageUrl = app.user and app.user.profile ? app.user.profile.profileImageUrl : null %}
+                        {% if profileImageUrl %}
+                            <img class="ac-avatar ac-avatar-image" src="{{ profileImageUrl }}" alt="Profile image">
+                        {% else %}
+                            <div class="ac-avatar">{{ (app.user ? app.user.email : 'G')|slice(0,1)|upper }}</div>
+                        {% endif %}
+                    </div>
+                </header>
+
+                {# Flash messages #}
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <span data-flash-toast-target="message" data-type="{{ label }}" hidden>{{ message }}</span>
+                    {% endfor %}
+                {% endfor %}
+
+                <main id="main-content" role="main" tabindex="-1">
+                    {% block sleep_content %}{% endblock %}
+                </main>
+            </div>
+        </div>
+    </div>
+
+    {% if is_sleep_section %}
+        {% include 'sleep/_translate_fab.html.twig' %}
+    {% endif %}
+{% endblock %}
+
+{% block body_javascripts %}
+    {{ parent() }}
+
+    <script>
+        (function () {
+            "use strict";
+
+            var sleepToggle = document.getElementById('sleepSidebarToggle');
+            var sleepSubmenu = document.getElementById('sleepSidebarSubmenu');
+
+            if (sleepToggle && sleepSubmenu) {
+                sleepToggle.addEventListener('click', function () {
+                    var expanded = sleepToggle.getAttribute('aria-expanded') === 'true';
+                    sleepToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+                    sleepSubmenu.hidden = expanded;
+                });
+            }
+        }());
+    </script>
+
+    {% set current_route_js = app.request.attributes.get('_route') %}
+    {% if current_route_js starts with 'app_sommeil' or current_route_js starts with 'app_reve' %}
+        <script>
+            (function () {
+                "use strict";
+
+                var trFabBtn     = document.getElementById('trFabBtn');
+                var trPanel      = document.getElementById('trPanel');
+                var trPanelClose = document.getElementById('trPanelClose');
+                var trRunBtn     = document.getElementById('trRunBtn');
+                var trResetBtn   = document.getElementById('trResetBtn');
+                var trTargetLang = document.getElementById('trTargetLang');
+                var trStatus     = document.getElementById('trStatus');
+
+                function trSetStatus(message, isError) {
+                    if (!trStatus) return;
+                    trStatus.hidden = false;
+                    trStatus.textContent = message || '';
+                    trStatus.classList.toggle('is-error', !!isError);
+                }
+
+                function trClearStatus() {
+                    if (!trStatus) return;
+                    trStatus.hidden = true;
+                    trStatus.textContent = '';
+                    trStatus.classList.remove('is-error');
+                }
+
+                function trOpenPanel() {
+                    if (!trPanel) return;
+                    trPanel.hidden = false;
+                    trPanel.classList.add('open');
+                }
+
+                function trClosePanel() {
+                    if (!trPanel) return;
+                    trPanel.classList.remove('open');
+                    trPanel.hidden = true;
+                    trClearStatus();
+                }
+
+                function trCollectNodes() {
+                    var container = document.getElementById('main-content');
+                    if (!container) return [];
+
+                    var selector = [
+                        'h1','h2','h3','h4','p','label','th','td','button','a',
+                        '.badge','.rv-pill',
+                        '.detail-item__label','.detail-item__value',
+                        '.page-header__title','.page-header__subtitle',
+                        '.sl-title','.sl-hero__subtitle',
+                        '.rv-title','.rv-subtitle'
+                    ].join(',');
+
+                    var elements = Array.prototype.slice.call(container.querySelectorAll(selector));
+
+                    return elements.filter(function (el) {
+                        if (!el) return false;
+                        if (el.closest('#trFabWrap')) return false;
+                        if (el.closest('script, style, svg, canvas')) return false;
+                        if (el.hasAttribute('data-no-translate')) return false;
+
+                        var text = (el.textContent || '').trim();
+                        if (!text || text.length < 2) return false;
+                        if (/^[\d\s\-–—:/.%+]+$/.test(text)) return false;
+                        if (text === '×') return false;
+
+                        return true;
+                    });
+                }
+
+                async function trTranslatePage() {
+                    var nodes = trCollectNodes();
+                    if (!nodes.length) {
+                        trSetStatus('Aucun texte à traduire sur cette page.', true);
+                        return;
+                    }
+
+                    var texts = nodes.map(function (node) {
+                        return node.dataset.originalText || node.textContent.trim();
+                    });
+
+                    var targetLang = trTargetLang ? trTargetLang.value : 'en';
+
+                    trSetStatus('Traduction en cours...', false);
+
+                    if (trRunBtn) trRunBtn.disabled = true;
+                    if (trResetBtn) trResetBtn.disabled = true;
+
+                    try {
+                        var response = await fetch('/api/sleep/translate/batch', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                texts: texts,
+                                sourceLang: 'fr',
+                                targetLang: targetLang
+                            })
+                        });
+
+                        var data = await response.json();
+
+                        if (!data.success || !Array.isArray(data.translations)) {
+                            trSetStatus(data.error || 'Erreur de traduction.', true);
+                            return;
+                        }
+
+                        nodes.forEach(function (node, index) {
+                            if (!node.dataset.originalText) {
+                                node.dataset.originalText = node.textContent.trim();
+                            }
+                            node.textContent = data.translations[index] || node.dataset.originalText;
+                        });
+
+                        trSetStatus('Traduction terminée.', false);
+                    } catch (e) {
+                        trSetStatus('Impossible de traduire pour le moment.', true);
+                    } finally {
+                        if (trRunBtn) trRunBtn.disabled = false;
+                        if (trResetBtn) trResetBtn.disabled = false;
+                    }
+                }
+
+                function trResetPage() {
+                    var nodes = trCollectNodes();
+
+                    nodes.forEach(function (node) {
+                        if (node.dataset.originalText) {
+                            node.textContent = node.dataset.originalText;
+                        }
+                    });
+
+                    trSetStatus('Texte original restauré.', false);
+                }
+
+                if (trFabBtn && trPanel) {
+                    trFabBtn.addEventListener('click', function () {
+                        if (trPanel.hidden) {
+                            trOpenPanel();
+                        } else {
+                            trClosePanel();
+                        }
+                    });
+                }
+
+                if (trPanelClose) trPanelClose.addEventListener('click', trClosePanel);
+                if (trRunBtn) trRunBtn.addEventListener('click', trTranslatePage);
+                if (trResetBtn) trResetBtn.addEventListener('click', trResetPage);
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') trClosePanel();
+                });
+            }());
+        </script>
+    {% endif %}
+
+    {% block sleep_javascripts %}{% endblock %}
+{% endblock %}
