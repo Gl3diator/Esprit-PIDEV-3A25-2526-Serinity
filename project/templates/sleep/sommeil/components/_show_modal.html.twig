@@ -1,0 +1,97 @@
+<div class="rv-modal-sheet">
+    <div class="rv-modal-sheet__header">
+        <div>
+            <h2 class="rv-modal-sheet__title">
+                🌙 Nuit du {{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '#' ~ sommeil.id }}
+            </h2>
+            <p class="rv-modal-sheet__subtitle">
+                {% if sommeil.qualite %}Qualité : {{ sommeil.qualite }}{% else %}Détail de la nuit{% endif %}
+            </p>
+        </div>
+
+        <div class="rv-modal-sheet__actions">
+            {% if modal_mode|default(false) %}
+                <button type="button"
+                        class="btn btn--secondary"
+                        onclick="openSommeilModal('{{ path('app_sommeil_edit', {id: sommeil.id}) }}')">
+                    Modifier
+                </button>
+            {% else %}
+                <a href="{{ path('app_sommeil_edit', {id: sommeil.id}) }}" class="btn btn--secondary">Modifier</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-5);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-bottom:var(--space-4);">⏰ Horaires</div>
+        <div class="detail-grid">
+            <div class="detail-item"><div class="detail-item__label">Date</div><div class="detail-item__value">{{ sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Coucher</div><div class="detail-item__value">{{ sommeil.heureCoucher ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Réveil</div><div class="detail-item__value">{{ sommeil.heureReveil ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Durée</div><div class="detail-item__value">{% if sommeil.dureeSommeil %}{{ sommeil.dureeSommeil }}h{% else %}—{% endif %}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Interruptions</div><div class="detail-item__value">{{ sommeil.interruptions ?? '—' }}</div></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-5);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);margin-bottom:var(--space-4);">⭐ Qualité & ressenti</div>
+        <div class="detail-grid">
+            <div class="detail-item"><div class="detail-item__label">Qualité</div><div class="detail-item__value">{{ sommeil.qualite ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Humeur réveil</div><div class="detail-item__value">{{ sommeil.humeurReveil ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Environnement</div><div class="detail-item__value">{{ sommeil.environnement ?? '—' }}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Température</div><div class="detail-item__value">{% if sommeil.temperature %}{{ sommeil.temperature }}°C{% else %}—{% endif %}</div></div>
+            <div class="detail-item"><div class="detail-item__label">Bruit</div><div class="detail-item__value">{{ sommeil.bruitNiveau ?? '—' }}</div></div>
+
+            {% if sommeil.commentaire %}
+                <div class="detail-item detail-item--full">
+                    <div class="detail-item__label">Commentaire</div>
+                    <div class="detail-item__value detail-item__value--text">{{ sommeil.commentaire }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if sommeil.revess is defined and sommeil.revess|length > 0 %}
+        <div class="card" style="margin-bottom:var(--space-2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4);">
+                <h3 style="font-size:1rem;font-weight:700;color:var(--text);margin:0;">💤 Rêves de cette nuit</h3>
+                <a href="{{ path('app_reve_new') }}" class="btn btn--primary btn--sm">+ Ajouter un rêve</a>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Type</th>
+                        <th>Humeur</th>
+                        <th>Intensité</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for reve in sommeil.revess %}
+                        <tr>
+                            <td><strong>{{ reve.titre }}</strong></td>
+                            <td><span class="badge badge--muted">{{ reve.typeReve }}</span></td>
+                            <td>{{ reve.humeur ?? '—' }}</td>
+                            <td>
+                                <div class="intensity-bar">
+                                    {% for i in 1..10 %}
+                                        <div class="intensity-dot {% if i <= reve.intensite %}filled{% endif %}"></div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if modal_mode|default(false) %}
+        <div class="form-actions" style="margin-top:1rem;">
+            <button type="button" class="btn btn--secondary" onclick="closeSommeilModal()">Fermer</button>
+        </div>
+    {% endif %}
+</div>

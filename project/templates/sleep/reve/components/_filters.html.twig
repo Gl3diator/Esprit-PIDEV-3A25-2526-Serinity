@@ -1,0 +1,76 @@
+<div class="rv-toolbar-card">
+    <form method="get" class="rv-toolbar-form">
+        <div class="rv-field rv-field-search">
+            <input
+                    type="text"
+                    name="q"
+                    value="{{ filters.q|default('') }}"
+                    placeholder="Recherche dynamique..."
+                    class="rv-input"
+            >
+        </div>
+
+        <div class="rv-field">
+            <input
+                    type="text"
+                    name="type"
+                    value="{{ filters.type|default('') }}"
+                    placeholder="Type de rêve"
+                    class="rv-input"
+            >
+        </div>
+
+        <div class="rv-field">
+            <select name="recurrent" class="rv-select">
+                <option value="">Tous</option>
+                <option value="1" {{ filters.recurrent|default('') == '1' ? 'selected' : '' }}>Récurrent</option>
+                <option value="0" {{ filters.recurrent|default('') == '0' ? 'selected' : '' }}>Non récurrent</option>
+            </select>
+        </div>
+
+        <div class="rv-field">
+            <input
+                    type="text"
+                    name="couleur"
+                    value="{{ filters.couleur|default('') }}"
+                    placeholder="Couleur"
+                    class="rv-input"
+            >
+        </div>
+
+        <div class="rv-field">
+            <select name="cauchemars" class="rv-select">
+                <option value="">Tous</option>
+                <option value="1" {{ filters.cauchemars|default('') == '1' ? 'selected' : '' }}>Seulement cauchemars</option>
+            </select>
+        </div>
+
+        <div class="rv-field">
+            <select name="sort" class="rv-select">
+                <option value="s.dateNuit" {{ filters.sort|default('s.dateNuit') == 's.dateNuit' ? 'selected' : '' }}>Date</option>
+                <option value="r.intensite" {{ filters.sort|default('') == 'r.intensite' ? 'selected' : '' }}>Intensité</option>
+                <option value="r.titre" {{ filters.sort|default('') == 'r.titre' ? 'selected' : '' }}>Titre</option>
+                <option value="r.typeReve" {{ filters.sort|default('') == 'r.typeReve' ? 'selected' : '' }}>Type</option>
+                <option value="r.humeur" {{ filters.sort|default('') == 'r.humeur' ? 'selected' : '' }}>Humeur</option>
+            </select>
+        </div>
+
+        <div class="rv-toolbar-actions">
+            <button type="submit" class="rv-btn rv-btn-primary">
+                Filtrer
+            </button>
+
+            <a href="{{ path('app_reve_index') }}" class="rv-btn rv-btn-ghost">
+                Réinitialiser
+            </a>
+
+            <a href="{{ path('app_reve_export_csv', app.request.query.all) }}" class="rv-btn rv-btn-outline">
+                Exporter Excel
+            </a>
+
+            <a href="{{ path('app_reve_export_pdf', app.request.query.all) }}" target="_blank" class="rv-btn rv-btn-outline">
+                Exporter PDF
+            </a>
+        </div>
+    </form>
+</div>
