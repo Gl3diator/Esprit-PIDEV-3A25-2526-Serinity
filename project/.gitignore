@@ -2,9 +2,9 @@
 # `root` .gitignore file
 
 ### CUSTOM IGNORES ###
-public/antelopev2
-.venv/
-### !CUSTOM IGNORES ###
+composer.lock
+src/Controller/User/AbstractUserUiController.php
+templates/base.html.twig
 
 ###> symfony/framework-bundle ###
 .env
@@ -27,5 +27,6 @@ phpunit.xml
 ###< phpunit/phpunit ###
 
 ###> symfony/asset-mapper ###
+public/assets/
 assets/vendor/
 ###< symfony/asset-mapper ###
