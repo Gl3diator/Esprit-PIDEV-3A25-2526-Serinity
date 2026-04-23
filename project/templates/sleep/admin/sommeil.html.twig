@@ -1,0 +1,728 @@
+{% extends 'sleep/admin/base.html.twig' %}
+
+{% block title %}Admin Sommeil — Serinity{% endblock %}
+{% block breadcrumb %}Sommeil &amp; Rêves{% endblock %}
+
+{% block body %}
+
+    <div class="adm-page-header">
+        <div>
+            <h1 class="adm-page-title">
+                <span class="adm-title-icon mod-sommeil-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </span>
+                <span>Gestion Sommeil &amp; Rêves</span>
+            </h1>
+
+
+        </div>
+    </div>
+
+    <div class="adm-kpi-grid adm-kpi-small">
+        <div class="adm-kpi-card kpi-sommeil">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ kpis.total_sommeils }}</span>
+                <span class="adm-kpi-label">Entrées Sommeil</span>
+            </div>
+        </div>
+
+        <div class="adm-kpi-card kpi-reves">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ kpis.total_reves }}</span>
+                <span class="adm-kpi-label">Rêves enregistrés</span>
+            </div>
+        </div>
+
+        <div class="adm-kpi-card kpi-avg">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ kpis.moyenne_duree }}h</span>
+                <span class="adm-kpi-label">Durée moyenne</span>
+            </div>
+        </div>
+
+        <div class="adm-kpi-card kpi-quality">
+            <div class="adm-kpi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </div>
+            <div class="adm-kpi-info">
+                <span class="adm-kpi-value">{{ kpis.moyenne_qualite }}%</span>
+                <span class="adm-kpi-label">Qualité moy.</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="adm-stacked-section">
+        <div class="adm-section-heading">
+            <h2 class="adm-section-block-title">Statistiques Sommeil</h2>
+            <span class="adm-section-count">{{ sommeils|length }} entrée(s)</span>
+        </div>
+
+        <div class="adm-panel-card adm-panel-card-narrow">
+            <div class="adm-panel-head">
+                <div>
+                    <h3 class="adm-panel-title">Répartition des qualités de sommeil</h3>
+
+                </div>
+            </div>
+            <div class="adm-chart-card adm-chart-card-small">
+                <canvas id="sleepQualityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="adm-panel-card adm-panel-card-narrow">
+            <div class="adm-panel-head">
+                <div>
+                    <h3 class="adm-panel-title">Durée de sommeil</h3>
+                    <p class="adm-panel-subtitle">Barres par nuit enregistrée.</p>
+                </div>
+            </div>
+            <div class="adm-chart-card adm-chart-card-small">
+                <canvas id="sleepDurationBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="adm-panel-card adm-panel-card-narrow">
+            <div class="adm-panel-head">
+                <div>
+                    <h3 class="adm-panel-title">Humeur au réveil</h3>
+                    <p class="adm-panel-subtitle">Répartition des humeurs après le sommeil.</p>
+                </div>
+            </div>
+            <div class="adm-chart-card adm-chart-card-small">
+                <canvas id="wakeMoodBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="adm-table-card">
+            <div class="adm-table-header">
+                <div class="adm-table-header-left">
+                    <span class="adm-table-dot dot-sommeil" aria-hidden="true"></span>
+                    <h2 class="adm-table-title">Tableau Sommeil</h2>
+                    <span class="adm-table-count" id="sleepCount">{{ sommeils|length }} entrée(s)</span>
+                </div>
+
+                <div class="adm-table-header-right" style="gap: 0.75rem; flex-wrap: wrap;">
+                    <div class="adm-search-mini">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search" id="sleepSearch" placeholder="Rechercher..." aria-label="Rechercher une entrée sommeil">
+                    </div>
+
+                    <select id="sleepStatusFilter" class="adm-filter-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="bon">Bon</option>
+                        <option value="moyen">Moyen</option>
+                        <option value="à améliorer">À améliorer</option>
+                    </select>
+
+                    <a href="{{ path('app_sommeil_new') }}" class="adm-btn adm-btn-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Ajouter
+                    </a>
+                </div>
+            </div>
+
+            <div class="adm-table-wrap">
+                <table class="adm-table" id="sleepTable" aria-label="Tableau des entrées sommeil">
+                    <thead>
+                    <tr>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="id"># <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="user">Utilisateur <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="date">Date <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="duree">Durée <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="qualite">Qualité <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="coucher">Heure coucher <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="reveil">Heure réveil <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="sleep" data-sort="status">Statut <span class="adm-sort-arrows">↕</span></button></th>
+                        <th class="adm-col-actions">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if sommeils is defined and sommeils|length > 0 %}
+                        {% for s in sommeils %}
+                            <tr
+                                    data-id="{{ s.id }}"
+                                    data-user="{{ s.user_label|lower }}"
+                                    data-date="{{ s.date_nuit ? s.date_nuit|date('Y-m-d') : '' }}"
+                                    data-duree="{{ s.duree }}"
+                                    data-qualite="{{ s.qualite_label|lower }}"
+                                    data-coucher="{{ s.heure_coucher }}"
+                                    data-reveil="{{ s.heure_reveil }}"
+                                    data-status="{{ s.statut_label|lower }}"
+                            >
+                                <td class="adm-td-id">{{ s.id }}</td>
+                                <td class="adm-td-user">
+                                    <div class="adm-user-cell">
+                                        <span class="adm-user-avatar-sm">{{ s.user_avatar }}</span>
+                                        <span>{{ s.user_label }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ s.date_nuit ? s.date_nuit|date('d/m/Y') : '-' }}</td>
+                                <td><span class="adm-badge-neutral">{{ s.duree }}h</span></td>
+                                <td>
+                                    <div class="adm-quality-bar">
+                                        <div class="adm-quality-fill"
+                                             style="width: {{ s.qualite_score }}%;"
+                                             aria-valuenow="{{ s.qualite_score }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <span class="adm-quality-val">{{ s.qualite_label }}</span>
+                                </td>
+                                <td>{{ s.heure_coucher }}</td>
+                                <td>{{ s.heure_reveil }}</td>
+                                <td>
+                                    <span class="adm-status-badge {{ s.statut_class }}">
+                                        {{ s.statut_label }}
+                                    </span>
+                                </td>
+                                <td class="adm-col-actions">
+                                    <div class="adm-actions-group">
+                                        <a href="{{ path('app_sommeil_show', {'id': s.id}) }}" class="adm-btn adm-btn-sm adm-btn-blue" title="Voir">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ path('app_sommeil_edit', {'id': s.id}) }}" class="adm-btn adm-btn-sm adm-btn-yellow" title="Modifier">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                        </a>
+                                        <form method="post" action="{{ path('app_sommeil_delete', {'id': s.id}) }}" onsubmit="return confirm('Supprimer cette entrée ?');" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ s.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="adm-btn adm-btn-sm adm-btn-red" title="Supprimer">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6l-1 14H6L5 6"/>
+                                                    <path d="M10 11v6"/>
+                                                    <path d="M14 11v6"/>
+                                                    <path d="M9 6V4h6v2"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="adm-empty-row">
+                                <div class="adm-empty-state">
+                                    <p>Aucune entrée sommeil.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="adm-stacked-section">
+        <div class="adm-section-heading">
+            <h2 class="adm-section-block-title">Statistiques Rêves</h2>
+            <span class="adm-section-count">{{ reves|length }} rêve(s)</span>
+        </div>
+
+        <div class="adm-panel-card adm-panel-card-narrow">
+            <div class="adm-panel-head">
+                <div>
+                    <h3 class="adm-panel-title">Répartition des types de rêves</h3>
+
+                </div>
+            </div>
+            <div class="adm-chart-card adm-chart-card-small">
+                <canvas id="dreamTypeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="adm-panel-card adm-panel-card-narrow">
+            <div class="adm-panel-head">
+                <div>
+                    <h3 class="adm-panel-title">Humeur des rêves</h3>
+                    <p class="adm-panel-subtitle">Répartition des émotions ressenties dans les rêves.</p>
+                </div>
+            </div>
+            <div class="adm-chart-card adm-chart-card-small">
+                <canvas id="dreamMoodBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="adm-table-card">
+            <div class="adm-table-header">
+                <div class="adm-table-header-left">
+                    <span class="adm-table-dot dot-reves" aria-hidden="true"></span>
+                    <h2 class="adm-table-title">Tableau Rêves</h2>
+                    <span class="adm-table-count" id="dreamCount">{{ reves|length }} rêve(s)</span>
+                </div>
+
+                <div class="adm-table-header-right" style="gap: 0.75rem; flex-wrap: wrap;">
+                    <div class="adm-search-mini">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="search" id="dreamSearch" placeholder="Rechercher..." aria-label="Rechercher un rêve">
+                    </div>
+
+                    <select id="dreamTypeFilter" class="adm-filter-select">
+                        <option value="">Tous les types</option>
+                        <option value="normal">Normal</option>
+                        <option value="lucide">Lucide</option>
+                        <option value="cauchemar">Cauchemar</option>
+                        <option value="prémonitoire">Prémonitoire</option>
+                    </select>
+
+                    <a href="{{ path('app_reve_new') }}" class="adm-btn adm-btn-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" aria-hidden="true">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Ajouter
+                    </a>
+                </div>
+            </div>
+
+            <div class="adm-table-wrap">
+                <table class="adm-table" id="dreamTable" aria-label="Tableau des rêves">
+                    <thead>
+                    <tr>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="id"># <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="user">Utilisateur <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="date">Date <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="title">Titre / Description <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="type">Type <span class="adm-sort-arrows">↕</span></button></th>
+                        <th><button type="button" class="adm-sort-btn" data-table="dream" data-sort="humeur">Humeur <span class="adm-sort-arrows">↕</span></button></th>
+                        <th class="adm-col-actions">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if reves is defined and reves|length > 0 %}
+                        {% for r in reves %}
+                            <tr
+                                    data-id="{{ r.id }}"
+                                    data-user="{{ r.user_label|lower }}"
+                                    data-date="{{ r.date_nuit ? r.date_nuit|date('Y-m-d') : '' }}"
+                                    data-title="{{ (r.titre ~ ' ' ~ r.description_courte)|lower }}"
+                                    data-type="{{ r.type_reve|lower }}"
+                                    data-humeur="{{ r.humeur|lower }}"
+                            >
+                                <td class="adm-td-id">{{ r.id }}</td>
+                                <td class="adm-td-user">
+                                    <div class="adm-user-cell">
+                                        <span class="adm-user-avatar-sm reve-avatar">{{ r.user_avatar }}</span>
+                                        <span>{{ r.user_label }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ r.date_nuit ? r.date_nuit|date('d/m/Y') : '-' }}</td>
+                                <td class="adm-td-desc">
+                                    <span class="adm-td-title">{{ r.titre }}</span>
+                                    <span class="adm-td-excerpt">{{ r.description_courte }}</span>
+                                </td>
+                                <td><span class="adm-badge-type">{{ r.type_reve }}</span></td>
+                                <td>
+                                    <span class="adm-emotion-tag {{ r.humeur_class }}">
+                                        {{ r.humeur }}
+                                    </span>
+                                </td>
+                                <td class="adm-col-actions">
+                                    <div class="adm-actions-group">
+                                        <a href="{{ path('app_reve_show', {'id': r.id}) }}" class="adm-btn adm-btn-sm adm-btn-blue" title="Voir">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ path('app_reve_edit', {'id': r.id}) }}" class="adm-btn adm-btn-sm adm-btn-yellow" title="Modifier">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                        </a>
+                                        <form method="post" action="{{ path('app_reve_delete', {'id': r.id}) }}" onsubmit="return confirm('Supprimer ce rêve ?');" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ r.id) }}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="adm-btn adm-btn-sm adm-btn-red" title="Supprimer">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6l-1 14H6L5 6"/>
+                                                    <path d="M10 11v6"/>
+                                                    <path d="M14 11v6"/>
+                                                    <path d="M9 6V4h6v2"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="adm-empty-row">
+                                <div class="adm-empty-state">
+                                    <p>Aucun rêve enregistré.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
+    <script>
+        (() => {
+            function setupTable(config) {
+                const table = document.getElementById(config.tableId);
+                const tbody = table ? table.querySelector('tbody') : null;
+                const searchInput = document.getElementById(config.searchId);
+                const filterSelect = document.getElementById(config.filterId);
+                const countEl = document.getElementById(config.countId);
+                const sortButtons = document.querySelectorAll(`.adm-sort-btn[data-table="${config.tableKey}"]`);
+
+                if (!table || !tbody) return;
+
+                let currentSort = { key: null, direction: 'asc' };
+
+                const getRows = () => Array.from(tbody.querySelectorAll('tr')).filter(
+                    row => !row.querySelector('.adm-empty-state')
+                );
+
+                function updateCount() {
+                    const visibleRows = getRows().filter(row => row.style.display !== 'none').length;
+                    if (countEl) {
+                        countEl.textContent = config.countLabel(visibleRows);
+                    }
+                }
+
+                function applyFilters() {
+                    const query = (searchInput?.value || '').trim().toLowerCase();
+                    const filter = (filterSelect?.value || '').trim().toLowerCase();
+
+                    getRows().forEach((row) => {
+                        const haystack = config.searchFields.map(field => row.dataset[field] || '').join(' ').toLowerCase();
+                        const filterValue = row.dataset[config.filterField] || '';
+
+                        const matchSearch = !query || haystack.includes(query);
+                        const matchFilter = !filter || filterValue.includes(filter);
+
+                        row.style.display = (matchSearch && matchFilter) ? '' : 'none';
+                    });
+
+                    updateCount();
+                }
+
+                function sortRows(key) {
+                    const rows = getRows();
+                    if (!rows.length) return;
+
+                    if (currentSort.key === key) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort.key = key;
+                        currentSort.direction = 'asc';
+                    }
+
+                    const multiplier = currentSort.direction === 'asc' ? 1 : -1;
+
+                    rows.sort((a, b) => {
+                        const aVal = (a.dataset[key] || '').toString();
+                        const bVal = (b.dataset[key] || '').toString();
+
+                        return aVal.localeCompare(bVal, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        }) * multiplier;
+                    });
+
+                    rows.forEach(row => tbody.appendChild(row));
+
+                    sortButtons.forEach((button) => {
+                        const active = button.dataset.sort === currentSort.key;
+                        button.classList.toggle('is-active', active);
+
+                        const arrows = button.querySelector('.adm-sort-arrows');
+                        if (arrows) {
+                            arrows.textContent = active
+                                ? (currentSort.direction === 'asc' ? '↑' : '↓')
+                                : '↕';
+                        }
+                    });
+
+                    applyFilters();
+                }
+
+                searchInput?.addEventListener('input', applyFilters);
+                filterSelect?.addEventListener('change', applyFilters);
+                sortButtons.forEach(button => {
+                    button.addEventListener('click', () => sortRows(button.dataset.sort));
+                });
+
+                applyFilters();
+            }
+
+            setupTable({
+                tableId: 'sleepTable',
+                searchId: 'sleepSearch',
+                filterId: 'sleepStatusFilter',
+                countId: 'sleepCount',
+                tableKey: 'sleep',
+                filterField: 'status',
+                searchFields: ['id', 'user', 'date', 'duree', 'qualite', 'coucher', 'reveil', 'status'],
+                countLabel: (n) => `${n} entrée(s)`
+            });
+
+            setupTable({
+                tableId: 'dreamTable',
+                searchId: 'dreamSearch',
+                filterId: 'dreamTypeFilter',
+                countId: 'dreamCount',
+                tableKey: 'dream',
+                filterField: 'type',
+                searchFields: ['id', 'user', 'date', 'title', 'type', 'humeur'],
+                countLabel: (n) => `${n} rêve(s)`
+            });
+
+            const sleepQualityCtx = document.getElementById('sleepQualityChart');
+            if (sleepQualityCtx && typeof Chart !== 'undefined') {
+                new Chart(sleepQualityCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Excellente', 'Bonne', 'Moyenne', 'Mauvaise'],
+                        datasets: [{
+                            data: [
+                                {{ kpis.qualite_excellente|default(0) }},
+                                {{ kpis.qualite_bonne|default(0) }},
+                                {{ kpis.qualite_moyenne|default(0) }},
+                                {{ kpis.qualite_mauvaise|default(0) }}
+                            ],
+                            backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                fontColor: '#cbd5e1',
+                                boxWidth: 18,
+                                padding: 16
+                            }
+                        }
+                    }
+                });
+            }
+
+            const sleepDurationBarCtx = document.getElementById('sleepDurationBarChart');
+            if (sleepDurationBarCtx && typeof Chart !== 'undefined') {
+                new Chart(sleepDurationBarCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ kpis.sleep_duration_labels|json_encode|raw }},
+                        datasets: [{
+                            label: 'Durée (h)',
+                            data: {{ kpis.sleep_duration_data|json_encode|raw }},
+                            backgroundColor: [
+                                '#38bdf8', '#22c55e', '#f59e0b', '#a78bfa',
+                                '#fb7185', '#14b8a6', '#f97316', '#60a5fa',
+                                '#34d399', '#eab308', '#c084fc', '#f43f5e'
+                            ],
+                            borderWidth: 0,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    color: 'rgba(255,255,255,0.08)'
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+
+            const wakeMoodBarCtx = document.getElementById('wakeMoodBarChart');
+            if (wakeMoodBarCtx && typeof Chart !== 'undefined') {
+                new Chart(wakeMoodBarCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ kpis.wake_mood_labels|json_encode|raw }},
+                        datasets: [{
+                            label: 'Nombre',
+                            data: {{ kpis.wake_mood_data|json_encode|raw }},
+                            backgroundColor: [
+                                '#22c55e',
+                                '#f59e0b',
+                                '#94a3b8',
+                                '#ef4444',
+                                '#3b82f6'
+                            ],
+                            borderWidth: 0,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0,
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    color: 'rgba(255,255,255,0.08)'
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+
+            const dreamTypeCtx = document.getElementById('dreamTypeChart');
+            if (dreamTypeCtx && typeof Chart !== 'undefined') {
+                new Chart(dreamTypeCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Normal', 'Lucide', 'Cauchemar', 'Prémonitoire'],
+                        datasets: [{
+                            data: [
+                                {{ kpis.reves_normaux|default(0) }},
+                                {{ kpis.reves_lucides|default(0) }},
+                                {{ kpis.reves_cauchemars|default(0) }},
+                                {{ kpis.reves_premonitoires|default(0) }}
+                            ],
+                            backgroundColor: ['#60a5fa', '#a78bfa', '#f87171', '#fbbf24'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                fontColor: '#cbd5e1',
+                                boxWidth: 18,
+                                padding: 16
+                            }
+                        }
+                    }
+                });
+            }
+
+            const dreamMoodBarCtx = document.getElementById('dreamMoodBarChart');
+            if (dreamMoodBarCtx && typeof Chart !== 'undefined') {
+                new Chart(dreamMoodBarCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ kpis.dream_mood_labels|json_encode|raw }},
+                        datasets: [{
+                            label: 'Nombre',
+                            data: {{ kpis.dream_mood_data|json_encode|raw }},
+                            backgroundColor: [
+                                '#f59e0b',
+                                '#60a5fa',
+                                '#ef4444',
+                                '#22c55e',
+                                '#94a3b8'
+                            ],
+                            borderWidth: 0,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    precision: 0,
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    color: 'rgba(255,255,255,0.08)'
+                                }
+                            }],
+                            xAxes: [{
+                                ticks: {
+                                    fontColor: '#cbd5e1'
+                                },
+                                gridLines: {
+                                    display: false
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+{% endblock %}
