@@ -1,6 +1,7 @@
 parameters:
     app.upload_dir: '%kernel.project_dir%/public/uploads'
     app.translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
+    app.imgbb_api_key: '%env(string:API_IMGBB)%'
 
 services:
     _defaults:
@@ -17,7 +18,9 @@ services:
     App\Service\ImageUploadService:
         arguments:
             $uploadDir: '%app.upload_dir%'
+            $imgbbApiKey: '%app.imgbb_api_key%'
 
     App\Service\TranslationService:
         arguments:
             $apiKey: '%app.translate_api_key%'
+    # ThreadDuplicateRadarService uses local lexical scoring; no API key required

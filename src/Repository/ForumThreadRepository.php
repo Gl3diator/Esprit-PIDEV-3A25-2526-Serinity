@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ForumThread;
 use App\Enum\ThreadStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -54,6 +55,66 @@ class ForumThreadRepository extends ServiceEntityRepository
 
         if (!empty($filters['authorId'])) {
             $qb->andWhere('t.authorId = :authorId')->setParameter('authorId', (string) $filters['authorId']);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findOneSuggestedInCategory(string $userId, int $categoryId): ?ForumThread
+    {
+        $result = $this->createSuggestionQueryBuilder($userId)
+            ->andWhere('c.id = :categoryId')
+            ->setParameter('categoryId', $categoryId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof ForumThread ? $result : null;
+    }
+
+    public function findOneSuggestedAnyCategory(string $userId): ?ForumThread
+    {
+        $result = $this->createSuggestionQueryBuilder($userId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof ForumThread ? $result : null;
+    }
+
+    private function createSuggestionQueryBuilder(string $userId): QueryBuilder
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.category', 'c')
+            ->addSelect('c')
+            ->leftJoin('t.interactions', 'pi', 'WITH', 'pi.userId = :userId')
+            ->leftJoin('t.replies', 'ur', 'WITH', 'ur.authorId = :userId')
+            ->andWhere('t.status != :archivedStatus')
+            ->andWhere('t.authorId != :userId')
+            ->andWhere('pi.id IS NULL')
+            ->andWhere('ur.id IS NULL')
+            ->setParameter('userId', $userId)
+            ->setParameter('archivedStatus', ThreadStatus::ARCHIVED)
+            ->orderBy('t.followCount', 'DESC')
+            ->addOrderBy('t.likeCount', 'DESC')
+            ->addOrderBy('t.replyCount', 'DESC')
+            ->addOrderBy('t.createdAt', 'DESC');
+    }
+
+    /**
+     * @return ForumThread[]
+     */
+    public function findDuplicateRadarCandidates(?string $excludeAuthorId = null, int $limit = 60): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->leftJoin('t.category', 'c')
+            ->addSelect('c')
+            ->orderBy('t.createdAt', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($excludeAuthorId !== null && $excludeAuthorId !== '') {
+            $qb->andWhere('t.authorId != :authorId')
+                ->setParameter('authorId', $excludeAuthorId);
         }
 
         return $qb->getQuery()->getResult();

@@ -33,6 +33,7 @@
                 <div class="d-flex gap-2">
                     <input type="text" name="q" value="{{ app.request.query.get('q') }}" class="form-control" placeholder="Search title...">
                     <button class="btn btn-primary px-3" type="submit">Search</button>
+                    <a class="btn btn-outline-primary px-3 text-nowrap" href="{{ path('app_forum_suggested_thread') }}">Suggested Thread</a>
                 </div>
             </div>
             <div class="col-lg-4 col-md-4">

@@ -26,9 +26,238 @@
                 {{ form_row(form.type) }}
                 {{ form_row(form.isPinned) }}
                 {{ form_row(form.imageFile) }}
+                {% if mode == 'create' %}
+                    <input type="hidden" name="force_publish" id="forcePublishInput" value="0">
+                {% endif %}
                 <button class="btn btn-primary">{{ mode == 'create' ? 'Publish' : 'Update' }}</button>
             {{ form_end(form) }}
+
+            {% if mode == 'create' %}
+                <div class="modal fade" id="duplicateRadarModal" tabindex="-1" aria-labelledby="duplicateRadarTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title h5 mb-0" id="duplicateRadarTitle">Semantic Duplicate Radar</h2>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted mb-3">We found near-duplicate threads. You can continue posting, merge into an existing thread, or revive an older one.</p>
+                                <div id="duplicateRadarList" class="d-flex flex-column gap-3"></div>
+                            </div>
+                            <div class="modal-footer d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="continuePublishBtn">Continue and Publish Anyway</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </section>
     </div>
 </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if mode == 'create' %}
+        <script>
+            (function () {
+                const initDuplicateRadar = function () {
+                    const form = document.querySelector('form[name="forum_thread"]');
+                const forcePublishInput = document.getElementById('forcePublishInput');
+                const modalEl = document.getElementById('duplicateRadarModal');
+                const listEl = document.getElementById('duplicateRadarList');
+                const continueBtn = document.getElementById('continuePublishBtn');
+
+                if (!form || !forcePublishInput || !modalEl || !listEl || !continueBtn) {
+                    return;
+                }
+
+                const titleInput = form.querySelector('input[name$="[title]"]');
+                const contentInput = form.querySelector('textarea[name$="[content]"]');
+                if (!titleInput || !contentInput) {
+                    return;
+                }
+
+                const radarEndpoint = '{{ path('app_thread_duplicate_radar') }}';
+                const duplicateRadarToken = '{{ csrf_token('duplicate_radar') }}';
+                const duplicateFlowToken = '{{ csrf_token('duplicate_flow') }}';
+                const mergeBaseUrl = '{{ path('app_thread_duplicate_merge', {id: 0}) }}'.replace(/0$/, '');
+                const reviveBaseUrl = '{{ path('app_thread_duplicate_revive', {id: 0}) }}'.replace(/0$/, '');
+                const fallbackDuplicates = {{ duplicateRadarResults|default([])|json_encode|raw }};
+
+                const modal = window.bootstrap && window.bootstrap.Modal
+                    ? window.bootstrap.Modal.getOrCreateInstance(modalEl)
+                    : null;
+
+                const safeText = (value) => {
+                    const div = document.createElement('div');
+                    div.textContent = String(value ?? '');
+                    return div.innerHTML;
+                };
+
+                const postDuplicateAction = (action, threadId) => {
+                    const targetUrl = (action === 'merge' ? mergeBaseUrl : reviveBaseUrl) + threadId;
+                    const draftContent = (contentInput.value || '').trim();
+
+                    const postForm = document.createElement('form');
+                    postForm.method = 'POST';
+                    postForm.action = targetUrl;
+                    postForm.style.display = 'none';
+
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '_token';
+                    tokenInput.value = duplicateFlowToken;
+
+                    const draftInput = document.createElement('input');
+                    draftInput.type = 'hidden';
+                    draftInput.name = 'draft_content';
+                    draftInput.value = draftContent;
+
+                    postForm.appendChild(tokenInput);
+                    postForm.appendChild(draftInput);
+                    document.body.appendChild(postForm);
+                    postForm.submit();
+                };
+
+                const bindActionButtons = () => {
+                    listEl.querySelectorAll('[data-duplicate-action]').forEach((button) => {
+                        button.addEventListener('click', () => {
+                            const action = button.getAttribute('data-duplicate-action') || '';
+                            const threadIdRaw = button.getAttribute('data-thread-id') || '0';
+                            const threadId = Number(threadIdRaw);
+
+                            if (!Number.isInteger(threadId) || threadId <= 0) {
+                                return;
+                            }
+
+                            postDuplicateAction(action, threadId);
+                        });
+                    });
+                };
+
+                const renderDuplicates = (duplicates) => {
+                    if (!Array.isArray(duplicates) || duplicates.length === 0) {
+                        listEl.innerHTML = '<p class="text-muted mb-0">No duplicates found.</p>';
+                        return;
+                    }
+
+                    listEl.innerHTML = duplicates.map((item) => {
+                        const score = Number(item.scorePercent ?? 0);
+                        const reviveLabel = item.canRevive ? 'Revive This Thread' : 'Open Thread';
+
+                        return `
+                            <article class="border rounded p-3">
+                                <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                    <h3 class="h6 mb-0">${safeText(item.title || 'Untitled')}</h3>
+                                    <span class="badge bg-warning text-dark">Similarity ${score}%</span>
+                                </div>
+                                <p class="small text-muted mb-2">${safeText(item.category || 'Unknown')} • ${safeText(item.status || '')} • ${safeText(item.createdAt || '')}</p>
+                                <p class="small mb-3">${safeText(item.excerpt || '')}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-duplicate-action="merge" data-thread-id="${Number(item.id || 0)}">Merge Into This Thread</button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning" data-duplicate-action="revive" data-thread-id="${Number(item.id || 0)}">${safeText(reviveLabel)}</button>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+
+                    bindActionButtons();
+                };
+
+                const openDuplicateModal = (duplicates) => {
+                    renderDuplicates(duplicates);
+                    if (modal) {
+                        modal.show();
+                        return;
+                    }
+
+                    window.alert('Possible duplicates found. Please review before publishing.');
+                };
+
+                continueBtn.addEventListener('click', () => {
+                    forcePublishInput.value = '1';
+                    if (modal) {
+                        modal.hide();
+                    }
+                    form.submit();
+                });
+
+                if (Array.isArray(fallbackDuplicates) && fallbackDuplicates.length > 0) {
+                    openDuplicateModal(fallbackDuplicates);
+                }
+
+                form.addEventListener('submit', async (event) => {
+                    if (forcePublishInput.value === '1') {
+                        return;
+                    }
+
+                    if (form.dataset.duplicateChecking === '1') {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    const title = (titleInput.value || '').trim();
+                    const content = (contentInput.value || '').trim();
+
+                    if (title === '' || content === '') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    form.dataset.duplicateChecking = '1';
+
+                    try {
+                        const payload = new URLSearchParams();
+                        payload.set('_token', duplicateRadarToken);
+                        payload.set('title', title);
+                        payload.set('content', content);
+
+                        const response = await fetch(radarEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                                'Accept': 'application/json',
+                            },
+                            body: payload.toString(),
+                        });
+
+                        const data = await response.json();
+                        const duplicates = Array.isArray(data.duplicates) ? data.duplicates : [];
+
+                        if (!response.ok) {
+                            forcePublishInput.value = '1';
+                            form.submit();
+                            return;
+                        }
+
+                        if (duplicates.length === 0) {
+                            forcePublishInput.value = '1';
+                            form.submit();
+                            return;
+                        }
+
+                        openDuplicateModal(duplicates);
+                    } catch (error) {
+                        forcePublishInput.value = '1';
+                        form.submit();
+                    } finally {
+                        delete form.dataset.duplicateChecking;
+                    }
+                });
+                // end initDuplicateRadar
+                };
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDuplicateRadar, { once: true });
+                } else {
+                    initDuplicateRadar();
+                }
+
+                // Re-initialize when Turbo Drive loads a new page fragment
+                document.addEventListener('turbo:load', initDuplicateRadar);
+            })();
+        </script>
+    {% endif %}
 {% endblock %}

@@ -16,7 +16,18 @@
                 <div class="d-flex flex-wrap gap-2">
                     <a class="btn btn-sm {{ currentVote == 1 ? 'btn-success' : 'btn-outline-success' }}" href="{{ path('app_thread_upvote', {id: thread.id}) }}">Upvote</a>
                     <a class="btn btn-sm {{ currentVote == -1 ? 'btn-danger' : 'btn-outline-danger' }}" href="{{ path('app_thread_downvote', {id: thread.id}) }}">Downvote</a>
-                    <a class="btn btn-sm {{ isFollowing ? 'btn-dark' : 'btn-outline-primary' }}" href="{{ path('app_thread_follow', {id: thread.id}) }}">{{ isFollowing ? 'Unfollow' : 'Follow' }}</a>
+                    <a
+                        id="followToggleBtn"
+                        class="btn btn-sm {{ isFollowing ? 'btn-dark' : 'btn-outline-primary' }}"
+                        href="{{ path('app_thread_follow', {id: thread.id}) }}"
+                        data-follow-toggle="1"
+                        data-following="{{ isFollowing ? '1' : '0' }}"
+                    >{{ isFollowing ? 'Unfollow' : 'Follow' }}</a>
+                </div>
+                <div id="followFlashWarnings" class="d-none">
+                    {% for message in app.flashes('warning') %}
+                        <span data-follow-warning="{{ message|e('html_attr') }}"></span>
+                    {% endfor %}
                 </div>
             </div>
             <div class="card-soft p-3 p-md-4 mt-3 thread-content-block">
@@ -103,6 +114,22 @@
                 <p class="text-muted">No replies yet.</p>
             {% endfor %}
         </section>
+
+        <div class="modal fade" id="followWarningModal" tabindex="-1" aria-labelledby="followWarningModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5 mb-0" id="followWarningModalTitle">Action Interrupted</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p id="followWarningModalMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}
@@ -111,6 +138,198 @@
     {{ parent() }}
     <script>
         (function () {
+            const initFollowToggle = () => {
+                const button = document.querySelector('[data-follow-toggle="1"]');
+                const warningModalEl = document.getElementById('followWarningModal');
+                const warningMessageEl = document.getElementById('followWarningModalMessage');
+                const warningSeed = document.getElementById('followFlashWarnings');
+
+                if (!button || button._followToggleBound === true) {
+                    return;
+                }
+
+                button._followToggleBound = true;
+
+                const FOLLOW_WINDOW_MS = 60_000;
+                const FOLLOW_MAX_ACTIONS = 9;
+
+                let committedState = button.dataset.following === '1';
+                let displayState = committedState;
+                let pendingToggles = 0;
+                let syncRunning = false;
+                let localBlockedUntil = 0;
+                const localActionTimestamps = [];
+
+                const warningModal = warningModalEl && window.bootstrap && window.bootstrap.Modal
+                    ? window.bootstrap.Modal.getOrCreateInstance(warningModalEl)
+                    : null;
+
+                const applyFollowingState = (isFollowing) => {
+                    button.dataset.following = isFollowing ? '1' : '0';
+                    button.textContent = isFollowing ? 'Unfollow' : 'Follow';
+                    button.classList.toggle('btn-dark', isFollowing);
+                    button.classList.toggle('btn-outline-primary', !isFollowing);
+                };
+
+                const showWarning = (message) => {
+                    if (!message || message.trim() === '') {
+                        return;
+                    }
+
+                    if (warningModal && warningMessageEl) {
+                        warningMessageEl.textContent = message;
+                        warningModal.show();
+                        return;
+                    }
+
+                    window.alert(message);
+                };
+
+                const secondsFromPayload = (payload) => {
+                    const raw = payload && payload.retryAfterSeconds;
+                    const parsed = Number(raw);
+
+                    if (!Number.isFinite(parsed) || parsed <= 0) {
+                        return null;
+                    }
+
+                    return Math.ceil(parsed);
+                };
+
+                const buildWarningMessage = (baseMessage, waitSeconds) => {
+                    const message = typeof baseMessage === 'string' && baseMessage.trim() !== ''
+                        ? baseMessage.trim()
+                        : 'Too many follow/unfollow actions.';
+
+                    if (waitSeconds === null || waitSeconds <= 0) {
+                        return message;
+                    }
+
+                    return `${message} Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'}.`;
+                };
+
+                const pruneLocalActions = (nowMs) => {
+                    const cutoff = nowMs - FOLLOW_WINDOW_MS;
+
+                    while (localActionTimestamps.length > 0 && localActionTimestamps[0] <= cutoff) {
+                        localActionTimestamps.shift();
+                    }
+                };
+
+                const flushFlashWarnings = () => {
+                    if (!warningSeed) {
+                        return;
+                    }
+
+                    const warningNodes = warningSeed.querySelectorAll('[data-follow-warning]');
+                    warningNodes.forEach((node) => {
+                        const message = node.getAttribute('data-follow-warning');
+                        if (typeof message === 'string' && message.trim() !== '') {
+                            showWarning(message);
+                        }
+                    });
+                };
+
+                const syncWithServer = async () => {
+                    if (syncRunning) {
+                        return;
+                    }
+
+                    syncRunning = true;
+
+                    try {
+                        while (pendingToggles > 0) {
+                            const stateBeforeRequest = committedState;
+                            const response = await fetch(button.getAttribute('href') || window.location.href, {
+                                method: 'GET',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                },
+                                cache: 'no-store',
+                            });
+
+                            let payload = null;
+                            try {
+                                payload = await response.json();
+                            } catch (error) {
+                                payload = null;
+                            }
+
+                            const hasServerState = payload && typeof payload.isFollowing === 'boolean';
+
+                            if (!response.ok || !payload || payload.ok !== true) {
+                                committedState = hasServerState ? payload.isFollowing : stateBeforeRequest;
+                                displayState = committedState;
+                                pendingToggles = 0;
+                                applyFollowingState(committedState);
+
+                                const retryAfterSeconds = secondsFromPayload(payload);
+                                if (retryAfterSeconds !== null) {
+                                    localBlockedUntil = Date.now() + (retryAfterSeconds * 1000);
+                                }
+
+                                const baseMessage = payload && typeof payload.message === 'string'
+                                    ? payload.message
+                                    : 'Too many follow/unfollow actions.';
+                                showWarning(buildWarningMessage(baseMessage, retryAfterSeconds));
+                                break;
+                            }
+
+                            committedState = hasServerState ? payload.isFollowing : !stateBeforeRequest;
+                            pendingToggles -= 1;
+
+                            if (pendingToggles === 0) {
+                                displayState = committedState;
+                                applyFollowingState(displayState);
+                            }
+                        }
+                    } catch (error) {
+                        displayState = committedState;
+                        pendingToggles = 0;
+                        applyFollowingState(committedState);
+                        showWarning('Could not update follow state. Please try again.');
+                    } finally {
+                        syncRunning = false;
+                        if (pendingToggles > 0) {
+                            void syncWithServer();
+                        }
+                    }
+                };
+
+                applyFollowingState(displayState);
+                flushFlashWarnings();
+
+                button.addEventListener('click', (event) => {
+                    event.preventDefault();
+
+                    const now = Date.now();
+                    pruneLocalActions(now);
+
+                    if (localBlockedUntil > now) {
+                        const waitSeconds = Math.max(1, Math.ceil((localBlockedUntil - now) / 1000));
+                        showWarning(buildWarningMessage('Too many follow/unfollow actions.', waitSeconds));
+
+                        return;
+                    }
+
+                    if (localActionTimestamps.length >= FOLLOW_MAX_ACTIONS) {
+                        localBlockedUntil = localActionTimestamps[0] + FOLLOW_WINDOW_MS;
+                        const waitSeconds = Math.max(1, Math.ceil((localBlockedUntil - now) / 1000));
+                        showWarning(buildWarningMessage('Too many follow/unfollow actions.', waitSeconds));
+
+                        return;
+                    }
+
+                    localActionTimestamps.push(now);
+
+                    pendingToggles += 1;
+                    displayState = !displayState;
+                    applyFollowingState(displayState);
+                    void syncWithServer();
+                });
+            };
+
             const initReplyLayer = () => {
                 const layer = document.getElementById('replyLayer');
                 const backdrop = document.getElementById('replyLayerBackdrop');
@@ -174,17 +393,29 @@
                 });
 
                 const urlReplyTo = new URLSearchParams(window.location.search).get('reply_to');
+                const composeRequested = new URLSearchParams(window.location.search).get('compose') === '1';
+
                 if (urlReplyTo) {
                     openLayer(urlReplyTo);
+                    return;
+                }
+
+                if (composeRequested) {
+                    openLayer();
                 }
             };
 
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initReplyLayer, { once: true });
+                document.addEventListener('DOMContentLoaded', () => {
+                    initFollowToggle();
+                    initReplyLayer();
+                }, { once: true });
             } else {
+                initFollowToggle();
                 initReplyLayer();
             }
 
+            document.addEventListener('turbo:load', initFollowToggle);
             document.addEventListener('turbo:load', initReplyLayer);
         })();
     </script>

@@ -40,4 +40,40 @@ class PostInteractionRepository extends ServiceEntityRepository
 
         return $rows;
     }
+
+    /**
+     * @return list<array{categoryId: int, score: int}>
+     */
+    public function findCategoryScoresForUser(string $userId): array
+    {
+        $rows = $this->createQueryBuilder('pi')
+            ->select('IDENTITY(t.category) AS categoryId')
+            ->addSelect('SUM(CASE WHEN pi.follow = true THEN 4 ELSE 0 END) AS followScore')
+            ->addSelect('SUM(CASE WHEN pi.vote = 1 THEN 3 WHEN pi.vote = -1 THEN -2 ELSE 0 END) AS voteScore')
+            ->innerJoin('pi.thread', 't')
+            ->andWhere('pi.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->groupBy('t.category')
+            ->getQuery()
+            ->getArrayResult();
+
+        $scores = [];
+
+        foreach ($rows as $row) {
+            $categoryId = (int) ($row['categoryId'] ?? 0);
+            if ($categoryId <= 0) {
+                continue;
+            }
+
+            $score = (int) ($row['followScore'] ?? 0) + (int) ($row['voteScore'] ?? 0);
+            $scores[] = [
+                'categoryId' => $categoryId,
+                'score' => $score,
+            ];
+        }
+
+        usort($scores, static fn (array $a, array $b): int => $b['score'] <=> $a['score']);
+
+        return $scores;
+    }
 }

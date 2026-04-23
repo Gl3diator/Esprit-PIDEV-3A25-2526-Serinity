@@ -21,16 +21,38 @@ class TranslationService
         if ($this->apiKey === '') {
             return sprintf('[translation disabled] %s', $text);
         }
+        $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $this->apiKey;
 
-        $response = $this->httpClient->request('POST', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='.$this->apiKey, [
+        $prompt = sprintf(
+            "Translate the following text to %s. Only return the translated text:\n\n%s",
+            $targetLanguage,
+            $text
+        );
+
+        $response = $this->httpClient->request('POST', $endpoint, [
             'json' => [
                 'contents' => [[
                     'parts' => [[
-                        'text' => sprintf('Translate this to %s and return only the translated text: %s', $targetLanguage, $text),
+                        'text' => $prompt,
                     ]],
                 ]],
             ],
         ]);
+
+        $status = $response->getStatusCode();
+        $body = $response->getContent(false);
+
+        if ($status < 200 || $status >= 300) {
+            // try to extract an error message
+            try {
+                $err = json_decode($body, true);
+                $message = $err['error']['message'] ?? $body;
+            } catch (\Throwable $e) {
+                $message = $body;
+            }
+
+            throw new \RuntimeException(sprintf('Translation API error (%d): %s', $status, $message));
+        }
 
         $data = $response->toArray(false);
 

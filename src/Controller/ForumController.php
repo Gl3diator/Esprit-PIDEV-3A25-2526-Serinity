@@ -16,6 +16,7 @@ use App\Service\InteractionService;
 use App\Service\ProfileLookupService;
 use App\Service\ReplyService;
 use App\Service\SummarizationService;
+use App\Service\ThreadSuggestionService;
 use App\Service\ThreadService;
 use App\Service\TranslationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -124,6 +125,37 @@ class ForumController extends AbstractController
         ]);
     }
 
+    #[Route('/suggested', name: 'app_forum_suggested_thread')]
+    public function suggested(
+        CurrentUserService $currentUserService,
+        ThreadSuggestionService $threadSuggestionService,
+        ProfileLookupService $profileLookupService,
+    ): Response {
+        $currentUser = $currentUserService->requireUser();
+        if ($currentUserService->isAdmin($currentUser)) {
+            return $this->redirectToRoute('app_admin_forum');
+        }
+
+        $result = $threadSuggestionService->buildSuggestion($currentUser->getId());
+        $thread = $result['thread'];
+
+        if ($thread instanceof ForumThread) {
+            $this->hydrateThreadAuthors([$thread], $profileLookupService);
+        }
+
+        $positiveSignals = array_values(array_filter(
+            $result['categoryScores'],
+            static fn (array $row): bool => (int) ($row['score'] ?? 0) > 0
+        ));
+
+        return $this->render('forum/suggested_thread.html.twig', [
+            'suggestedThread' => $thread,
+            'currentUser' => $currentUser,
+            'hasCategorySignals' => $positiveSignals !== [],
+            'signalCategoryCount' => count($positiveSignals),
+        ]);
+    }
+
     #[Route('/thread/{id}', name: 'app_forum_thread_detail', requirements: ['id' => '\\d+'])]
     public function detail(
         ForumThread $thread,
@@ -143,6 +175,15 @@ class ForumController extends AbstractController
         }
 
         $reply = new Reply();
+        $prefillKey = 'thread_reply_prefill_'.(int) $thread->getId();
+        if ($request->hasSession()) {
+            $prefillReply = (string) $request->getSession()->get($prefillKey, '');
+            if ($prefillReply !== '') {
+                $reply->setContent($prefillReply);
+                $request->getSession()->remove($prefillKey);
+            }
+        }
+
         $form = $this->createForm(ReplyType::class, $reply);
         $form->handleRequest($request);
 
@@ -173,7 +214,18 @@ class ForumController extends AbstractController
 
         $translated = null;
         if ($request->query->has('lang')) {
-            $translated = $translationService->translate((string) $thread->getContent(), (string) $request->query->get('lang'));
+            try {
+                $translated = $translationService->translate((string) $thread->getContent(), (string) $request->query->get('lang'));
+
+                // if translated text equals original, treat as no-op and notify user
+                if (trim((string) $translated) === trim((string) $thread->getContent())) {
+                    $this->addFlash('warning', 'Translation returned the same content — translation may be unavailable.');
+                    $translated = null;
+                }
+            } catch (\Throwable $e) {
+                $this->addFlash('warning', 'Translation failed: ' . $e->getMessage());
+                $translated = null;
+            }
         }
 
         $currentInteraction = $interactionService->getInteraction($thread, $currentUser);

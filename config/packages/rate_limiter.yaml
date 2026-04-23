@@ -1,0 +1,7 @@
+framework:
+    rate_limiter:
+        # Limit is set to 9 so the 10th rapid follow/unfollow click is blocked.
+        follow_toggle:
+            policy: 'fixed_window'
+            limit: 9
+            interval: '1 minute'
