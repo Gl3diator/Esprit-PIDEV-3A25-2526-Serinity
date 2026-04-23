@@ -1,0 +1,136 @@
+{% set isEdit = sommeil is defined and sommeil is not null %}
+{% set modalTitle = isEdit ? 'Modifier la nuit' : 'Nouvelle nuit' %}
+{% set modalSubtitle = isEdit
+    ? (sommeil.dateNuit ? sommeil.dateNuit|date('d/m/Y') : 'Édition')
+    : 'Enregistrez votre nuit de sommeil'
+%}
+
+<div class="rv-modal-sheet">
+    <div class="rv-modal-sheet__header">
+        <div>
+            <h2 class="rv-modal-sheet__title">{{ modalTitle }}</h2>
+            <p class="rv-modal-sheet__subtitle">{{ modalSubtitle }}</p>
+        </div>
+    </div>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-warning mb-3">{{ message }}</div>
+    {% endfor %}
+
+    <div class="sleep-card rv-modal-sheet__card">
+        {{ form_start(form, {
+            action: isEdit
+            ? path('app_sommeil_edit', { id: sommeil.id })
+            : path('app_sommeil_new'),
+            method: 'POST',
+            attr: {
+                class: 'sleep-form',
+                novalidate: 'novalidate'
+            }
+        }) }}
+
+        {{ form_errors(form) }}
+
+        <div class="form-section">
+            <h3>⏰ Horaires</h3>
+            <div class="form-grid">
+                <div>
+                    {{ form_label(form.dateNuit) }}
+                    {{ form_widget(form.dateNuit) }}
+                    {{ form_errors(form.dateNuit) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.heureCoucher) }}
+                    {{ form_widget(form.heureCoucher) }}
+                    {{ form_errors(form.heureCoucher) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.heureReveil) }}
+                    {{ form_widget(form.heureReveil) }}
+                    {{ form_errors(form.heureReveil) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.dureeSommeil) }}
+                    {{ form_widget(form.dureeSommeil) }}
+                    {{ form_errors(form.dureeSommeil) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>⭐ Qualité & ressenti</h3>
+            <div class="form-grid">
+                <div>
+                    {{ form_label(form.qualite) }}
+                    {{ form_widget(form.qualite) }}
+                    {{ form_errors(form.qualite) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.humeurReveil) }}
+                    {{ form_widget(form.humeurReveil) }}
+                    {{ form_errors(form.humeurReveil) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.interruptions) }}
+                    {{ form_widget(form.interruptions) }}
+                    {{ form_errors(form.interruptions) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>🏠 Environnement</h3>
+            <div class="form-grid">
+                <div>
+                    {{ form_label(form.environnement) }}
+                    {{ form_widget(form.environnement) }}
+                    {{ form_errors(form.environnement) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.temperature) }}
+                    {{ form_widget(form.temperature) }}
+                    {{ form_errors(form.temperature) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.bruitNiveau) }}
+                    {{ form_widget(form.bruitNiveau) }}
+                    {{ form_errors(form.bruitNiveau) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>📝 Notes</h3>
+            {{ form_label(form.commentaire) }}
+            {{ form_widget(form.commentaire) }}
+            {{ form_errors(form.commentaire) }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">
+                {{ isEdit ? '✔ Sauvegarder' : '✔ Enregistrer' }}
+            </button>
+
+            {% if modal_mode|default(false) %}
+                <button type="button" class="btn btn--secondary" onclick="closeSommeilModal()">
+                    Annuler
+                </button>
+            {% else %}
+                {% if isEdit %}
+                    <a href="{{ path('app_sommeil_show', {id: sommeil.id}) }}" class="btn btn--secondary">Annuler</a>
+                {% else %}
+                    <a href="{{ path('app_sommeil_list') }}" class="btn btn--secondary">Annuler</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
