@@ -1,0 +1,19 @@
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <h2 class="modal__title">Supprimer ce rêve ?</h2>
+        <p class="modal__body" id="deleteModalBody">Cette action est irréversible.</p>
+
+        <div class="modal__actions">
+            <button type="button" class="btn btn--secondary" onclick="closeDeleteModal()">
+                Annuler
+            </button>
+
+            <form id="deleteForm" method="post">
+                <input type="hidden" name="_token" value="">
+                <button type="submit" class="btn btn--danger">
+                    Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

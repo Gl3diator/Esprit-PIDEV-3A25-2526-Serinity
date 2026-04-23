@@ -1,0 +1,147 @@
+{% extends 'sleep/_layout.html.twig' %}
+
+{% block title %}Sommeil — Serinity Sleep{% endblock %}
+{% block meta_description %}Gérez votre suivi du sommeil et votre journal des rêves depuis cet espace dédié.{% endblock %}
+
+{% block sleep_content %}
+
+    <section class="sn-module-hub" aria-labelledby="hub-title">
+
+        {# ── Décoration fond nucleo ── #}
+        <span class="sn-hub-nucleo" style="top:8%;left:3%;"
+              aria-hidden="true">
+        <i class="ni ni-moon-stars"></i>
+    </span>
+        <span class="sn-hub-nucleo" style="bottom:10%;right:4%;font-size:7rem;opacity:0.05;"
+              aria-hidden="true">
+        <i class="ni ni-cloud"></i>
+    </span>
+        <span class="sn-hub-nucleo" style="top:30%;right:8%;font-size:5rem;opacity:0.04;"
+              aria-hidden="true">
+        <i class="ni ni-favourite-28"></i>
+    </span>
+
+        {# ── Orbes ── #}
+        <div class="sn-hub-orb sn-hub-orb-1" aria-hidden="true"></div>
+        <div class="sn-hub-orb sn-hub-orb-2" aria-hidden="true"></div>
+
+        <div class="sn-hub-content">
+
+            {# Badge module #}
+            <div class="sn-hub-badge sn-animate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                Module Sommeil
+            </div>
+
+            {# Icône centrale #}
+            <div class="sn-hub-icon sn-animate sn-animate-delay-1" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </div>
+
+            <h1 class="sn-hub-title sn-animate sn-animate-delay-1" id="hub-title">
+                Votre espace <span class="highlight">Sommeil</span>
+            </h1>
+
+            <p class="sn-hub-desc sn-animate sn-animate-delay-2">
+                Suivez la qualité de vos nuits et explorez l'univers de vos rêves.
+                Choisissez ce que vous souhaitez gérer aujourd'hui.
+            </p>
+
+            {# ── 2 grandes cartes d'action ── #}
+            <div class="sn-hub-actions sn-animate sn-animate-delay-3" role="list">
+
+                {# ── Gérer Sommeil ── #}
+                <a href="{{ path('app_sommeil_list') }}"
+                   class="sn-hub-card"
+                   role="listitem"
+                   aria-label="Accéder à la gestion du sommeil">
+
+                    {# Décoration nucleo sur la carte #}
+                    <span style="position:absolute;bottom:-10px;right:-10px;font-size:7rem;
+                             opacity:0.04;color:var(--sn-teal);pointer-events:none;"
+                          aria-hidden="true">
+                    <i class="ni ni-night-time"></i>
+                </span>
+
+                    <div class="sn-hub-card-icon icon-manage-sommeil">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="sn-hub-card-title">Gérer Sommeil</h2>
+
+                    <p class="sn-hub-card-desc">
+                        Enregistrez une nouvelle nuit, consultez vos entrées,
+                        analysez vos cycles et suivez votre évolution.
+                    </p>
+
+                    <span class="sn-hub-card-btn btn-sommeil" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    Accéder
+                </span>
+
+                </a>
+
+                {# ── Gérer Rêves ── #}
+                <a href="{{ path('app_reve_index') }}"
+                   class="sn-hub-card"
+                   role="listitem"
+                   aria-label="Accéder au journal des rêves">
+
+                    {# Décoration nucleo sur la carte #}
+                    <span style="position:absolute;bottom:-10px;right:-10px;font-size:7rem;
+                             opacity:0.04;color:var(--sn-lavender);pointer-events:none;"
+                          aria-hidden="true">
+                    <i class="ni ni-favourite-28"></i>
+                </span>
+
+                    <div class="sn-hub-card-icon icon-manage-reves">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+
+                    <h2 class="sn-hub-card-title">Gérer Rêves</h2>
+
+                    <p class="sn-hub-card-desc">
+                        Notez vos rêves, catégorisez-les, découvrez les récurrences
+                        et analysez les émotions et symboles.
+                    </p>
+
+                    <span class="sn-hub-card-btn btn-reves" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    Accéder
+                </span>
+
+                </a>
+
+            </div>
+
+            {# Lien retour accueil #}
+            <p style="margin-top:var(--sn-sp-10);font-size:0.85rem;color:var(--sn-text-faint);">
+                <a href="{{ path('app_home') }}"
+                   style="color:var(--sn-teal);font-weight:600;display:inline-flex;align-items:center;gap:0.35rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Retour à l'accueil
+                </a>
+            </p>
+
+        </div>
+    </section>
+
+{% endblock %}
