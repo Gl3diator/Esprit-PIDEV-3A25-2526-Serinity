@@ -126,6 +126,9 @@ services:
             $phone: '%app.whatsapp_phone%'
             $apiKey: '%app.whatsapp_api_key%'
 
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
     App\Service\AI\FaceRecognitionService:
         arguments:
             $projectDir: '%kernel.project_dir%'

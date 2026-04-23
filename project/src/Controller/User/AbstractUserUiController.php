@@ -13,6 +13,7 @@ abstract class AbstractUserUiController extends AbstractController
     protected function currentUser(): User
     {
         $user = $this->getUser();
+
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
@@ -20,6 +21,7 @@ abstract class AbstractUserUiController extends AbstractController
         if (!in_array($user->getRole(), ['PATIENT', 'THERAPIST'], true)) {
             throw $this->createAccessDeniedException();
         }
+
         if ($user->getAccountStatus() === AccountStatus::DISABLED->value) {
             throw $this->createAccessDeniedException('Your account is disabled.');
         }
@@ -39,45 +41,95 @@ abstract class AbstractUserUiController extends AbstractController
      */
     protected function buildNav(string $activeRoute): array
     {
+        $user = $this->currentUser();
+        $role = $user->getRole();
+
         $items = [
             ['label' => 'Dashboard', 'route' => 'user_ui_dashboard', 'icon' => 'dashboard', 'section' => 'home'],
             ['label' => 'Profile', 'route' => 'user_ui_profile', 'icon' => 'person', 'section' => 'home'],
             ['label' => 'Settings', 'route' => 'user_ui_settings', 'icon' => 'settings', 'section' => 'home'],
-            ['label' => 'Consultations', 'route' => 'user_ui_consultations', 'icon' => 'medical_services', 'section' => 'modules'],
-            ['label' => 'Exercises', 'route' => 'user_ui_exercises', 'icon' => 'fitness_center', 'section' => 'modules'],
-            ['label' => 'Forum', 'route' => 'user_ui_forum', 'icon' => 'forum', 'section' => 'modules'],
-            [
-                'label' => 'Mood',
-                'route' => 'user_ui_mood',
-                'icon' => 'mood',
-                'section' => 'modules',
-                'children' => [
-                    ['label' => 'Mood entries', 'route' => 'user_ui_mood', 'icon' => 'list'],
-                    ['label' => 'Journal', 'route' => 'user_ui_journal_entry', 'icon' => 'edit_note'],
-                    ['label' => 'Insights', 'route' => 'user_ui_mood_insights', 'icon' => 'insights'],
-                    ['label' => 'Recovery plan', 'route' => 'user_ui_mood_recovery_plan', 'icon' => 'healing'],
-                ],
+        ];
+
+        /**
+         * MODULES SELON ROLE
+         */
+        if ($role === 'PATIENT') {
+            $items[] = [
+                'label' => 'Doctors',
+                'route' => 'app_doctors',
+                'icon' => 'medical_services',
+                'section' => 'modules'
+            ];
+
+            $items[] = [
+                'label' => 'Mes rendez vous',
+                'route' => 'app_patient_rdv',
+                'icon' => 'calendar_month',
+                'section' => 'modules'
+            ];
+        }
+
+        if ($role === 'THERAPIST') {
+            $items[] = [
+                'label' => 'Gestion des rendez vous',
+                'route' => 'app_therapist_rdv',
+                'icon' => 'calendar_month',
+                'section' => 'modules'
+            ];
+
+          
+        }
+
+        /**
+         * COMMUNS
+         */
+        $items[] = [
+            'label' => 'Exercises',
+            'route' => 'user_ui_exercises',
+            'icon' => 'fitness_center',
+            'section' => 'modules'
+        ];
+
+        $items[] = [
+            'label' => 'Forum',
+            'route' => 'user_ui_forum',
+            'icon' => 'forum',
+            'section' => 'modules'
+        ];
+
+        $items[] = [
+            'label' => 'Mood',
+            'route' => 'user_ui_mood',
+            'icon' => 'mood',
+            'section' => 'modules',
+            'children' => [
+                ['label' => 'Mood entries', 'route' => 'user_ui_mood', 'icon' => 'list'],
+                ['label' => 'Journal', 'route' => 'user_ui_journal_entry', 'icon' => 'edit_note'],
+                ['label' => 'Insights', 'route' => 'user_ui_mood_insights', 'icon' => 'insights'],
+                ['label' => 'Recovery plan', 'route' => 'user_ui_mood_recovery_plan', 'icon' => 'healing'],
             ],
-            [
-                'label' => 'Sleep',
-                'route' => 'app_sommeil_list',
-                'icon' => 'bedtime',
-                'section' => 'modules',
-                'children' => [
-                    ['label' => 'gestion sommeil ', 'route' => 'app_sommeil_list', 'icon' => 'bedtime'],
-                    ['label' => 'gestion Reves ', 'route' => 'app_reve_index', 'icon' => 'nights_stay'],
-                ],
+        ];
+
+        $items[] = [
+            'label' => 'Sleep',
+            'route' => 'app_sommeil_list',
+            'icon' => 'bedtime',
+            'section' => 'modules',
+            'children' => [
+                ['label' => 'Sommail', 'route' => 'app_sommeil_list', 'icon' => 'bedtime'],
+                ['label' => 'Reves management', 'route' => 'app_reve_index', 'icon' => 'nights_stay'],
             ],
         ];
 
         return array_map(static function (array $item) use ($activeRoute): array {
             $children = $item['children'] ?? [];
+
             $mappedChildren = array_map(
                 static fn(array $child): array => [
                     ...$child,
                     'active' => $child['route'] === $activeRoute,
                 ],
-                $children,
+                $children
             );
 
             return [

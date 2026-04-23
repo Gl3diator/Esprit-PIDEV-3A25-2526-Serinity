@@ -15,8 +15,15 @@ security:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
-        main:
+        api:
+            pattern: ^/api/
             stateless: true
+            provider: app_user_provider
+            user_checker: App\Security\AccountStatusUserChecker
+            custom_authenticators:
+                - App\Security\Jwt\JwtAuthenticator
+        main:
+            stateless: false
             lazy: true
             provider: app_user_provider
             user_checker: App\Security\AccountStatusUserChecker
@@ -45,6 +52,7 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/doctors, roles: PUBLIC_ACCESS }
 
 when@test:
     security:

@@ -1530,6 +1530,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     convert_exception?: bool|Param, // Default: false
  *     remove_first_page_param?: bool|Param, // Default: false
  * }
+ * @psalm-type EndroidQrCodeConfig = array<string, mixed>
  * @psalm-type KnpuOauth2ClientConfig = array{
  *     http_client?: scalar|Param|null, // Service id of HTTP client to use (must implement GuzzleHttp\ClientInterface) // Default: null
  *     http_client_options?: array{
@@ -2385,6 +2386,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     cmen_google_charts?: CmenGoogleChartsConfig,
  *     tinymce?: TinymceConfig,
  *     knp_paginator?: KnpPaginatorConfig,
+ *     endroid_qr_code?: EndroidQrCodeConfig,
  *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *     scheb_two_factor?: SchebTwoFactorConfig,
  *     sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
@@ -2408,6 +2410,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         cmen_google_charts?: CmenGoogleChartsConfig,
  *         tinymce?: TinymceConfig,
  *         knp_paginator?: KnpPaginatorConfig,
+ *         endroid_qr_code?: EndroidQrCodeConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         scheb_two_factor?: SchebTwoFactorConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
@@ -2429,6 +2432,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         cmen_google_charts?: CmenGoogleChartsConfig,
  *         tinymce?: TinymceConfig,
  *         knp_paginator?: KnpPaginatorConfig,
+ *         endroid_qr_code?: EndroidQrCodeConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         scheb_two_factor?: SchebTwoFactorConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
@@ -2451,6 +2455,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         cmen_google_charts?: CmenGoogleChartsConfig,
  *         tinymce?: TinymceConfig,
  *         knp_paginator?: KnpPaginatorConfig,
+ *         endroid_qr_code?: EndroidQrCodeConfig,
  *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
  *         scheb_two_factor?: SchebTwoFactorConfig,
  *         sensiolabs_gotenberg?: SensiolabsGotenbergConfig,
