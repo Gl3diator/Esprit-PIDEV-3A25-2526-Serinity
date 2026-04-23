@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Web;
 
 use App\Dto\Admin\UserFilterRequest;
+use App\Dto\Exercice\AddResourceRequest;
+use App\Dto\Exercice\ExerciceUpsertRequest;
 use App\Entity\MoodEmotion;
 use App\Entity\MoodInfluence;
 use App\Entity\Profile;
@@ -19,9 +21,14 @@ use App\Service\ImageUploadService;
 use App\Service\Admin\AdminExerciceService;
 use App\Service\Admin\DashboardService;
 use App\Service\Admin\UserManagementService;
+use App\Service\User\UserDashboardService;
+use App\Service\User\UserProfileService;
+use CMEN\GoogleChartsBundle\GoogleCharts\Charts\ColumnChart;
+use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,6 +51,8 @@ final class AccessControlUiController extends AbstractController
         private readonly MoodInfluenceRepository $moodInfluenceRepository,
         private readonly AdminExerciceService $adminExerciceService,
         private readonly ImageUploadService $imageUploadService,
+        private readonly UserDashboardService $userDashboardService,
+        private readonly UserProfileService $userProfileService,
         private readonly EntityManagerInterface $entityManager,
         private readonly PaginatorInterface $paginator,
     ) {
@@ -74,6 +83,12 @@ final class AccessControlUiController extends AbstractController
         return $this->render('access_control/pages/reset_password.html.twig', [
             'step' => $step,
         ]);
+    }
+
+    #[Route('/verify-email', name: 'ac_ui_verify_email', methods: ['GET'])]
+    public function verifyEmail(): Response
+    {
+        return $this->render('access_control/pages/verify_email.html.twig');
     }
 
     #[Route('/dashboard', name: 'ac_ui_dashboard_legacy', methods: ['GET'])]
@@ -309,6 +324,111 @@ final class AccessControlUiController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/settings', name: 'ac_ui_settings', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function settings(Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $current = $this->userDashboardService->decodeSettings((string) $request->cookies->get('admin_settings', ''));
+
+        if ($request->isMethod('POST')) {
+            $updated = $this->userDashboardService->sanitizeSettings([
+                'theme' => (string) $request->request->get('theme', $current['theme']),
+                'notifications' => (bool) $request->request->get('notifications', false),
+                'compactView' => (bool) $request->request->get('compactView', false),
+            ]);
+            $encoded = $this->userDashboardService->encodeSettings($updated);
+
+            $response = $this->redirectToRoute('ac_ui_settings');
+            $response->headers->setCookie(new Cookie(
+                'admin_settings',
+                $encoded,
+                time() + 31536000,
+                '/',
+                null,
+                false,
+                false,
+                false,
+                'lax',
+            ));
+            $this->addFlash('success', 'Settings updated successfully.');
+
+            return $response;
+        }
+
+        return $this->render('user/pages/settings.html.twig', [
+            'nav' => $this->buildNav('ac_ui_settings'),
+            'userName' => $user->getEmail(),
+            'settings' => $current,
+            'faceRecognitionEnabled' => $user->isFaceRecognitionEnabled(),
+            'twoFactorEnabled' => $user->isTwoFactorEnabled(),
+            'settingsSaveRoute' => 'ac_ui_settings',
+            'settingsChangePasswordRoute' => 'ac_ui_settings_change_password',
+            'settingsDeleteAccountRoute' => 'ac_ui_settings_delete_account',
+        ]);
+    }
+
+    #[Route('/admin/settings/delete-account', name: 'ac_ui_settings_delete_account', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function deleteAccount(Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $result = $this->userProfileService->deleteAccount(
+            $user,
+            trim((string) $request->request->get('currentPassword', '')),
+            trim((string) $request->request->get('confirmDelete', '')),
+        );
+
+        if (!$result->success) {
+            $this->addFlash('error', $result->message);
+
+            return $this->redirectToRoute('ac_ui_settings');
+        }
+
+        $response = $this->redirectToRoute('home');
+        $response->headers->clearCookie('access_token', '/');
+        $response->headers->clearCookie('refresh_token', '/');
+        $response->headers->clearCookie('jwt', '/');
+        $response->headers->clearCookie('admin_settings', '/');
+
+        return $response;
+    }
+
+    #[Route('/admin/settings/change-password', name: 'ac_ui_settings_change_password', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function changePassword(Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $result = $this->userProfileService->changePassword(
+            $user,
+            trim((string) $request->request->get('currentPassword', '')),
+            trim((string) $request->request->get('newPassword', '')),
+            trim((string) $request->request->get('confirmPassword', '')),
+        );
+
+        if (!$result->success) {
+            $this->addFlash('error', $result->message);
+
+            return $this->redirectToRoute('ac_ui_settings');
+        }
+
+        $this->addFlash('success', $result->message);
+
+        return $this->redirectToRoute('ac_ui_settings');
+    }
+
     private function nullableString(mixed $value): ?string
     {
         $trimmed = trim((string) $value);
@@ -383,13 +503,25 @@ final class AccessControlUiController extends AbstractController
 
     #[Route('/admin/exercises', name: 'ac_ui_exercises', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function exercises(): Response
+    public function exercises(Request $request): Response
     {
+        $exercices = $this->adminExerciceService->listExercices();
+
         return $this->render('access_control/pages/exercises.html.twig', [
             'nav' => $this->buildNav('ac_ui_exercises'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
             'summary' => $this->adminExerciceService->summary(),
-            'exercices' => $this->adminExerciceService->listExercices(),
+            'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 8),
+            'exerciseTypeChart' => $this->buildPieChart(
+                'Exercises by type',
+                ['Type', 'Exercises'],
+                $this->adminExerciceService->countExercicesByType(),
+            ),
+            'sessionStatusChart' => $this->buildColumnChart(
+                'Session status distribution',
+                ['Status', 'Sessions'],
+                $this->adminExerciceService->countControlsByStatus(),
+            ),
         ]);
     }
 
@@ -403,13 +535,7 @@ final class AccessControlUiController extends AbstractController
             return $this->redirectToRoute('ac_ui_exercises');
         }
 
-        $dto = new \App\Dto\Exercice\ExerciceUpsertRequest();
-        $dto->title = trim((string) $request->request->get('title', ''));
-        $dto->type = trim((string) $request->request->get('type', ''));
-        $dto->level = max(1, min(10, (int) $request->request->get('level', 1)));
-        $dto->durationMinutes = max(1, min(300, (int) $request->request->get('durationMinutes', 10)));
-        $dto->description = trim((string) $request->request->get('description', ''));
-        $dto->isActive = $request->request->has('isActive');
+        $dto = $this->exerciseDtoFromRequest($request);
 
         if (!$this->isDtoValid($validator, $dto)) {
             return $this->redirectToRoute('ac_ui_exercises');
@@ -419,6 +545,42 @@ final class AccessControlUiController extends AbstractController
         $this->addFlash($result->success ? 'success' : 'error', $result->message);
 
         return $this->redirectToRoute('ac_ui_exercises');
+    }
+
+    #[Route('/admin/exercises/{id}/edit', name: 'ac_ui_exercises_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function exercisesEdit(Request $request, int $id, ValidatorInterface $validator): Response
+    {
+        $exercice = $this->adminExerciceService->getExercice($id);
+        if ($exercice === null) {
+            $this->addFlash('error', 'Exercice not found.');
+
+            return $this->redirectToRoute('ac_ui_exercises');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('exercice_edit_' . $id, (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Invalid edit token.');
+
+                return $this->redirectToRoute('ac_ui_exercises_edit', ['id' => $id]);
+            }
+
+            $dto = $this->exerciseDtoFromRequest($request);
+            if (!$this->isDtoValid($validator, $dto)) {
+                return $this->redirectToRoute('ac_ui_exercises_edit', ['id' => $id]);
+            }
+
+            $result = $this->adminExerciceService->updateExercice($id, $dto);
+            $this->addFlash($result->success ? 'success' : 'error', $result->message);
+
+            return $this->redirectToRoute($result->success ? 'ac_ui_exercises' : 'ac_ui_exercises_edit', $result->success ? [] : ['id' => $id]);
+        }
+
+        return $this->render('access_control/pages/exercise_edit.html.twig', [
+            'nav' => $this->buildNav('ac_ui_exercises'),
+            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'exercice' => $exercice,
+        ]);
     }
 
     #[Route('/admin/exercises/assign', name: 'ac_ui_exercises_assign', methods: ['POST'])]
@@ -446,32 +608,124 @@ final class AccessControlUiController extends AbstractController
         return $this->redirectToRoute('ac_ui_exercises');
     }
 
-    #[Route('/admin/exercises/{id}/resource', name: 'ac_ui_exercises_add_resource', methods: ['POST'])]
+    #[Route('/admin/exercises/{id}/resources', name: 'ac_ui_exercises_resources', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function exercisesAddResource(Request $request, int $id, ValidatorInterface $validator): Response
+    public function exercisesResources(Request $request, int $id): Response
     {
-        if (!$this->isCsrfTokenValid('exercice_resource_' . $id, (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Invalid resource token.');
+        $result = $this->adminExerciceService->resourcesForExercice($id);
+        if (!$result->success) {
+            $this->addFlash('error', $result->message);
 
             return $this->redirectToRoute('ac_ui_exercises');
         }
 
-        $dto = new \App\Dto\Exercice\AddResourceRequest();
+        return $this->render('access_control/pages/exercise_resources.html.twig', [
+            'nav' => $this->buildNav('ac_ui_exercises'),
+            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'exercice' => $result->data['exercice'],
+            'resources' => $this->paginator->paginate($result->data['resources'], max(1, $request->query->getInt('page', 1)), 8),
+            'resourceCountChart' => $this->buildColumnChart(
+                'Resource count by exercise',
+                ['Exercise', 'Resources'],
+                $this->adminExerciceService->countResourcesByExercise(),
+            ),
+        ]);
+    }
+
+    #[Route('/admin/exercises/{id}/resource', name: 'ac_ui_exercises_add_resource', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function exercisesAddResource(Request $request, int $id, ValidatorInterface $validator): Response
+    {
+        $redirectRoute = $request->request->get('returnTo') === 'resources' ? 'ac_ui_exercises_resources' : 'ac_ui_exercises';
+        $redirectParams = $redirectRoute === 'ac_ui_exercises_resources' ? ['id' => $id] : [];
+
+        if (!$this->isCsrfTokenValid('exercice_resource_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid resource token.');
+
+            return $this->redirectToRoute($redirectRoute, $redirectParams);
+        }
+
+        $dto = new AddResourceRequest();
         $dto->title = trim((string) $request->request->get('title', ''));
         $dto->resourceType = trim((string) $request->request->get('resourceType', ''));
         $dto->resourceUrl = trim((string) $request->request->get('resourceUrl', ''));
 
         if (!$this->isDtoValid($validator, $dto)) {
-            return $this->redirectToRoute('ac_ui_exercises');
+            return $this->redirectToRoute($redirectRoute, $redirectParams);
         }
 
         $result = $this->adminExerciceService->addResource($id, $dto->title, $dto->resourceType, $dto->resourceUrl);
         $this->addFlash($result->success ? 'success' : 'error', $result->message);
 
-        return $this->redirectToRoute('ac_ui_exercises');
+        return $this->redirectToRoute($redirectRoute, $redirectParams);
     }
 
-    #[Route('/admin/exercises/{id}/delete', name: 'ac_ui_exercises_delete', methods: ['POST'])]
+    #[Route('/admin/resources/{id}/edit', name: 'ac_ui_exercise_resource_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function exerciseResourceEdit(Request $request, int $id, ValidatorInterface $validator): Response
+    {
+        $resource = $this->adminExerciceService->getResource($id);
+        if ($resource === null) {
+            $this->addFlash('error', 'Resource not found.');
+
+            return $this->redirectToRoute('ac_ui_exercises');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('exercice_resource_edit_' . $id, (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Invalid resource edit token.');
+
+                return $this->redirectToRoute('ac_ui_exercise_resource_edit', ['id' => $id]);
+            }
+
+            $dto = new AddResourceRequest();
+            $dto->title = trim((string) $request->request->get('title', ''));
+            $dto->resourceType = trim((string) $request->request->get('resourceType', ''));
+            $dto->resourceUrl = trim((string) $request->request->get('resourceUrl', ''));
+
+            if (!$this->isDtoValid($validator, $dto)) {
+                return $this->redirectToRoute('ac_ui_exercise_resource_edit', ['id' => $id]);
+            }
+
+            $result = $this->adminExerciceService->updateResource($id, $dto->title, $dto->resourceType, $dto->resourceUrl);
+            $this->addFlash($result->success ? 'success' : 'error', $result->message);
+
+            $exerciseId = (int) ($resource['exercice']['id'] ?? 0);
+
+            return $this->redirectToRoute($result->success && $exerciseId > 0 ? 'ac_ui_exercises_resources' : 'ac_ui_exercise_resource_edit', $result->success && $exerciseId > 0 ? ['id' => $exerciseId] : ['id' => $id]);
+        }
+
+        return $this->render('access_control/pages/exercise_resource_edit.html.twig', [
+            'nav' => $this->buildNav('ac_ui_exercises'),
+            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'resource' => $resource,
+        ]);
+    }
+
+    #[Route('/admin/resources/{id}/delete', name: 'ac_ui_exercise_resource_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function exerciseResourceDelete(Request $request, int $id): Response
+    {
+        $resource = $this->adminExerciceService->getResource($id);
+        $exerciseId = is_array($resource) ? (int) ($resource['exercice']['id'] ?? 0) : 0;
+        if (!$this->isCsrfTokenValid('exercice_resource_delete_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid resource delete token.');
+
+            return $exerciseId > 0
+                ? $this->redirectToRoute('ac_ui_exercises_resources', ['id' => $exerciseId])
+                : $this->redirectToRoute('ac_ui_exercises');
+        }
+
+        $result = $this->adminExerciceService->deleteResource($id);
+        $this->addFlash($result->success ? 'success' : 'error', $result->message);
+        $redirectExerciseId = (int) ($result->data['exerciceId'] ?? $exerciseId);
+
+        return $redirectExerciseId > 0
+            ? $this->redirectToRoute('ac_ui_exercises_resources', ['id' => $redirectExerciseId])
+            : $this->redirectToRoute('ac_ui_exercises');
+    }
+
+    #[Route('/admin/exercises/{id}/delete', name: 'ac_ui_exercises_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function exercisesDelete(Request $request, int $id): Response
     {
@@ -485,6 +739,60 @@ final class AccessControlUiController extends AbstractController
         $this->addFlash($result->success ? 'success' : 'error', $result->message);
 
         return $this->redirectToRoute('ac_ui_exercises');
+    }
+
+    private function exerciseDtoFromRequest(Request $request): ExerciceUpsertRequest
+    {
+        $dto = new ExerciceUpsertRequest();
+        $dto->title = trim((string) $request->request->get('title', ''));
+        $dto->type = trim((string) $request->request->get('type', ''));
+        $dto->level = max(1, min(10, (int) $request->request->get('level', 1)));
+        $dto->durationMinutes = max(1, min(300, (int) $request->request->get('durationMinutes', 10)));
+        $description = trim((string) $request->request->get('description', ''));
+        $dto->description = $description !== '' ? $description : null;
+        $dto->isActive = $request->request->has('isActive');
+
+        return $dto;
+    }
+
+    /**
+     * @param list<array{0:string,1:int}> $rows
+     */
+    private function buildPieChart(string $title, array $header, array $rows): PieChart
+    {
+        $chart = new PieChart();
+        $chart->getData()->setArrayToDataTable([
+            $header,
+            ...($rows !== [] ? $rows : [['No data', 0]]),
+        ]);
+        $chart->getOptions()
+            ->setTitle($title)
+            ->setHeight(320)
+            ->setWidth(520)
+            ->setColors(['#2f6f6d', '#88bdbc', '#5e8c8a', '#cfe1df', '#355d6e']);
+        $chart->getOptions()->getLegend()->setPosition('bottom');
+
+        return $chart;
+    }
+
+    /**
+     * @param list<array{0:string,1:int}> $rows
+     */
+    private function buildColumnChart(string $title, array $header, array $rows): ColumnChart
+    {
+        $chart = new ColumnChart();
+        $chart->getData()->setArrayToDataTable([
+            $header,
+            ...($rows !== [] ? $rows : [['No data', 0]]),
+        ]);
+        $chart->getOptions()
+            ->setTitle($title)
+            ->setHeight(320)
+            ->setWidth(560)
+            ->setColors(['#2f6f6d']);
+        $chart->getOptions()->getLegend()->setPosition('none');
+
+        return $chart;
     }
 
     #[Route('/admin/forum', name: 'ac_ui_forum', methods: ['GET'])]
@@ -821,6 +1129,7 @@ final class AccessControlUiController extends AbstractController
         $items = [
             ['section' => 'Admin self-management', 'label' => 'Dashboard', 'route' => 'ac_ui_dashboard', 'icon' => 'dashboard'],
             ['section' => 'Admin self-management', 'label' => 'Profile', 'route' => 'ac_ui_profile', 'icon' => 'person'],
+            ['section' => 'Admin self-management', 'label' => 'Settings', 'route' => 'ac_ui_settings', 'icon' => 'settings'],
             ['section' => 'Admin self-management', 'label' => 'Sessions', 'route' => 'ac_ui_sessions', 'icon' => 'devices'],
             ['section' => 'Admin self-management', 'label' => 'Audit logs', 'route' => 'ac_ui_audit_logs', 'icon' => 'history'],
             ['section' => 'Users management', 'label' => 'Users', 'route' => 'ac_ui_users', 'icon' => 'group'],

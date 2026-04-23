@@ -51,7 +51,7 @@
 
 <p align="center">
   <a href="doc/" target="_blank">
-    <img src="https://www.zippyops.com/userfiles/media/default/web-application-testing.png" alt="serinity-web.gif">
+    <img src="res/img/home.png" alt="serinity-web.png">
   </a>
 </p>
 
@@ -130,12 +130,49 @@ composer install
 
 ### 3. Configure Environment Variables
 
-Update your `.env` file (or `.env.local`) with your database configuration:
+Copy the provided env template, then configure your database credentials:
 
 ```bash
+cp project/.env.example project/.env.local
+```
+
+Example database URL:
+
+```dotenv
 DATABASE_URL="mysql://user:password@127.0.0.1:3306/db_name"
 ```
 
+For production, use `project/.env.prod` as a template and set the same variables in your hosting platform (Vercel Environment Variables).
+
+Face authentication uses ONNX Runtime with the default local model:
+
+```dotenv
+FACE_AUTH_RECOGNITION_MODEL_PATH=public/antelopev2/glintr100.onnx
+FACE_AUTH_ONNX_RUNTIME_LIBRARY_PATH=vendor/ankane/onnxruntime/lib/onnxruntime-linux-x64-1.24.3/lib/libonnxruntime.so.1.24.3
+FACE_AUTH_PYTHON_COMMAND=.venv/bin/python
+FACE_AUTH_PYTHON_SCRIPT_PATH=bin/face_embedding_infer.py
+FACE_AUTH_SIMILARITY_THRESHOLD=0.30
+FACE_AUTH_RATE_LIMIT_ATTEMPTS=5
+FACE_AUTH_RATE_LIMIT_WINDOW_SECONDS=900
+```
+
+> [!NOTE]
+> Face login uses a **1:1 email + face** check: users must enter their email on the sign-in form before triggering face authentication.
+
+To install dependencies and download antelopev2 models automatically:
+
+```bash
+cd project
+cp .env.example .env.local
+bash bin/setup_face_recognition
+```
+
+If your web PHP blocks `ffi.enable`, install Python fallback deps once:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install numpy onnxruntime
+```
 ### 4. Create Database & Run Migrations
 
 ```bash
@@ -145,7 +182,6 @@ php bin/console doctrine:migrations:migrate
 
 > [!IMPORTANT]
 > MariaDB must already be installed on your system
-
 ### 5. Start the Symfony Server
 
 ```bash

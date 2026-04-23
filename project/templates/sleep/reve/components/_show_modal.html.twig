@@ -1,0 +1,159 @@
+<div class="rv-modal-sheet">
+
+    {# ============ HEADER ============ #}
+    <div class="rv-modal-sheet__header">
+        <div>
+            <h2 class="rv-modal-sheet__title">💭 {{ reve.titre }}</h2>
+
+            <p class="rv-modal-sheet__subtitle">
+                {% if reve.sommeil %}
+                    Nuit du {{ reve.sommeil.dateNuit
+                ? reve.sommeil.dateNuit|date('d/m/Y')
+                : '—'
+                }}
+                {% else %}
+                    Journal de rêve
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="rv-modal-sheet__actions">
+            {% if modal_mode|default(false) %}
+                <button
+                        type="button"
+                        class="btn btn--secondary"
+                        onclick="openReveModal('{{ path('app_reve_edit', { id: reve.id }) }}')">
+                    Modifier
+                </button>
+            {% else %}
+                {{ path('app_reve_edit', { id: reve.id }) }}Modifier</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ============ BADGES ============ #}
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-6);">
+        {% if reve.typeReve %}
+            {% set typeClass = {
+                'Normal':'muted',
+                'Lucide':'primary',
+                'Cauchemar':'danger',
+                'Prémonitoire':'warning'
+            } %}
+            <span class="badge badge--{{ typeClass[reve.typeReve] ?? 'muted' }}">
+                {{ reve.typeReve }}
+            </span>
+        {% endif %}
+
+        {% if reve.humeur %}
+            <span class="badge badge--info">{{ reve.humeur }}</span>
+        {% endif %}
+
+        {% if reve.couleur %}
+            <span class="badge badge--success">🎨 Couleur</span>
+        {% else %}
+            <span class="badge badge--muted">Noir & blanc</span>
+        {% endif %}
+
+        {% if reve.recurrent %}
+            <span class="badge badge--warning">↻ Récurrent</span>
+        {% else %}
+            <span class="badge badge--muted">Non récurrent</span>
+        {% endif %}
+    </div>
+
+    {# ============ DESCRIPTION ============ #}
+    <div class="card" style="margin-bottom:var(--space-5);">
+        <div class="card__title">📝 Description</div>
+        <p style="white-space:pre-wrap;color:var(--text-muted);line-height:1.8;">
+            {{ reve.description }}
+        </p>
+    </div>
+
+    {# ============ DÉTAILS ============ #}
+    <div class="card">
+
+        <div class="card__title">🔍 Détails</div>
+
+        <div class="detail-grid">
+
+            {# Intensité #}
+            <div class="detail-item">
+                <div class="detail-item__label">Intensité</div>
+                <div class="detail-item__value">
+                    <div class="intensity-bar">
+                        {% for i in 1..10 %}
+                            <div class="intensity-dot {% if i <= reve.intensite %}filled{% endif %}"></div>
+                        {% endfor %}
+                    </div>
+                    <span class="detail-help">{{ reve.intensite }}/10</span>
+                </div>
+            </div>
+
+            {# ✅ NUIT ASSOCIÉE — CORRIGÉ ✅ #}
+            <div class="detail-item">
+                <div class="detail-item__label">Nuit associée</div>
+                <div class="detail-item__value">
+                    {% if reve.sommeil %}
+                        <a href="{{ path('app_sommeil_show', { id: reve.sommeil.id }) }}"
+                           class="detail-link">
+                            Nuit du {{ reve.sommeil.dateNuit
+                            ? reve.sommeil.dateNuit|date('d/m/Y')
+                            : '—'
+                            }}
+                        </a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Création #}
+            <div class="detail-item">
+                <div class="detail-item__label">Créé le</div>
+                <div class="detail-item__value">
+                    {{ reve.createdAt|date('d/m/Y à H:i') }}
+                </div>
+            </div>
+
+            {# Modification #}
+            <div class="detail-item">
+                <div class="detail-item__label">Modifié le</div>
+                <div class="detail-item__value">
+                    {{ reve.updatedAt|date('d/m/Y à H:i') }}
+                </div>
+            </div>
+
+            {# Émotions #}
+            {% if reve.emotions %}
+                <div class="detail-item detail-item--full">
+                    <div class="detail-item__label">Émotions</div>
+                    <div class="detail-item__value">
+                        {{ reve.emotions }}
+                    </div>
+                </div>
+            {% endif %}
+
+            {# Symboles #}
+            {% if reve.symboles %}
+                <div class="detail-item detail-item--full">
+                    <div class="detail-item__label">Symboles</div>
+                    <div class="detail-item__value detail-item__value--text">
+                        {{ reve.symboles }}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {# ============ ACTIONS MODAL ============ #}
+    {% if modal_mode|default(false) %}
+        <div class="form-actions" style="margin-top:1rem;">
+            <button type="button" class="btn btn--secondary" onclick="closeReveModal()">
+                Fermer
+            </button>
+        </div>
+    {% endif %}
+
+</div>
