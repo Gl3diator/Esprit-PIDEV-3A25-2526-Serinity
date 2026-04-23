@@ -413,7 +413,8 @@ public function showRdv(RendezVous $rdv): Response
      * USE proposedDateTime ONLY
      */
     if (!$rdv->getProposedDateTime()) {
-        throw $this->createNotFoundException('Date du rendez-vous non disponible.');
+        $rdv->SetProposedDateTime($rdv->getDateTime());
+
     }
 
     $now = new \DateTime();

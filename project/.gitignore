@@ -2,7 +2,9 @@
 # `root` .gitignore file
 
 ### CUSTOM IGNORES ###
-# none
+composer.lock
+src/Controller/User/AbstractUserUiController.php
+templates/base.html.twig
 
 ###> symfony/framework-bundle ###
 .env
