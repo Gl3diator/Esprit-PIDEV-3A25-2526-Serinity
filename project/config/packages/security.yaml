@@ -39,6 +39,9 @@ security:
         - { path: ^/api/auth/me$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/(sommeil|reve), roles: [ROLE_PATIENT, ROLE_THERAPIST] }
         - { path: ^/user, roles: [ROLE_PATIENT, ROLE_THERAPIST] }
+        - { path: ^/forum, roles: [ROLE_PATIENT, ROLE_THERAPIST] }
+        - { path: ^/threads, roles: [ROLE_PATIENT, ROLE_THERAPIST] }
+        - { path: ^/notifications, roles: [ROLE_PATIENT, ROLE_THERAPIST] }
         - { path: ^/api/user, roles: [ROLE_PATIENT, ROLE_THERAPIST] }
         - { path: ^/admin/dashboard$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/admin, roles: ROLE_ADMIN }
