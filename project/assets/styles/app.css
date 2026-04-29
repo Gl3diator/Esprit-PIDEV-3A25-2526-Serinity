@@ -294,6 +294,42 @@ h1,h2,h3,p { margin: 0; }
 .ac-journal-rich-content p {
     margin: 0 0 .6rem;
 }
+
+/* Forum card/thread styles (adapted from serinity-forum) */
+.card-soft, .hero-shell {
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+.action-strip {
+    border-left: 4px solid rgba(8, 145, 178, 0.18);
+}
+.filter-strip {
+    border-top: 3px solid rgba(8, 145, 178, 0.18);
+}
+.stats-chip-wrap { display:flex; flex-wrap:wrap; gap: .5rem; }
+.stats-chip {
+    border: 1px solid rgba(8,145,178,0.18);
+    color: var(--text);
+    background: rgba(255,255,255,0.9);
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 700;
+    padding: .38rem .72rem;
+}
+.thread-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.thread-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.thread-card-pinned { border: 1px solid rgba(94,114,228,0.45); background: linear-gradient(120deg, rgba(94,114,228,0.08), rgba(8,145,178,0.04)), var(--surface); box-shadow: 0 12px 28px rgba(94,114,228,0.08); position: relative; }
+.thread-card-pinned::after { content: ""; position: absolute; inset: 0; border-radius: .75rem; border: 1px solid rgba(94,114,228,0.12); pointer-events: none; }
+.pinned-flag { display:inline-flex; align-items:center; gap:.35rem; font-size:.76rem; font-weight:700; color: #4451b8; background: rgba(255,255,255,0.9); border:1px solid rgba(94,114,228,0.34); border-radius:999px; padding: .26rem .62rem; }
+.thread-content-block { background: rgba(248,249,254,0.82); padding: .9rem; border-radius: .5rem; }
+.thread-meta-grid .thread-meta-item { padding:.25rem .5rem; border-radius:.5rem; background: var(--surface); border: 1px solid var(--border); }
+.meta-pill { padding: .25rem .6rem; border-radius: .5rem; font-weight:700; }
+.meta-open { background: color-mix(in srgb, var(--primary), white 85%); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary), black 8%); }
+.meta-locked { background: color-mix(in srgb, var(--danger), white 92%); color: var(--danger); border: 1px solid rgba(0,0,0,0.04); }
+.thread-card .h5 a { color: inherit; }
+.reply-box { border-left: 4px solid rgba(8,145,178,0.1); background: var(--surface); }
 .ac-journal-rich-content ul,
 .ac-journal-rich-content ol {
     margin: 0 0 .6rem 1.2rem;

@@ -42,6 +42,9 @@ parameters:
     app.ai_emotion_api_timeout: '%env(float:AI_EMOTION_API_TIMEOUT)%'
     app.ai_emotion_api_threshold: '%env(float:AI_EMOTION_API_THRESHOLD)%'
     app.ai_emotion_api_top_k: '%env(int:AI_EMOTION_API_TOP_K)%'
+    app.forum_upload_dir: '%kernel.project_dir%/public/uploads'
+    app.forum_imgbb_api_key: '%env(string:API_IMGBB)%'
+    app.forum_translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -66,6 +69,15 @@ services:
         arguments:
             $imageRequestUrl: '%app.image_request_url%'
             $imageApiKey: '%app.image_api_key%'
+
+    App\Service\ForumImageUploadService:
+        arguments:
+            $uploadDir: '%app.forum_upload_dir%'
+            $imgbbApiKey: '%app.forum_imgbb_api_key%'
+
+    App\Service\TranslationService:
+        arguments:
+            $apiKey: '%app.forum_translate_api_key%'
 
     App\Service\MailerService:
         arguments:
