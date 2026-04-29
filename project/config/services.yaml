@@ -59,6 +59,7 @@ parameters:
     app.forum_translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
 
     app.account_ban_duration_minutes: '%env(int:ACCOUNT_BAN_DURATION_MINUTES)%'
+    app.spam_ban_duration_minutes: '%env(int:SPAM_BAN_DURATION_MINUTES)%'
     app.ntfy_base_url: '%env(string:NTFY_BASE_URL)%'
     app.ntfy_doctor_topic: '%env(string:NTFY_DOCTOR_TOPIC)%'
     app.ntfy_enabled: '%env(bool:NTFY_ENABLED)%'
@@ -233,6 +234,10 @@ services:
     App\Service\AccountAccessService:
         arguments:
             $banDurationMinutes: '%app.account_ban_duration_minutes%'
+
+    App\Service\SpamRateLimiterService:
+        arguments:
+            $spamBanDurationMinutes: '%app.spam_ban_duration_minutes%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
