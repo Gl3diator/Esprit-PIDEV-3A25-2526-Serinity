@@ -41,6 +41,9 @@ class Profile
     #[ORM\Column(name: 'profile_image_url', type: Types::STRING, length: 512, nullable: true)]
     private ?string $profileImageUrl = null;
 
+    #[ORM\Column(name: 'anime_avatar_image_url', type: Types::STRING, length: 512, nullable: true)]
+    private ?string $animeAvatarImageUrl = null;
+
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
     private ?string $country = null;
 
@@ -158,6 +161,18 @@ class Profile
     public function setProfileImageUrl(?string $profileImageUrl): self
     {
         $this->profileImageUrl = $profileImageUrl;
+
+        return $this;
+    }
+
+    public function getAnimeAvatarImageUrl(): ?string
+    {
+        return $this->animeAvatarImageUrl;
+    }
+
+    public function setAnimeAvatarImageUrl(?string $animeAvatarImageUrl): self
+    {
+        $this->animeAvatarImageUrl = $animeAvatarImageUrl;
 
         return $this;
     }
