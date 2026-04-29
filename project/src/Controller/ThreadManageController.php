@@ -11,6 +11,7 @@ use App\Service\ForumCurrentUserService;
 use App\Service\ForumImageUploadService;
 use App\Service\ForumRateLimitService;
 use App\Service\InteractionService;
+use App\Service\SpamRateLimiterService;
 use App\Service\ThreadDuplicateRadarService;
 use App\Service\ThreadService;
 use App\Service\User\UserNavService;
@@ -32,10 +33,23 @@ class ThreadManageController extends AbstractController
         ForumImageUploadService $uploadService,
         ThreadDuplicateRadarService $threadDuplicateRadarService,
         UserNavService $navService,
+        SpamRateLimiterService $spamRateLimiterService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
         if ($currentUserService->isBackofficeUser($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
+        }
+
+       
+ // Check if user is currently banned
+        if ($spamRateLimiterService->isUserBannedForSpam($currentUser)) {
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $this->addFlash('danger', sprintf(
+                'Your account is temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            ));
+
+            return $this->redirectToRoute('app_forum_feed');
         }
 
         $threadError = null;
@@ -45,6 +59,20 @@ class ThreadManageController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Check spam rate limit before creating thread
+            $rateLimit = $spamRateLimiterService->checkThreadCreationSpam($currentUser->getId());
+            if (!$rateLimit->isAccepted()) {
+                // Ban user for 12 hours due to spam
+                $spamRateLimiterService->banUserForSpam($currentUser);
+                $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+                $this->addFlash('danger', sprintf(
+                    'You have been temporarily banned due to spam activity. Please try again in %s.',
+                    $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+                ));
+
+                return $this->redirectToRoute('app_forum_feed');
+            }
+
             $forcePublish = $request->request->getBoolean('force_publish');
 
             if (!$forcePublish) {
@@ -263,11 +291,40 @@ class ThreadManageController extends AbstractController
     }
 
     #[Route('/{id}/upvote', name: 'app_thread_upvote')]
-    public function upvote(ForumThread $thread, InteractionService $interactionService, ForumCurrentUserService $currentUserService): Response
-    {
+    public function upvote(
+        ForumThread $thread,
+        InteractionService $interactionService,
+        ForumCurrentUserService $currentUserService,
+        SpamRateLimiterService $spamRateLimiterService,
+    ): Response {
         $currentUser = $currentUserService->requireUser();
         if ($currentUserService->isBackofficeUser($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
+        }
+
+        // Check if user is banned
+        if ($spamRateLimiterService->isUserBannedForSpam($currentUser)) {
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $this->addFlash('danger', sprintf(
+                'Your account is temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            ));
+
+            return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
+        }
+
+        // Check spam rate limit for interactions
+        $rateLimit = $spamRateLimiterService->checkInteractionSpam($currentUser->getId());
+        if (!$rateLimit->isAccepted()) {
+            // Ban user for 12 hours due to spam
+            $spamRateLimiterService->banUserForSpam($currentUser);
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $this->addFlash('danger', sprintf(
+                'You have been temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            ));
+
+            return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
         }
 
         $interactionService->toggleUpvote($thread, $currentUser);
@@ -276,11 +333,40 @@ class ThreadManageController extends AbstractController
     }
 
     #[Route('/{id}/downvote', name: 'app_thread_downvote')]
-    public function downvote(ForumThread $thread, InteractionService $interactionService, ForumCurrentUserService $currentUserService): Response
-    {
+    public function downvote(
+        ForumThread $thread,
+        InteractionService $interactionService,
+        ForumCurrentUserService $currentUserService,
+        SpamRateLimiterService $spamRateLimiterService,
+    ): Response {
         $currentUser = $currentUserService->requireUser();
         if ($currentUserService->isBackofficeUser($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
+        }
+
+        // Check if user is banned
+        if ($spamRateLimiterService->isUserBannedForSpam($currentUser)) {
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $this->addFlash('danger', sprintf(
+                'Your account is temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            ));
+
+            return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
+        }
+
+        // Check spam rate limit for interactions
+        $rateLimit = $spamRateLimiterService->checkInteractionSpam($currentUser->getId());
+        if (!$rateLimit->isAccepted()) {
+            // Ban user for 12 hours due to spam
+            $spamRateLimiterService->banUserForSpam($currentUser);
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $this->addFlash('danger', sprintf(
+                'You have been temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            ));
+
+            return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
         }
 
         $interactionService->toggleDownvote($thread, $currentUser);
@@ -295,34 +381,61 @@ class ThreadManageController extends AbstractController
         InteractionService $interactionService,
         ForumCurrentUserService $currentUserService,
         ForumRateLimitService $forumRateLimitService,
+        SpamRateLimiterService $spamRateLimiterService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
         if ($currentUserService->isBackofficeUser($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
-        $rateLimit = $forumRateLimitService->consumeFollowToggle($currentUser->getId());
-        if (!$rateLimit->isAccepted()) {
-            $retryAt = $rateLimit->getRetryAfter();
-            $retryAfterSeconds = $retryAt === null ? null : max(1, $retryAt->getTimestamp() - time());
-            $message = 'Too many follow/unfollow actions. Please wait a moment before trying again.';
+        // Check if user is banned for spam
+        if ($spamRateLimiterService->isUserBannedForSpam($currentUser)) {
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $message = sprintf(
+                'Your account is temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            );
 
             if ($this->expectsJson($request)) {
-                $isFollowing = $interactionService->getInteraction($thread, $currentUser)?->isFollow() ?? false;
-
                 return $this->json([
                     'ok' => false,
-                    'limited' => true,
+                    'banned' => true,
                     'message' => $message,
-                    'retryAfterSeconds' => $retryAfterSeconds,
-                    'isFollowing' => $isFollowing,
-                ], Response::HTTP_TOO_MANY_REQUESTS);
+                    'remainingSeconds' => $remainingSeconds,
+                ], Response::HTTP_FORBIDDEN);
             }
 
-            $this->addFlash('warning', $message);
+            $this->addFlash('danger', $message);
 
             return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
         }
+
+        // Check spam rate limit for interactions (before the follow-specific limiter)
+        $spamRateLimit = $spamRateLimiterService->checkInteractionSpam($currentUser->getId());
+        if (!$spamRateLimit->isAccepted()) {
+            // Ban user for 12 hours due to spam
+            $spamRateLimiterService->banUserForSpam($currentUser);
+            $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+            $message = sprintf(
+                'You have been temporarily banned due to spam activity. Please try again in %s.',
+                $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+            );
+
+            if ($this->expectsJson($request)) {
+                return $this->json([
+                    'ok' => false,
+                    'banned' => true,
+                    'message' => $message,
+                    'remainingSeconds' => $remainingSeconds,
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            $this->addFlash('danger', $message);
+
+            return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
+        }
+
+        
 
         $interactionService->toggleFollow($thread, $currentUser);
 

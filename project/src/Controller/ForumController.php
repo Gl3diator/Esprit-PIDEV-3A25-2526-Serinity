@@ -18,6 +18,7 @@ use App\Service\InteractionService;
 use App\Service\PdfExportService;
 use App\Service\ProfileLookupService;
 use App\Service\ReplyService;
+use App\Service\SpamRateLimiterService;
 use App\Service\SummarizationService;
 use App\Service\ThreadService;
 use App\Service\ThreadSuggestionService;
@@ -210,11 +211,14 @@ class ForumController extends AbstractController
         ThreadService $threadService,
         ProfileLookupService $profileLookupService,
         UserNavService $navService,
+        SpamRateLimiterService $spamRateLimiterService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
         if ($currentUserService->isBackofficeUser($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
+
+       
 
         $reply = new Reply();
         $prefillKey = 'thread_reply_prefill_'.(int) $thread->getId();
@@ -232,6 +236,20 @@ class ForumController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             if ($thread->getStatus() === ThreadStatus::LOCKED) {
                 throw $this->createAccessDeniedException('Cannot add replies to a locked thread.');
+            }
+
+            // Check spam rate limit for replies before creating reply
+            $rateLimit = $spamRateLimiterService->checkReplyCreationSpam($currentUser->getId());
+            if (!$rateLimit->isAccepted()) {
+                // Ban user for 12 hours due to spam
+                $spamRateLimiterService->banUserForSpam($currentUser);
+                $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
+                $this->addFlash('danger', sprintf(
+                    'You have been temporarily banned due to spam activity. Please try again in %s.',
+                    $spamRateLimiterService->formatRemainingBanTime($remainingSeconds)
+                ));
+
+                return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
             }
 
             $parentIdRaw = $form->get('parentId')->getData();

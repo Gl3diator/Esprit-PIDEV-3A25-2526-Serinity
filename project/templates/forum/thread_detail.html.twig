@@ -150,6 +150,23 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="spamBanModal" tabindex="-1" aria-labelledby="spamBanModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-danger-subtle border-danger">
+                    <div class="modal-header border-danger">
+                        <h2 class="modal-title h5 mb-0" id="spamBanModalTitle">Account Temporarily Banned</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2"><strong>You have been temporarily banned due to spam activity.</strong></p>
+                        <p class="mb-0">You can try again in: <span id="spamBanModalTimer" class="badge bg-danger fw-bold">00:00</span></p>
+                    </div>
+                    <div class="modal-footer border-danger">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}
@@ -429,14 +446,89 @@
                 document.addEventListener('DOMContentLoaded', () => {
                     initFollowToggle();
                     initReplyLayer();
+                    initSpamBanModal();
                 }, { once: true });
             } else {
                 initFollowToggle();
                 initReplyLayer();
+                initSpamBanModal();
             }
+
+            const initSpamBanModal = () => {
+                const spamBanModalEl = document.getElementById('spamBanModal');
+                const timerEl = document.getElementById('spamBanModalTimer');
+
+                if (!spamBanModalEl || !timerEl) {
+                    return;
+                }
+
+                const spamBanModal = window.bootstrap && window.bootstrap.Modal
+                    ? window.bootstrap.Modal.getOrCreateInstance(spamBanModalEl)
+                    : null;
+
+                if (!spamBanModal) {
+                    return;
+                }
+
+                let countdownInterval = null;
+
+                const updateTimer = (remainingSeconds) => {
+                    if (remainingSeconds <= 0) {
+                        timerEl.textContent = '00:00';
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
+
+                        return;
+                    }
+
+                    const hours = Math.floor(remainingSeconds / 3600);
+                    const minutes = Math.floor((remainingSeconds % 3600) / 60);
+
+                    if (hours > 0) {
+                        timerEl.textContent = `${hours}h ${minutes}m`;
+                    } else {
+                        timerEl.textContent = `${minutes}m`;
+                    }
+                };
+
+                const showBanModal = (remainingSeconds) => {
+                    updateTimer(remainingSeconds);
+                    spamBanModal.show();
+
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                    }
+
+                    let remaining = remainingSeconds;
+                    countdownInterval = setInterval(() => {
+                        remaining -= 1;
+                        updateTimer(remaining);
+
+                        if (remaining <= 0) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
+                    }, 1000);
+                };
+
+                // Check if user is banned via data attribute (populated by server on page load)
+                const pageContent = document.querySelector('main');
+                if (pageContent && pageContent.dataset.userBannedSeconds) {
+                    const bannedSeconds = parseInt(pageContent.dataset.userBannedSeconds, 10);
+                    if (bannedSeconds > 0) {
+                        showBanModal(bannedSeconds);
+                    }
+                }
+
+                // Store the function globally so AJAX responses can show the modal
+                window._showSpamBanModal = showBanModal;
+            };
 
             document.addEventListener('turbo:load', initFollowToggle);
             document.addEventListener('turbo:load', initReplyLayer);
+            document.addEventListener('turbo:load', initSpamBanModal);
         })();
     </script>
 {% endblock %}
