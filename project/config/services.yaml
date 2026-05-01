@@ -54,7 +54,12 @@ parameters:
     app.ai_emotion_api_timeout: '%env(float:AI_EMOTION_API_TIMEOUT)%'
     app.ai_emotion_api_threshold: '%env(float:AI_EMOTION_API_THRESHOLD)%'
     app.ai_emotion_api_top_k: '%env(int:AI_EMOTION_API_TOP_K)%'
+    app.forum_upload_dir: '%kernel.project_dir%/public/uploads'
+    app.forum_imgbb_api_key: '%env(string:API_IMGBB)%'
+    app.forum_translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
+
     app.account_ban_duration_minutes: '%env(int:ACCOUNT_BAN_DURATION_MINUTES)%'
+    app.spam_ban_duration_minutes: '%env(int:SPAM_BAN_DURATION_MINUTES)%'
     app.ntfy_base_url: '%env(string:NTFY_BASE_URL)%'
     app.ntfy_doctor_topic: '%env(string:NTFY_DOCTOR_TOPIC)%'
     app.ntfy_enabled: '%env(bool:NTFY_ENABLED)%'
@@ -64,7 +69,6 @@ parameters:
     app.user_lon: '%env(float:USER_LON)%'
     app.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
     app.gemini_model: '%env(string:GEMINI_MODEL)%'
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -88,6 +92,15 @@ services:
         arguments:
             $imageRequestUrl: '%app.image_request_url%'
             $imageApiKey: '%app.image_api_key%'
+
+    App\Service\ForumImageUploadService:
+        arguments:
+            $uploadDir: '%app.forum_upload_dir%'
+            $imgbbApiKey: '%app.forum_imgbb_api_key%'
+
+    App\Service\TranslationService:
+        arguments:
+            $apiKey: '%app.forum_translate_api_key%'
 
     App\Service\MailerService:
         arguments:
@@ -221,6 +234,10 @@ services:
     App\Service\AccountAccessService:
         arguments:
             $banDurationMinutes: '%app.account_ban_duration_minutes%'
+
+    App\Service\SpamRateLimiterService:
+        arguments:
+            $spamBanDurationMinutes: '%app.spam_ban_duration_minutes%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
