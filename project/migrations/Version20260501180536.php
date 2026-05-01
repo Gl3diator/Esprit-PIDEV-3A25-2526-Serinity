@@ -7,21 +7,25 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20260417164318 extends AbstractMigration
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260501180536 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'No-op: discard unsafe auto-generated diff that conflicts with existing indexes';
+        return '';
     }
 
     public function up(Schema $schema): void
     {
-        // Intentionally no-op.
-        // The required google_id change is handled by Version20260417161800.
+        // this up() migration is auto-generated, please modify it to your needs
+
     }
 
     public function down(Schema $schema): void
     {
-        // Intentionally no-op.
+        // this down() migration is auto-generated, please modify it to your needs
+
     }
 }
