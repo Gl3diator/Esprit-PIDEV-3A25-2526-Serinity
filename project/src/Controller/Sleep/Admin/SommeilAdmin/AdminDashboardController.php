@@ -51,7 +51,6 @@ class AdminDashboardController extends AbstractController
             'Cauchemar' => 0,
         ];
 
-        // ✅ Fix PHPStan L.93-94 : type explicite pour usort
         /** @var array<int, array<string, mixed>> $recentActivities */
         $recentActivities = [];
 
@@ -79,8 +78,8 @@ class AdminDashboardController extends AbstractController
 
             $recentActivities[] = [
                 'type' => 'Rêve',
-                'date_sort' => $reve->getCreatedAt()->format('Y-m-d H:i:s'),
-                'date_label' => $reve->getCreatedAt()->format('d/m/Y'),
+                'date_sort' => $reve->getCreatedAt()?->format('Y-m-d H:i:s') ?? '',
+                'date_label' => $reve->getCreatedAt()?->format('d/m/Y') ?? '-',
                 'title' => $reve->getTitre() ?: 'Sans titre',
                 'metric' => 'Intensité ' . ($reve->getIntensite() ?? '-'),
                 'status' => $typeReve,
@@ -90,7 +89,7 @@ class AdminDashboardController extends AbstractController
                 'route' => 'app_admin_sommeil_index',
             ];
         }
-
+        /** @var array<int, array{date_sort: string}> $recentActivities */
         usort(
             $recentActivities,
             static fn(array $a, array $b): int => strcmp($b['date_sort'], $a['date_sort'])

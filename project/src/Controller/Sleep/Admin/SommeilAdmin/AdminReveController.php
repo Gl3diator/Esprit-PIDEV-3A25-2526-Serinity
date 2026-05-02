@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Controller\Sleep\Admin\SommeilAdmin; // ✅ namespace corrigé
+namespace App\Controller\Sleep\Admin\SommeilAdmin;
 
-use App\Entity\Sleep\Reves;                         // ✅ import corrigé
+use App\Entity\Sleep\Reves;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -12,42 +14,45 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AdminReveController extends AbstractController
 {
     #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
+    public function index(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator
+    ): Response {
         $reveEntities = $entityManager->getRepository(Reves::class)->findBy([], ['id' => 'DESC']);
 
-        $reves = [];
+        $revesRaw = [];
 
         foreach ($reveEntities as $reve) {
-            $sommeil = $reve->getSommeil(); // ✅ getSommeil() (plus getSommeilId())
+            $sommeil  = $reve->getSommeil();
+            $userId   = $sommeil?->getUserId();
+            $dateNuit = $sommeil?->getDateNuit();
+            $humeur   = $reve->getHumeur() ?? 'Neutre';
 
-            $userId = null;
-            $dateNuit = null;
-
-            if ($sommeil) {
-                $userId = $sommeil->getUserId();
-                $dateNuit = $sommeil->getDateNuit();
-            }
-
-            $humeur = $reve->getHumeur() ?? 'Neutre';
-
-            $reves[] = [
-                'id' => $reve->getId(),
-                'user_id' => $userId,
-                'user_label' => $userId ? 'Utilisateur #' . $userId : 'Utilisateur inconnu',
-                'user_avatar' => 'U',
-                'date_nuit' => $dateNuit,
-                'titre' => $reve->getTitre() ?? 'Sans titre',
-                'description' => $reve->getDescription() ?? '',
-                'description_courte' => mb_strimwidth($reve->getDescription() ?? '', 0, 60, '…'),
-                'type_reve' => $reve->getTypeReve() ?? 'Inconnu',
-                'humeur' => $humeur,
-                'humeur_class' => $this->mapEmotionClass($humeur),
+            $revesRaw[] = [
+                'id'                => $reve->getId(),
+                'user_id'           => $userId,
+                'user_label'        => $userId ? 'Utilisateur #' . $userId : 'Utilisateur inconnu',
+                'user_avatar'       => 'U',
+                'date_nuit'         => $dateNuit,
+                'titre'             => $reve->getTitre() ?? 'Sans titre',
+                'description'       => $reve->getDescription() ?? '',
+                'description_courte'=> mb_strimwidth($reve->getDescription() ?? '', 0, 60, '…'),
+                'type_reve'         => $reve->getTypeReve() ?? 'Inconnu',
+                'humeur'            => $humeur,
+                'humeur_class'      => $this->mapEmotionClass($humeur),
             ];
         }
 
+        $pagination = $paginator->paginate(
+            $revesRaw,
+            $request->query->getInt('page', 1),
+            10 // items par page
+        );
+
         return $this->render('sleep/admin/sommeil.html.twig', [
-            'reves' => $reves,
+            'reves'      => $pagination,
+            'pagination' => $pagination,
         ]);
     }
 
@@ -55,22 +60,22 @@ final class AdminReveController extends AbstractController
     {
         $value = mb_strtolower(trim($humeur));
 
-        if (str_contains($value, 'joy') || str_contains($value, 'heureux') || str_contains($value, 'heureuse')) {
-            return 'emotion-joyeux';
-        }
+        return match (true) {
+            str_contains($value, 'joy')     ||
+            str_contains($value, 'heureux') ||
+            str_contains($value, 'heureuse')  => 'emotion-joyeux',
 
-        if (str_contains($value, 'peur') || str_contains($value, 'effray') || str_contains($value, 'angoisse') || str_contains($value, 'anx')) {
-            return 'emotion-peur';
-        }
+            str_contains($value, 'peur')    ||
+            str_contains($value, 'effray')  ||
+            str_contains($value, 'angoisse')||
+            str_contains($value, 'anx')       => 'emotion-peur',
 
-        if (str_contains($value, 'serein') || str_contains($value, 'calme')) {
-            return 'emotion-calme';
-        }
+            str_contains($value, 'serein')  ||
+            str_contains($value, 'calme')     => 'emotion-calme',
 
-        if (str_contains($value, 'triste')) {
-            return 'emotion-triste';
-        }
+            str_contains($value, 'triste')    => 'emotion-triste',
 
-        return 'emotion-neutre';
+            default                           => 'emotion-neutre',
+        };
     }
 }

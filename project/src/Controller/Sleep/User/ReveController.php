@@ -15,24 +15,27 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Form\FormError;
 
 #[Route('/reve')]
 final class ReveController extends AbstractController
 {
     #[Route('', name: 'app_reve_index', methods: ['GET'])]
     public function index(
-        Request $request,
-        RevesRepository $revesRepository,
+        Request            $request,
+        RevesRepository    $revesRepository,
         PaginatorInterface $paginator
-    ): Response {
+    ): Response
+    {
+        /** @var array<string, mixed> $filters */
         $filters = [
-            'q'          => $request->query->get('q'),
-            'type'       => $request->query->get('type'),
-            'recurrent'  => $request->query->get('recurrent', ''),
-            'couleur'    => $request->query->get('couleur'),
+            'q' => $request->query->get('q'),
+            'type' => $request->query->get('type'),
+            'recurrent' => $request->query->get('recurrent', ''),
+            'couleur' => $request->query->get('couleur'),
             'cauchemars' => $request->query->get('cauchemars'),
-            'sort'       => $request->query->get('sort', 's.dateNuit'),
-            'direction'  => $request->query->get('direction', 'DESC'),
+            'sort' => $request->query->get('sort', 's.dateNuit'),
+            'direction' => $request->query->get('direction', 'DESC'),
         ];
 
         $query = $revesRepository->createFrontFilteredQuery($filters);
@@ -44,40 +47,41 @@ final class ReveController extends AbstractController
         );
 
         $allReves = $revesRepository->findFrontFiltered($filters);
-        $stats    = $revesRepository->getFrontStats();
+        $stats = $revesRepository->getFrontStats();
 
         $dreamMoodCounts = [
-            '😄 Joyeux'  => 0,
-            '😢 Triste'  => 0,
+            '😄 Joyeux' => 0,
+            '😢 Triste' => 0,
             '😨 Effrayé' => 0,
-            '😐 Neutre'  => 0,
+            '😐 Neutre' => 0,
         ];
 
         foreach ($allReves as $reve) {
-            $humeur = trim((string) ($reve->getHumeur() ?? ''));
+            $humeur = trim((string)($reve->getHumeur() ?? ''));
             if (array_key_exists($humeur, $dreamMoodCounts)) {
                 $dreamMoodCounts[$humeur]++;
             }
         }
 
         $stats['dream_mood_labels'] = array_keys($dreamMoodCounts);
-        $stats['dream_mood_data']   = array_values($dreamMoodCounts);
+        $stats['dream_mood_data'] = array_values($dreamMoodCounts);
 
         return $this->render('sleep/reve/index.html.twig', [
-            'reves'   => $reves,
+            'reves' => $reves,
             'filters' => $filters,
-            'stats'   => $stats,
+            'stats' => $stats,
         ]);
     }
 
     #[Route('/generate-description', name: 'app_reve_generate_description', methods: ['POST'])]
     public function generateDescription(
-        Request $request,
+        Request         $request,
         LmStudioService $lmStudioService
-    ): JsonResponse {
+    ): JsonResponse
+    {
         $data = json_decode($request->getContent(), true);
 
-        $title = trim((string) ($data['title'] ?? ''));
+        $title = trim((string)($data['title'] ?? ''));
 
         if ($title === '') {
             return $this->json([
@@ -131,7 +135,7 @@ final class ReveController extends AbstractController
 
         if ($request->isXmlHttpRequest()) {
             return $this->render('sleep/reve/components/_form_modal.html.twig', [
-                'form'       => $form->createView(),
+                'form' => $form->createView(),
                 'modal_mode' => true,
             ]);
         }
@@ -146,7 +150,7 @@ final class ReveController extends AbstractController
     {
         if ($request->isXmlHttpRequest()) {
             return $this->render('sleep/reve/components/_show_modal.html.twig', [
-                'reve'       => $reve,
+                'reve' => $reve,
                 'modal_mode' => true,
             ]);
         }
@@ -184,8 +188,8 @@ final class ReveController extends AbstractController
 
         if ($request->isXmlHttpRequest()) {
             return $this->render('sleep/reve/components/_form_modal.html.twig', [
-                'reve'       => $reve,
-                'form'       => $form->createView(),
+                'reve' => $reve,
+                'form' => $form->createView(),
                 'modal_mode' => true,
             ]);
         }
@@ -199,7 +203,7 @@ final class ReveController extends AbstractController
     #[Route('/delete/{id<\d+>}', name: 'app_reve_delete', methods: ['POST'])]
     public function delete(Request $request, Reves $reve, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $reve->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $reve->getId(), (string)$request->request->get('_token'))) {
             $em->remove($reve);
             $em->flush();
 
@@ -212,16 +216,18 @@ final class ReveController extends AbstractController
     #[Route('/export/csv', name: 'app_reve_export_csv', methods: ['GET'])]
     public function exportCsv(Request $request, RevesRepository $revesRepository): Response
     {
-        $filters = [
-            'q'          => $request->query->get('q'),
-            'type'       => $request->query->get('type'),
-            'recurrent'  => $request->query->get('recurrent', ''),
-            'couleur'    => $request->query->get('couleur'),
-            'cauchemars' => $request->query->get('cauchemars'),
-            'sort'       => $request->query->get('sort', 's.dateNuit'),
-            'direction'  => $request->query->get('direction', 'DESC'),
-        ];
+        /** @var array<string, mixed> $filters */
 
+        $filters = [
+            'q' => $request->query->get('q'),
+            'type' => $request->query->get('type'),
+            'recurrent' => $request->query->get('recurrent', ''),
+            'couleur' => $request->query->get('couleur'),
+            'cauchemars' => $request->query->get('cauchemars'),
+            'sort' => $request->query->get('sort', 's.dateNuit'),
+            'direction' => $request->query->get('direction', 'DESC'),
+        ];
+        /** @var Reves[] $rows */
         $rows = $revesRepository->findFrontFiltered($filters);
 
         $response = new Response();
@@ -229,6 +235,10 @@ final class ReveController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="reves.csv"');
 
         $handle = fopen('php://temp', 'r+');
+
+        if ($handle === false) {
+            throw new \RuntimeException('Impossible d’ouvrir le flux CSV');
+        }
         fputcsv($handle, ['Date', 'Titre', 'Type', 'Intensité', 'Récurrent', 'Couleur']);
 
         foreach ($rows as $r) {
@@ -253,18 +263,20 @@ final class ReveController extends AbstractController
 
     #[Route('/export/pdf', name: 'app_reve_export_pdf', methods: ['GET'])]
     public function exportPdf(
-        Request $request,
-        RevesRepository $revesRepository,
+        Request               $request,
+        RevesRepository       $revesRepository,
         GotenbergPdfInterface $gotenberg
-    ): Response {
+    ): Response
+    {
+        /** @var array<string, mixed> $filters */
         $filters = [
-            'q'          => $request->query->get('q'),
-            'type'       => $request->query->get('type'),
-            'recurrent'  => $request->query->get('recurrent', ''),
-            'couleur'    => $request->query->get('couleur'),
+            'q' => $request->query->get('q'),
+            'type' => $request->query->get('type'),
+            'recurrent' => $request->query->get('recurrent', ''),
+            'couleur' => $request->query->get('couleur'),
             'cauchemars' => $request->query->get('cauchemars'),
-            'sort'       => $request->query->get('sort', 's.dateNuit'),
-            'direction'  => $request->query->get('direction', 'DESC'),
+            'sort' => $request->query->get('sort', 's.dateNuit'),
+            'direction' => $request->query->get('direction', 'DESC'),
         ];
 
         $reves = $revesRepository->findFrontFiltered($filters);
@@ -279,17 +291,24 @@ final class ReveController extends AbstractController
             ->stream();
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getFormErrors(FormInterface $form): array
     {
+        /** @var array<int, string> $errors */
         $errors = [];
 
         foreach ($form->getErrors(true) as $error) {
-            $message = $error->getMessage();
-            if (!in_array($message, $errors, true)) {
-                $errors[] = $message;
+            if ($error instanceof FormError) {
+                $message = $error->getMessage();
+                if (!in_array($message, $errors, true)) {
+                    $errors[] = $message;
+                }
             }
         }
 
         return $errors;
     }
+
 }

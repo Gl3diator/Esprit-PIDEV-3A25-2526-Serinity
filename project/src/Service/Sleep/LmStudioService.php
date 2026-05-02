@@ -12,6 +12,9 @@ class LmStudioService
         private readonly string $model,
     ) {}
 
+    /**
+     * @return string
+     */
     public function generateDreamDescription(string $title): string
     {
         $title = trim($title);
@@ -80,6 +83,10 @@ TXT,
         return $content;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     public function analyzeReve(array $data): array
     {
         $messages = [
@@ -96,6 +103,10 @@ TXT,
         );
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $reves
+     * @return array<string, mixed>
+     */
     public function analyzeGlobal(array $reves): array
     {
         if (empty($reves)) {
@@ -130,6 +141,11 @@ TXT,
         );
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $messages
+     * @param array<string, mixed> $schema
+     * @return array<string, mixed>
+     */
     private function requestStructured(array $messages, array $schema, string $schemaName): array
     {
         $url = rtrim($this->baseUrl, '/') . '/chat/completions';
@@ -165,8 +181,8 @@ TXT,
             throw new \RuntimeException('LM Studio HTTP ' . $status . ' : ' . $rawBody);
         }
 
+        /** @var mixed $raw */
         $raw = json_decode($rawBody, true);
-
         if (!is_array($raw)) {
             throw new \RuntimeException('Réponse LM Studio non JSON.');
         }
@@ -177,7 +193,9 @@ TXT,
             throw new \RuntimeException('Réponse LM Studio invalide : content introuvable.');
         }
 
+        /** @var mixed $decoded */
         $decoded = json_decode($content, true);
+
 
         if (!is_array($decoded)) {
             throw new \RuntimeException('Réponse JSON invalide retournée par LM Studio : ' . $content);
@@ -186,6 +204,9 @@ TXT,
         return $decoded;
     }
 
+    /**
+     * @param array<string, mixed> $d
+     */
     private function buildSingleUserMessage(array $d): string
     {
         $titre = $d['titre'] ?? 'Non renseigné';
@@ -219,7 +240,11 @@ Consignes supplémentaires :
 TXT;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $reves
+     */
     private function buildGlobalUserMessage(array $reves): string
+
     {
         $resume = implode("\n", array_map(function (array $r) {
             $titre = $r['titre'] ?? 'Sans titre';
@@ -252,6 +277,9 @@ Consignes supplémentaires :
 TXT;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function singleSchema(): array
     {
         return [
@@ -311,6 +339,9 @@ TXT;
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function globalSchema(): array
     {
         return [

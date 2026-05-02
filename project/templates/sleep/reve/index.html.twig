@@ -32,6 +32,16 @@
                         </iframe>
                     </div>
 
+                    <div class="rv-global-analysis-bar">
+                        <button type="button"
+                                class="rv-btn rv-btn--primary"
+                                onclick="analyzeGlobal()">
+                            🧠 Analyse globale des rêves
+                        </button>
+                    </div>
+
+
+
                     {# FILTRES #}
                     {% include 'sleep/reve/components/_filters.html.twig' with {
                         filters: filters

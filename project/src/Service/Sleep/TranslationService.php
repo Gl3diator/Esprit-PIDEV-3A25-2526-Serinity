@@ -3,6 +3,7 @@
 namespace App\Service\Sleep;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class TranslationService
 {
@@ -34,12 +35,14 @@ class TranslationService
                 ]
             );
 
+            /** @var array<int, mixed> $data */
             $data = $response->toArray(false);
 
             // Google retourne [[[translated, original, ...], ...], ...]
             $translated = '';
             foreach (($data[0] ?? []) as $chunk) {
-                $translated .= $chunk[0] ?? '';
+                /** @var array<int, mixed> $chunk */
+                $translated .= (string) ($chunk[0] ?? '');
             }
 
             return trim($translated) !== '' ? trim($translated) : $text;
@@ -48,10 +51,17 @@ class TranslationService
         }
     }
 
+    /**
+     * @param array<int, string> $texts
+     * @return array<int, string>
+     */
     public function translateBatch(array $texts, string $targetLang, string $sourceLang = 'fr'): array
     {
+        /** @var array<int, ResponseInterface> $responses */
         $responses = [];
-        $results   = [];
+
+        /** @var array<int, string> $results */
+        $results = [];
 
         foreach ($texts as $index => $text) {
             $text = trim((string) $text);
@@ -79,11 +89,13 @@ class TranslationService
 
         foreach ($responses as $index => $response) {
             try {
+                /** @var array<int, mixed> $data */
                 $data = $response->toArray(false);
 
                 $translated = '';
                 foreach (($data[0] ?? []) as $chunk) {
-                    $translated .= $chunk[0] ?? '';
+                    /** @var array<int, mixed> $chunk */
+                    $translated .= (string) ($chunk[0] ?? '');
                 }
 
                 $results[$index] = trim($translated) !== '' ? trim($translated) : $texts[$index];

@@ -4,9 +4,31 @@ namespace App\Service\Sleep;
 
 class SleepAdviceService
 {
+    /**
+     * @param array{
+     *     current?: array{
+     *         temp?: int|float|null,
+     *         humidity?: int|float|null,
+     *         wind_speed?: int|float|null,
+     *         desc?: string
+     *     }
+     * }|null $weatherData
+     *
+     * @return array{
+     *     score: int|null,
+     *     niveau: string,
+     *     resume: string,
+     *     conseils: array<int, string>,
+     *     badge: array{
+     *         label: string,
+     *         class: string,
+     *         emoji: string
+     *     }
+     * }
+     */
     public function analyze(?array $weatherData): array
     {
-        if (!$weatherData || !isset($weatherData['current'])) {
+        if (!$weatherData ) {
             return [
                 'score' => null,
                 'niveau' => 'Indisponible',
@@ -20,9 +42,12 @@ class SleepAdviceService
             ];
         }
 
+        /** @var array<string, mixed> $current */
         $current = $weatherData['current'];
 
         $score = 100;
+
+        /** @var array<int, string> $conseils */
         $conseils = [];
 
         $temp = $current['temp'] ?? null;

@@ -14,6 +14,18 @@ class HuggingFaceService
         private string $apiKey,
     ) {}
 
+    /**
+     * @return array{
+     *     sentiment: string,
+     *     confiance: int,
+     *     tous: array<int, array{label: string, score: int}>,
+     *     phrase: string,
+     *     humeur_originale: string,
+     *     humeur_normalisee: string,
+     *     source: string,
+     *     erreur?: string
+     * }
+     */
     public function analyzeHumeur(string $humeur): array
     {
         $humeurNormalisee = $this->normalizeHumeur($humeur);
@@ -32,7 +44,9 @@ class HuggingFaceService
                         'use_cache' => false,
                     ],
                 ],
-                'timeout' => 30,
+                'timeout' => 100,
+                'verify_peer' => false,
+                'verify_host' => false,
             ]);
 
             $statusCode = $response->getStatusCode();
@@ -43,7 +57,10 @@ class HuggingFaceService
             }
 
             $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            /** @var mixed $data */
 
+
+            /** @var array<int, array<string, mixed>> $results */
             $results = [];
 
             if (isset($data[0]) && is_array($data[0])) {
@@ -56,17 +73,18 @@ class HuggingFaceService
                 throw new \RuntimeException('Réponse Hugging Face vide ou invalide : ' . $raw);
             }
 
-            usort($results, fn(array $a, array $b) => ($b['score'] ?? 0) <=> ($a['score'] ?? 0));
+            /** @var array<int, array{label?: string, score?: float|int}> $results */
+            usort($results, fn(array $a, array $b): int => ($b['score'] ?? 0) <=> ($a['score'] ?? 0));
 
             $top = $results[0] ?? ['label' => 'neutral', 'score' => 0.5];
 
             return [
                 'sentiment' => $this->mapSentiment((string) ($top['label'] ?? 'neutral')),
-                'confiance' => round(((float) ($top['score'] ?? 0)) * 100),
-                'tous' => array_map(fn(array $r) => [
+                'confiance' => (int) round(((float) ($top['score'] ?? 0)) * 100),
+                'tous' => array_map(fn(array $r): array => [
                     'label' => $this->mapSentiment((string) ($r['label'] ?? 'neutral')),
-                    'score' => round(((float) ($r['score'] ?? 0)) * 100),
-                ], $results),
+                    'score' => (int) round(((float) ($r['score'] ?? 0)) * 100),
+                    ], $results),
                 'phrase' => $phrase,
                 'humeur_originale' => $humeur,
                 'humeur_normalisee' => $humeurNormalisee,

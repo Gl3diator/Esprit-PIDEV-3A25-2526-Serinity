@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Controller\Sleep\Admin\SommeilAdmin; // ✅ namespace corrigé
+namespace App\Controller\Sleep\Admin\SommeilAdmin;
 
-use App\Entity\Sleep\Reves;   // ✅ import corrigé
-use App\Entity\Sleep\Sommeil; // ✅ import corrigé
+use App\Entity\Sleep\Reves;
+use App\Entity\Sleep\Sommeil;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -13,8 +15,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AdminSommeilController extends AbstractController
 {
     #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
+    public function index(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator
+    ): Response {
         $sommeilEntities = $entityManager->getRepository(Sommeil::class)->findBy([], ['id' => 'DESC']);
         $reveEntities = $entityManager->getRepository(Reves::class)->findBy([], ['id' => 'DESC']);
 
@@ -72,10 +77,18 @@ final class AdminSommeilController extends AbstractController
             }
 
             switch ($qualiteLabel) {
-                case 'Excellente': $qualiteExcellente++; break;
-                case 'Bonne':      $qualiteBonne++;      break;
-                case 'Moyenne':    $qualiteMoyenne++;    break;
-                case 'Mauvaise':   $qualiteMauvaise++;   break;
+                case 'Excellente':
+                    $qualiteExcellente++;
+                    break;
+                case 'Bonne':
+                    $qualiteBonne++;
+                    break;
+                case 'Moyenne':
+                    $qualiteMoyenne++;
+                    break;
+                case 'Mauvaise':
+                    $qualiteMauvaise++;
+                    break;
             }
 
             $dateLabel = $sommeil->getDateNuit()?->format('d/m') ?? ('#' . $sommeil->getId());
@@ -83,11 +96,7 @@ final class AdminSommeilController extends AbstractController
             $sleepDurationData[] = $duree;
 
             $humeurReveil = trim((string) ($sommeil->getHumeurReveil() ?? ''));
-            $humeurReveilClean = str_replace(
-                ['😌 ', '😄 ', '😐 ', '😴 ', '⚡ '],
-                '',
-                $humeurReveil
-            );
+            $humeurReveilClean = str_replace(['😌 ', '😄 ', '😐 ', '😴 ', '⚡ '], '', $humeurReveil);
 
             if (array_key_exists($humeurReveilClean, $wakeMoodCounts)) {
                 $wakeMoodCounts[$humeurReveilClean]++;
@@ -96,18 +105,18 @@ final class AdminSommeilController extends AbstractController
             $userId = $sommeil->getUserId();
 
             $sommeils[] = [
-                'id'            => $sommeil->getId(),
-                'user_id'       => $userId,
-                'user_label'    => 'Utilisateur #' . $userId,
-                'user_avatar'   => 'U',
-                'date_nuit'     => $sommeil->getDateNuit(),
-                'duree'         => $duree,
+                'id' => $sommeil->getId(),
+                'user_id' => $userId,
+                'user_label' => 'Utilisateur #' . $userId,
+                'user_avatar' => 'U',
+                'date_nuit' => $sommeil->getDateNuit(),
+                'duree' => $duree,
                 'qualite_label' => $qualiteLabel,
                 'qualite_score' => $qualiteScore,
                 'heure_coucher' => $sommeil->getHeureCoucher() ?? '-',
-                'heure_reveil'  => $sommeil->getHeureReveil() ?? '-',
-                'statut_label'  => $statutLabel,
-                'statut_class'  => $statutClass,
+                'heure_reveil' => $sommeil->getHeureReveil() ?? '-',
+                'statut_label' => $statutLabel,
+                'statut_class' => $statutClass,
             ];
         }
 
@@ -117,88 +126,97 @@ final class AdminSommeilController extends AbstractController
         $revesPremonitoires = 0;
 
         $dreamMoodCounts = [
-            'Joyeux'  => 0,
-            'Triste'  => 0,
+            'Joyeux' => 0,
+            'Triste' => 0,
             'Effrayé' => 0,
-            'Serein'  => 0,
-            'Neutre'  => 0,
+            'Serein' => 0,
+            'Neutre' => 0,
         ];
 
         foreach ($reveEntities as $reve) {
-            $sommeil = $reve->getSommeil(); // ✅ getSommeil() (plus getSommeilId())
-
-            $userId  = null;
-            $dateNuit = null;
-
-            if ($sommeil) {
-                $userId   = $sommeil->getUserId();
-                $dateNuit = $sommeil->getDateNuit();
-            }
-
-            $humeur   = $reve->getHumeur() ?? 'Neutre';
+            $sommeil = $reve->getSommeil();
+            $userId = $sommeil?->getUserId();
+            $dateNuit = $sommeil?->getDateNuit();
+            $humeur = $reve->getHumeur() ?? 'Neutre';
             $typeReve = $reve->getTypeReve() ?? 'Inconnu';
 
             $typeNormalize = mb_strtolower(trim($typeReve));
+
             if ($typeNormalize === 'normal') {
                 $revesNormaux++;
             } elseif ($typeNormalize === 'lucide') {
                 $revesLucides++;
             } elseif ($typeNormalize === 'cauchemar') {
                 $revesCauchemars++;
-            } elseif (in_array($typeNormalize, ['prémonitoire', 'premonitoire'])) {
+            } elseif (in_array($typeNormalize, ['prémonitoire', 'premonitoire'], true)) {
                 $revesPremonitoires++;
             }
 
-            $humeurClean = str_replace(
-                ['😄 ', '😢 ', '😨 ', '😌 ', '😐 '],
-                '',
-                $humeur
-            );
+            $humeurClean = str_replace(['😄 ', '😢 ', '😨 ', '😌 ', '😐 '], '', $humeur);
 
             if (array_key_exists($humeurClean, $dreamMoodCounts)) {
                 $dreamMoodCounts[$humeurClean]++;
             }
 
             $reves[] = [
-                'id'               => $reve->getId(),
-                'user_id'          => $userId,
-                'user_label'       => $userId ? 'Utilisateur #' . $userId : 'Utilisateur inconnu',
-                'user_avatar'      => 'U',
-                'date_nuit'        => $dateNuit,
-                'titre'            => $reve->getTitre() ?? 'Sans titre',
-                'description'      => $reve->getDescription() ?? '',
+                'id' => $reve->getId(),
+                'user_id' => $userId,
+                'user_label' => $userId ? 'Utilisateur #' . $userId : 'Utilisateur inconnu',
+                'user_avatar' => 'U',
+                'date_nuit' => $dateNuit,
+                'titre' => $reve->getTitre() ?? 'Sans titre',
+                'description' => $reve->getDescription() ?? '',
                 'description_courte' => mb_strimwidth($reve->getDescription() ?? '', 0, 60, '…'),
-                'type_reve'        => $typeReve,
-                'humeur'           => $humeur,
-                'humeur_class'     => $this->mapEmotionClass($humeur),
+                'type_reve' => $typeReve,
+                'humeur' => $humeur,
+                'humeur_class' => $this->mapEmotionClass($humeur),
             ];
         }
 
+        $paginationSommeils = $paginator->paginate(
+            $sommeils,
+            $request->query->getInt('sleep_page', 1),
+            5,
+            ['pageParameterName' => 'sleep_page']
+        );
+
+        $paginationReves = $paginator->paginate(
+            $reves,
+            $request->query->getInt('dream_page', 1),
+            5,
+            ['pageParameterName' => 'dream_page']
+        );
+
         $kpis = [
-            'total_sommeils'       => count($sommeils),
-            'total_reves'          => count($reves),
-            'moyenne_duree'        => count($sommeils) > 0 ? round($totalDuree / count($sommeils), 1) : 0,
-            'moyenne_qualite'      => $countSommeilsAvecQualite > 0 ? round($totalQualite / $countSommeilsAvecQualite) : 0,
-            'qualite_excellente'   => $qualiteExcellente,
-            'qualite_bonne'        => $qualiteBonne,
-            'qualite_moyenne'      => $qualiteMoyenne,
-            'qualite_mauvaise'     => $qualiteMauvaise,
-            'reves_normaux'        => $revesNormaux,
-            'reves_lucides'        => $revesLucides,
-            'reves_cauchemars'     => $revesCauchemars,
-            'reves_premonitoires'  => $revesPremonitoires,
+            'total_sommeils' => count($sommeils),
+            'total_reves' => count($reves),
+            'moyenne_duree' => count($sommeils) > 0 ? round($totalDuree / count($sommeils), 1) : 0,
+            'moyenne_qualite' => $countSommeilsAvecQualite > 0 ? round($totalQualite / $countSommeilsAvecQualite) : 0,
+            'qualite_excellente' => $qualiteExcellente,
+            'qualite_bonne' => $qualiteBonne,
+            'qualite_moyenne' => $qualiteMoyenne,
+            'qualite_mauvaise' => $qualiteMauvaise,
+            'reves_normaux' => $revesNormaux,
+            'reves_lucides' => $revesLucides,
+            'reves_cauchemars' => $revesCauchemars,
+            'reves_premonitoires' => $revesPremonitoires,
             'sleep_duration_labels' => $sleepDurationLabels,
-            'sleep_duration_data'  => $sleepDurationData,
-            'wake_mood_labels'     => array_keys($wakeMoodCounts),
-            'wake_mood_data'       => array_values($wakeMoodCounts),
-            'dream_mood_labels'    => array_keys($dreamMoodCounts),
-            'dream_mood_data'      => array_values($dreamMoodCounts),
+            'sleep_duration_data' => $sleepDurationData,
+            'wake_mood_labels' => array_keys($wakeMoodCounts),
+            'wake_mood_data' => array_values($wakeMoodCounts),
+            'dream_mood_labels' => array_keys($dreamMoodCounts),
+            'dream_mood_data' => array_values($dreamMoodCounts),
         ];
 
         return $this->render('sleep/admin/sommeil.html.twig', [
-            'sommeils' => $sommeils,
-            'reves'    => $reves,
-            'kpis'     => $kpis,
+            'nav' => $this->buildNav('app_admin_sommeil_index'),
+            'userName' => $this->getUser()?->getUserIdentifier() ?? 'Admin',
+
+            'sommeils' => $paginationSommeils,
+            'reves' => $paginationReves,
+            'pagination_sommeils' => $paginationSommeils,
+            'pagination_reves' => $paginationReves,
+            'kpis' => $kpis,
         ]);
     }
 
@@ -206,19 +224,89 @@ final class AdminSommeilController extends AbstractController
     {
         $value = mb_strtolower(trim($humeur));
 
-        if (str_contains($value, 'joy') || str_contains($value, 'heureux') || str_contains($value, 'heureuse')) {
-            return 'emotion-joyeux';
-        }
-        if (str_contains($value, 'peur') || str_contains($value, 'effray') || str_contains($value, 'angoisse') || str_contains($value, 'anx')) {
-            return 'emotion-peur';
-        }
-        if (str_contains($value, 'serein') || str_contains($value, 'calme')) {
-            return 'emotion-calme';
-        }
-        if (str_contains($value, 'triste')) {
-            return 'emotion-triste';
-        }
+        return match (true) {
+            str_contains($value, 'joy') ||
+            str_contains($value, 'heureux') ||
+            str_contains($value, 'heureuse') => 'emotion-joyeux',
 
-        return 'emotion-neutre';
+            str_contains($value, 'peur') ||
+            str_contains($value, 'effray') ||
+            str_contains($value, 'angoisse') ||
+            str_contains($value, 'anx') => 'emotion-peur',
+
+            str_contains($value, 'serein') ||
+            str_contains($value, 'calme') => 'emotion-calme',
+
+            str_contains($value, 'triste') => 'emotion-triste',
+
+            default => 'emotion-neutre',
+        };
+    }
+
+    private function buildNav(string $activeRoute): array
+    {
+        $items = [
+            ['section' => 'Admin self-management', 'label' => 'Dashboard', 'route' => 'ac_ui_dashboard', 'icon' => 'dashboard'],
+            ['section' => 'Admin self-management', 'label' => 'Profile', 'route' => 'ac_ui_profile', 'icon' => 'person'],
+            ['section' => 'Admin self-management', 'label' => 'Settings', 'route' => 'ac_ui_settings', 'icon' => 'settings'],
+            ['section' => 'Admin self-management', 'label' => 'Sessions', 'route' => 'ac_ui_sessions', 'icon' => 'devices'],
+            ['section' => 'Admin self-management', 'label' => 'Audit logs', 'route' => 'ac_ui_audit_logs', 'icon' => 'history'],
+
+            ['section' => 'Users management', 'label' => 'Users', 'route' => 'ac_ui_users', 'icon' => 'group'],
+            ['section' => 'Users management', 'label' => 'Consultations', 'route' => 'ac_ui_consultations', 'icon' => 'medical_services'],
+            ['section' => 'Users management', 'label' => 'Exercises', 'route' => 'ac_ui_exercises', 'icon' => 'self_improvement'],
+            ['section' => 'Users management', 'label' => 'Forum', 'route' => 'ac_ui_forum', 'icon' => 'forum'],
+
+            ['section' => 'Users management', 'label' => 'Sleep', 'route' => 'app_admin_sommeil_index', 'icon' => 'hotel'],
+
+            [
+                'section' => 'Users management',
+                'label' => 'Mood',
+                'route' => 'ac_ui_mood',
+                'icon' => 'mood',
+                'children' => [
+                    ['label' => 'Mood analytics', 'route' => 'ac_ui_mood', 'icon' => 'analytics'],
+                    ['label' => 'Emotion management', 'route' => 'ac_ui_emotion', 'icon' => 'sentiment_satisfied'],
+                    ['label' => 'Influence management', 'route' => 'ac_ui_influence', 'icon' => 'tune'],
+                ],
+            ],
+        ];
+
+        return array_map(
+            static function (array $item) use ($activeRoute): array {
+                $children = $item['children'] ?? [];
+
+                $mappedChildren = array_map(
+                    static fn(array $child): array => [
+                        ...$child,
+                        'active' => $child['route'] === $activeRoute,
+                    ],
+                    $children
+                );
+
+                $hasActiveChild = false;
+                foreach ($mappedChildren as $child) {
+                    if ($child['active']) {
+                        $hasActiveChild = true;
+                        break;
+                    }
+                }
+
+                $result = [
+                    'section' => $item['section'],
+                    'label' => $item['label'],
+                    'route' => $item['route'],
+                    'icon' => $item['icon'],
+                    'active' => $item['route'] === $activeRoute || $hasActiveChild,
+                ];
+
+                if (!empty($mappedChildren)) {
+                    $result['children'] = $mappedChildren;
+                }
+
+                return $result;
+            },
+            $items
+        );
     }
 }
