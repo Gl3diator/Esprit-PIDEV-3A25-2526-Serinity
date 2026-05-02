@@ -39,12 +39,12 @@ final class UserNavService
             ],
             [
                 'label' => 'Sleep',
-                'route' => 'eil_list',
+                'route' => 'app_sommeil_list',
                 'icon' => 'bedtime',
                 'section' => 'modules',
                 'children' => [
-                    ['label' => 'Sommail', 'route' => 'app_sommeil_list', 'icon' => 'bedtime'],
-                    ['label' => 'Reves management', 'route' => 'app_reve_index', 'icon' => 'nights_stay'],
+                    ['label' => 'Sommeil', 'route' => 'app_sommeil_list', 'icon' => 'bedtime'],
+                    ['label' => 'Reve ', 'route' => 'app_reve_index', 'icon' => 'nights_stay'],
                 ],
             ],
         ];
