@@ -8,6 +8,9 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Reves>
+ */
 class RevesRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -17,6 +20,8 @@ class RevesRepository extends ServiceEntityRepository
 
     /**
      * Pour la pagination KNP
+     *
+     * @param array<string, mixed> $filters
      */
     public function createFrontFilteredQuery(array $filters = []): Query
     {
@@ -27,6 +32,9 @@ class RevesRepository extends ServiceEntityRepository
 
     /**
      * Pour les exports / stats / traitements complets
+     *
+     * @param array<string, mixed> $filters
+     * @return array<int, Reves>
      */
     public function findFrontFiltered(array $filters = []): array
     {
@@ -36,8 +44,10 @@ class RevesRepository extends ServiceEntityRepository
     }
 
     /**
-     * Alias explicite pour les exports PDF/CSV
-     * (ajouté sans retirer les méthodes existantes)
+
+     *
+     * @param array<string, mixed> $filters
+     * @return array<int, Reves>
      */
     public function findFrontFilteredForExport(array $filters = []): array
     {
@@ -46,6 +56,8 @@ class RevesRepository extends ServiceEntityRepository
 
     /**
      * QueryBuilder centralisé
+     *
+     * @param array<string, mixed> $filters
      */
     private function createFrontFilteredQueryBuilder(array $filters = []): QueryBuilder
     {
@@ -85,6 +97,7 @@ class RevesRepository extends ServiceEntityRepository
                 ->setParameter('nightmare', 'cauchemar');
         }
 
+        /** @var array<string, string> $allowedSorts */
         $allowedSorts = [
             'date'        => 'r.createdAt',
             'r.createdAt' => 'r.createdAt',
@@ -99,7 +112,7 @@ class RevesRepository extends ServiceEntityRepository
             'r.intensite' => 'r.intensite',
         ];
 
-        $sort = $filters['sort'] ?? 's.dateNuit';
+        $sort = (string) ($filters['sort'] ?? 's.dateNuit');
         $direction = strtoupper((string) ($filters['direction'] ?? 'DESC'));
         $direction = in_array($direction, ['ASC', 'DESC'], true) ? $direction : 'DESC';
 
@@ -112,6 +125,14 @@ class RevesRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    /**
+     * @return array{
+     *     total: int,
+     *     nightmares: int,
+     *     avg_intensity: float|int,
+     *     attention: bool
+     * }
+     */
     public function getFrontStats(): array
     {
         $total = $this->createQueryBuilder('r')

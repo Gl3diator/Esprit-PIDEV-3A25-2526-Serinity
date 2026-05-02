@@ -1,1 +1,37 @@
 pack/
+
+### Symfony ###
+/var/
+/vendor/
+
+/public/bundles/
+/public/build/
+
+/node_modules/
+
+/.env
+.env.local
+.env.*.local
+
+### IDE ###
+.idea/
+.vscode/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Logs ###
+*.log
+
+### Cache ###
+/.cache/
+
+/pack/
+
+### PHPUnit ###
+/phpunit.xml
+.phpunit.result.cache
+
+### Composer ###
+composer.lock

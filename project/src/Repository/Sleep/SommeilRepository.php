@@ -8,6 +8,9 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Sommeil>
+ */
 class SommeilRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -17,6 +20,8 @@ class SommeilRepository extends ServiceEntityRepository
 
     /**
      * Pour la pagination KNP
+     *
+     * @param array<string, mixed> $filters
      */
     public function createFrontFilteredQuery(array $filters = []): Query
     {
@@ -26,7 +31,9 @@ class SommeilRepository extends ServiceEntityRepository
     }
 
     /**
-     * Pour les exports / stats / traitements complets
+     *
+     * @param array<string, mixed> $filters
+     * @return array<int, Sommeil>
      */
     public function findFrontFiltered(array $filters = []): array
     {
@@ -36,8 +43,9 @@ class SommeilRepository extends ServiceEntityRepository
     }
 
     /**
-     * Alias explicite pour les exports PDF/CSV
-     * (ajouté sans retirer les méthodes existantes)
+     *
+     * @param array<string, mixed> $filters
+     * @return array<int, Sommeil>
      */
     public function findFrontFilteredForExport(array $filters = []): array
     {
@@ -46,6 +54,8 @@ class SommeilRepository extends ServiceEntityRepository
 
     /**
      * QueryBuilder centralisé
+     *
+     * @param array<string, mixed> $filters
      */
     private function createFrontFilteredQueryBuilder(array $filters = []): QueryBuilder
     {
@@ -76,7 +86,7 @@ class SommeilRepository extends ServiceEntityRepository
                 ->setParameter('minSleep', 5);
         }
 
-        $sort = $filters['sort'] ?? 's.dateNuit';
+        $sort = (string) ($filters['sort'] ?? 's.dateNuit');
         $direction = strtoupper((string) ($filters['direction'] ?? 'DESC'));
         $direction = in_array($direction, ['ASC', 'DESC'], true) ? $direction : 'DESC';
 
@@ -95,6 +105,7 @@ class SommeilRepository extends ServiceEntityRepository
             return $qb;
         }
 
+        /** @var array<string, string> $allowedSorts */
         $allowedSorts = [
             'dateNuit'        => 's.dateNuit',
             's.dateNuit'      => 's.dateNuit',
@@ -114,6 +125,13 @@ class SommeilRepository extends ServiceEntityRepository
         return $qb;
     }
 
+    /**
+     * @return array{
+     *     total: int,
+     *     avg_duration: float|int,
+     *     insufficient: int
+     * }
+     */
     public function getFrontStats(): array
     {
         $qb = $this->createQueryBuilder('s');

@@ -17,6 +17,9 @@ class WeatherService
     ) {
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getSleepWidgetData(
         ?float $lat = null,
         ?float $lon = null,
@@ -27,8 +30,8 @@ class WeatherService
 
         $cacheKey = 'sleep_weather_' . md5($userKey . '_' . $lat . '_' . $lon);
 
-        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($lat, $lon) {
-            $item->expiresAfter(600); // 10 minutes
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($lat, $lon): ?array {
+            $item->expiresAfter(600);
 
             try {
                 $currentResponse = $this->httpClient->request('GET', 'https://api.openweathermap.org/data/2.5/weather', [
@@ -53,12 +56,18 @@ class WeatherService
                     'timeout' => 10,
                 ]);
 
-                $currentData  = $currentResponse->toArray(false);
+                /** @var array<string, mixed> $currentData */
+                $currentData = $currentResponse->toArray(false);
+
+                /** @var array<string, mixed> $forecastData */
                 $forecastData = $forecastResponse->toArray(false);
 
                 if (!isset($currentData['main']) || !isset($forecastData['list'])) {
                     return null;
                 }
+
+                /** @var array<int, array<string, mixed>> $forecastList */
+                $forecastList = is_array($forecastData['list']) ? $forecastData['list'] : [];
 
                 return [
                     'location' => [
@@ -73,12 +82,12 @@ class WeatherService
                         'humidity'   => (int)($currentData['main']['humidity'] ?? 0),
                         'pressure'   => (int)($currentData['main']['pressure'] ?? 0),
                         'wind_speed' => round((float)($currentData['wind']['speed'] ?? 0), 1),
-                        'desc'       => ucfirst($currentData['weather'][0]['description'] ?? ''),
+                        'desc'       => ucfirst((string)($currentData['weather'][0]['description'] ?? '')),
                         'icon_url'   => isset($currentData['weather'][0]['icon'])
                             ? sprintf('https://openweathermap.org/img/wn/%s@2x.png', $currentData['weather'][0]['icon'])
                             : null,
                     ],
-                    'forecast' => array_map(function (array $item) {
+                    'forecast' => array_map(function (array $item): array {
                         return [
                             'dt' => $item['dt'] ?? null,
                             'temp' => round((float)($item['main']['temp'] ?? 0), 1),
@@ -86,14 +95,14 @@ class WeatherService
                             'humidity' => (int)($item['main']['humidity'] ?? 0),
                             'pressure' => (int)($item['main']['pressure'] ?? 0),
                             'wind_speed' => round((float)($item['wind']['speed'] ?? 0), 1),
-                            'pop' => isset($item['pop']) ? (int)round($item['pop'] * 100) : 0,
-                            'desc' => ucfirst($item['weather'][0]['description'] ?? ''),
+                            'pop' => isset($item['pop']) ? (int)round((float)$item['pop'] * 100) : 0,
+                            'desc' => ucfirst((string)($item['weather'][0]['description'] ?? '')),
                             'icon_url' => isset($item['weather'][0]['icon'])
                                 ? sprintf('https://openweathermap.org/img/wn/%s@2x.png', $item['weather'][0]['icon'])
                                 : null,
                         ];
-                    }, array_slice($forecastData['list'], 0, 6)),
-                    'daily' => $this->buildDailyPreview($forecastData['list']),
+                    }, array_slice($forecastList, 0, 6)),
+                    'daily' => $this->buildDailyPreview($forecastList),
                 ];
             } catch (\Throwable $e) {
                 return null;
@@ -101,8 +110,13 @@ class WeatherService
         });
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $forecastList
+     * @return array<int, array<string, mixed>>
+     */
     private function buildDailyPreview(array $forecastList): array
     {
+        /** @var array<string, array<string, mixed>> $grouped */
         $grouped = [];
 
         foreach ($forecastList as $item) {
@@ -118,23 +132,23 @@ class WeatherService
                     'temp_min' => (float)($item['main']['temp_min'] ?? 0),
                     'temp_max' => (float)($item['main']['temp_max'] ?? 0),
                     'pop' => 0,
-                    'desc' => ucfirst($item['weather'][0]['description'] ?? ''),
+                    'desc' => ucfirst((string)($item['weather'][0]['description'] ?? '')),
                     'icon_url' => isset($item['weather'][0]['icon'])
                         ? sprintf('https://openweathermap.org/img/wn/%s@2x.png', $item['weather'][0]['icon'])
                         : null,
                 ];
             }
 
-            $grouped[$dateKey]['temp_min'] = min($grouped[$dateKey]['temp_min'], (float)($item['main']['temp_min'] ?? 0));
-            $grouped[$dateKey]['temp_max'] = max($grouped[$dateKey]['temp_max'], (float)($item['main']['temp_max'] ?? 0));
-            $grouped[$dateKey]['pop'] = max($grouped[$dateKey]['pop'], isset($item['pop']) ? (int)round($item['pop'] * 100) : 0);
+            $grouped[$dateKey]['temp_min'] = min((float)$grouped[$dateKey]['temp_min'], (float)($item['main']['temp_min'] ?? 0));
+            $grouped[$dateKey]['temp_max'] = max((float)$grouped[$dateKey]['temp_max'], (float)($item['main']['temp_max'] ?? 0));
+            $grouped[$dateKey]['pop'] = max((int)$grouped[$dateKey]['pop'], isset($item['pop']) ? (int)round((float)$item['pop'] * 100) : 0);
         }
 
-        return array_values(array_map(function (array $day) {
+        return array_values(array_map(function (array $day): array {
             return [
                 'dt' => $day['dt'],
-                'temp_min' => round($day['temp_min'], 1),
-                'temp_max' => round($day['temp_max'], 1),
+                'temp_min' => round((float)$day['temp_min'], 1),
+                'temp_max' => round((float)$day['temp_max'], 1),
                 'pop' => $day['pop'],
                 'desc' => $day['desc'],
                 'icon_url' => $day['icon_url'],
