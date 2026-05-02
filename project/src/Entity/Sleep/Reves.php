@@ -14,6 +14,7 @@ class Reves
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
+    /** @phpstan-ignore-next-line Doctrine assigne automatiquement l'identifiant. */
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Sommeil::class, inversedBy: "reves")]

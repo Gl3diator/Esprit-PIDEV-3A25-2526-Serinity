@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Sensiolabs\GotenbergBundle\GotenbergPdfInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,6 +34,7 @@ final class SommeilController extends AbstractController
         SommeilRepository $sommeilRepository,
         PaginatorInterface $paginator
     ): Response {
+        /** @var array<string, mixed> $filters */
         $filters = [
             'q'           => $request->query->get('q'),
             'qualite'     => $request->query->get('qualite'),
@@ -221,7 +223,7 @@ final class SommeilController extends AbstractController
     #[Route('/delete/{id<\d+>}', name: 'app_sommeil_delete', methods: ['POST'])]
     public function delete(Request $request, Sommeil $sommeil, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $sommeil->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $sommeil->getId(), (string) $request->request->get('_token'))) {
             $em->remove($sommeil);
             $em->flush();
 
@@ -234,6 +236,7 @@ final class SommeilController extends AbstractController
     #[Route('/export/csv', name: 'app_sommeil_export_csv', methods: ['GET'])]
     public function exportCsv(Request $request, SommeilRepository $sommeilRepository): Response
     {
+        /** @var array<string, mixed> $filters */
         $filters = [
             'q'           => $request->query->get('q'),
             'qualite'     => $request->query->get('qualite'),
@@ -250,6 +253,11 @@ final class SommeilController extends AbstractController
         $response->headers->set('Content-Disposition', 'attachment; filename="sommeils.csv"');
 
         $handle = fopen('php://temp', 'r+');
+
+        if ($handle === false) {
+            throw new \RuntimeException('Impossible d’ouvrir le flux CSV');
+        }
+
         fputcsv($handle, ['Date', 'Heure coucher', 'Heure réveil', 'Durée', 'Qualité', 'Humeur', 'Statut']);
 
         foreach ($rows as $s) {
@@ -279,6 +287,7 @@ final class SommeilController extends AbstractController
         SommeilRepository $sommeilRepository,
         GotenbergPdfInterface $gotenberg
     ): Response {
+        /** @var array<string, mixed> $filters */
         $filters = [
             'q'           => $request->query->get('q'),
             'qualite'     => $request->query->get('qualite'),
@@ -300,14 +309,20 @@ final class SommeilController extends AbstractController
             ->stream();
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getFormErrors(FormInterface $form): array
     {
+        /** @var array<int, string> $errors */
         $errors = [];
 
         foreach ($form->getErrors(true) as $error) {
-            $message = $error->getMessage();
-            if (!in_array($message, $errors, true)) {
-                $errors[] = $message;
+            if ($error instanceof FormError) {
+                $message = $error->getMessage();
+                if (!in_array($message, $errors, true)) {
+                    $errors[] = $message;
+                }
             }
         }
 

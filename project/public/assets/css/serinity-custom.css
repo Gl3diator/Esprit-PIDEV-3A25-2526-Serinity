@@ -3369,3 +3369,96 @@ footer.sn-footer .sn-footer-bottom {
     font-size: 0.72rem;
   }
 }
+.rv-global-analysis-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.rv-global-analysis-bar button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  background: #b3ecf1;
+  color: #136163;
+
+  border: 1px solid #9edfe5;
+  border-radius: 999px;
+
+  padding: 0.6rem 1.2rem;
+
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(19, 97, 99, 0.1);
+  transition: all 0.2s ease;
+}
+
+.rv-global-analysis-bar button:hover {
+  background: #9edfe5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(19, 97, 99, 0.15);
+}
+
+.rv-global-analysis-bar button:active {
+  transform: scale(0.97);
+}
+
+.rv-delete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(10, 40, 45, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.rv-delete-overlay.open {
+  display: flex;
+}
+
+.rv-delete-dialog {
+  width: min(440px, 100%);
+  background: #e9fbfc;
+  border: 1px solid #b3ecf1;
+  border-radius: 22px;
+  padding: 1.5rem;
+  box-shadow: 0 24px 60px rgba(19, 97, 99, 0.22);
+}
+
+.rv-delete-dialog h2 {
+  margin: 0 0 0.75rem;
+  color: #0f5663;
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.rv-delete-dialog p {
+  margin: 0 0 1.25rem;
+  color: #136163;
+  font-size: 1rem;
+}
+
+.rv-delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.rv-btn--secondary {
+  background: #ffffff;
+  color: #136163;
+  border: 1px solid #b3ecf1;
+}
+
+.rv-btn--danger {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #dc2626;
+}

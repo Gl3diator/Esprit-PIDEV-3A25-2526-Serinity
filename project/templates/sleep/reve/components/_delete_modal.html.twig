@@ -1,19 +1,26 @@
-<div class="modal-overlay" id="deleteModal">
-    <div class="modal">
-        <h2 class="modal__title">Supprimer ce rêve ?</h2>
-        <p class="modal__body" id="deleteModalBody">Cette action est irréversible.</p>
+<div class="rv-delete-overlay" id="deleteModal" aria-hidden="true">
+    <div class="rv-delete-dialog">
+        <h2>Supprimer ce rêve ?</h2>
 
-        <div class="modal__actions">
-            <button type="button" class="btn btn--secondary" onclick="closeDeleteModal()">
-                Annuler
-            </button>
+        <p id="deleteModalBody">
+            Supprimer ce rêve ? Action irréversible.
+        </p>
 
-            <form id="deleteForm" method="post">
-                <input type="hidden" name="_token" value="">
-                <button type="submit" class="btn btn--danger">
+        <form id="deleteForm" method="post">
+            <input type="hidden" name="_token" value="">
+
+            <div class="rv-delete-actions">
+                <button type="button"
+                        class="rv-btn rv-btn--secondary"
+                        onclick="closeDeleteModal()">
+                    Annuler
+                </button>
+
+                <button type="submit"
+                        class="rv-btn rv-btn--danger">
                     Supprimer
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>

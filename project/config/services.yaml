@@ -260,6 +260,7 @@ services:
 
     App\Service\Sleep\HuggingFaceService:
         arguments:
+            $httpClient: '@http_client'
             $apiKey: '%env(string:HUGGINGFACE_API_KEY)%'
 
     App\Service\Sleep\LmStudioService:

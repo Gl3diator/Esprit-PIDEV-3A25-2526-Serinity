@@ -16,6 +16,7 @@ class Sommeil
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
+    /** @phpstan-ignore-next-line Doctrine assigne automatiquement l'identifiant. */
     private ?int $id = null;
 
     #[ORM\Column(name: 'date_nuit', type: "date", nullable: true)]
