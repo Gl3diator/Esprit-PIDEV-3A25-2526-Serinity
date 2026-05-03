@@ -214,7 +214,7 @@ final class DashboardController extends AbstractUserUiController
     {
         $this->currentUser();
 
-        return $this->redirectToRoute('user_ui_sommeil_list');
+        return $this->redirectToRoute('app_sommeil_list');
     }
 
     private function isWeeklyTrendReviewed(Request $request): bool

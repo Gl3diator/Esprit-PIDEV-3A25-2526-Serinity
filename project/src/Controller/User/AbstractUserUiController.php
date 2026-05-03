@@ -111,15 +111,23 @@ abstract class AbstractUserUiController extends AbstractController
         ];
 
         $items[] = [
-            'label' => 'Sleep',
-            'route' => 'user_ui_sommeil_list',
-            'icon' => 'bedtime',
-            'section' => 'modules',
-            'children' => [
-                ['label' => 'Sommail', 'route' => 'user_ui_sommeil_list', 'icon' => 'bedtime'],
-                ['label' => 'Reves management', 'route' => 'user_ui_reve_index', 'icon' => 'nights_stay'],
-            ],
-        ];
+    'label' => 'Sleep',
+    'route' => 'app_sommeil_list',
+    'icon' => 'bedtime',
+    'section' => 'modules',
+    'children' => [
+        [
+            'label' => 'Gestion Sommeil',
+            'route' => 'app_sommeil_list',
+            'icon' => 'bedtime'
+        ],
+        [
+            'label' => 'Gestion Rêves',
+            'route' => 'app_reve_index',
+            'icon' => 'nights_stay'
+        ],
+    ],
+];
 
         return array_map(static function (array $item) use ($activeRoute): array {
             $children = $item['children'] ?? [];
