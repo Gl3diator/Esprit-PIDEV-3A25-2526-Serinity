@@ -20,6 +20,8 @@ final class AdminSommeilController extends AbstractController
         EntityManagerInterface $entityManager,
         PaginatorInterface $paginator
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $sommeilEntities = $entityManager->getRepository(Sommeil::class)->findBy([], ['id' => 'DESC']);
         $reveEntities = $entityManager->getRepository(Reves::class)->findBy([], ['id' => 'DESC']);
 
@@ -86,7 +88,7 @@ final class AdminSommeilController extends AbstractController
                 case 'Moyenne':
                     $qualiteMoyenne++;
                     break;
-                case 'Mauvaise':
+                default:
                     $qualiteMauvaise++;
                     break;
             }
@@ -107,7 +109,7 @@ final class AdminSommeilController extends AbstractController
             $sommeils[] = [
                 'id' => $sommeil->getId(),
                 'user_id' => $userId,
-                'user_label' => 'Utilisateur #' . $userId,
+                'user_label' => $userId ? 'Utilisateur #' . $userId : 'Utilisateur inconnu',
                 'user_avatar' => 'U',
                 'date_nuit' => $sommeil->getDateNuit(),
                 'duree' => $duree,
@@ -115,6 +117,7 @@ final class AdminSommeilController extends AbstractController
                 'qualite_score' => $qualiteScore,
                 'heure_coucher' => $sommeil->getHeureCoucher() ?? '-',
                 'heure_reveil' => $sommeil->getHeureReveil() ?? '-',
+                'humeur_reveil' => $sommeil->getHumeurReveil() ?? '-',
                 'statut_label' => $statutLabel,
                 'statut_class' => $statutClass,
             ];
@@ -211,13 +214,67 @@ final class AdminSommeilController extends AbstractController
         return $this->render('sleep/admin/sommeil.html.twig', [
             'nav' => $this->buildNav('app_admin_sommeil_index'),
             'userName' => $this->getUser()?->getUserIdentifier() ?? 'Admin',
-
             'sommeils' => $paginationSommeils,
             'reves' => $paginationReves,
             'pagination_sommeils' => $paginationSommeils,
             'pagination_reves' => $paginationReves,
             'kpis' => $kpis,
         ]);
+    }
+
+    #[Route('/modal/sommeil/{id}', name: 'modal_sommeil_show', methods: ['GET'])]
+    public function modalSommeil(Sommeil $sommeil): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('sleep/admin/_modal_sommeil_show.html.twig', [
+            'sommeil' => $sommeil,
+        ]);
+    }
+
+    #[Route('/modal/reve/{id}', name: 'modal_reve_show', methods: ['GET'])]
+    public function modalReve(Reves $reve): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('sleep/admin/_modal_reve_show.html.twig', [
+            'reve' => $reve,
+            'sommeil' => $reve->getSommeil(),
+        ]);
+    }
+
+    #[Route('/delete/sommeil/{id}', name: 'delete_sommeil', methods: ['POST', 'DELETE'])]
+    public function deleteSommeil(
+        Request $request,
+        Sommeil $sommeil,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($this->isCsrfTokenValid('delete_sommeil_' . $sommeil->getId(), (string) $request->request->get('_token'))) {
+            $entityManager->remove($sommeil);
+            $entityManager->flush();
+            $this->addFlash('success', 'La nuit a été supprimée avec succès.');
+        }
+
+        return $this->redirectToRoute('app_admin_sommeil_index');
+    }
+
+    #[Route('/delete/reve/{id}', name: 'delete_reve', methods: ['POST', 'DELETE'])]
+    public function deleteReve(
+        Request $request,
+        Reves $reve,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($this->isCsrfTokenValid('delete_reve_' . $reve->getId(), (string) $request->request->get('_token'))) {
+            $entityManager->remove($reve);
+            $entityManager->flush();
+            $this->addFlash('success', 'Le rêve a été supprimé avec succès.');
+        }
+
+        return $this->redirectToRoute('app_admin_sommeil_index');
     }
 
     private function mapEmotionClass(string $humeur): string
@@ -256,9 +313,7 @@ final class AdminSommeilController extends AbstractController
             ['section' => 'Users management', 'label' => 'Consultations', 'route' => 'ac_ui_consultations', 'icon' => 'medical_services'],
             ['section' => 'Users management', 'label' => 'Exercises', 'route' => 'ac_ui_exercises', 'icon' => 'self_improvement'],
             ['section' => 'Users management', 'label' => 'Forum', 'route' => 'ac_ui_forum', 'icon' => 'forum'],
-
             ['section' => 'Users management', 'label' => 'Sleep', 'route' => 'app_admin_sommeil_index', 'icon' => 'hotel'],
-
             [
                 'section' => 'Users management',
                 'label' => 'Mood',
