@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: SommeilRepository::class)]
 #[ORM\Table(name: 'sommeil')]
@@ -94,8 +95,9 @@ class Sommeil
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(name: 'user_id', type: "integer", options: ['default' => 1])]
-    private int $userId = 1;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private ?User $user = null;
 
     /** @var Collection<int, Reves> */
     #[ORM\OneToMany(mappedBy: "sommeil", targetEntity: Reves::class, cascade: ['persist', 'remove'])]
@@ -254,15 +256,20 @@ class Sommeil
         return $this;
     }
 
-    public function getUserId(): int
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(int $value): static
+    public function setUser(?User $user): static
     {
-        $this->userId = $value;
+        $this->user = $user;
         return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->user?->getId();
     }
 
     /** @return Collection<int, Reves> */
