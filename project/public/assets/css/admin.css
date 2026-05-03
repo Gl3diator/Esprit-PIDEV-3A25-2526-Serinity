@@ -2,9 +2,74 @@
  * ═══════════════════════════════════════════════════════════════════
  *  SERENITY SLEEP — admin.css
  *  Dashboard Admin unifié : Sleep · Exercice · Mood
- *  Thème : sombre/nuit avec accents teal/or/lavande par module
+ *  Compatible thème clair/sombre — les variables --adm-* et --sn-admin-*
+ *  s'adaptent automatiquement au thème de la template parente.
  * ═══════════════════════════════════════════════════════════════════
  */
+
+/* ══════════════════════════════════════════════════════════════════
+   BRIDGE THÈME — Variables sémantiques --adm-*
+   Ces valeurs sont redéfinies par la template parente via
+   [data-theme="dark"] / [data-theme="light"] ou prefers-color-scheme.
+   Surcharge ici pour le thème clair (défaut).
+══════════════════════════════════════════════════════════════════ */
+:root, [data-theme="light"] {
+  /* Surfaces */
+  --adm-bg:             #f4f6f9;
+  --adm-surface:        #ffffff;
+  --adm-surface-2:      #f0f4f8;
+  --adm-surface-3:      #e8edf3;
+  --adm-surface-offset: rgba(0, 0, 0, 0.035);
+  --adm-surface-dynamic: rgba(0, 0, 0, 0.06);
+  /* Borders */
+  --adm-border:         rgba(0, 50, 90, 0.12);
+  --adm-border-soft:    rgba(0, 50, 90, 0.07);
+  /* Text */
+  --adm-text:           #0f2233;
+  --adm-text-muted:     #4a6882;
+  --adm-text-faint:     #8da8be;
+  /* Layout */
+  --adm-sidebar-w:      240px;
+  --adm-topbar-h:       60px;
+}
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --adm-bg:             #070e18;
+  --adm-surface:        #0d1625;
+  --adm-surface-2:      #111d2e;
+  --adm-surface-3:      #152337;
+  --adm-surface-offset: rgba(255, 255, 255, 0.04);
+  --adm-surface-dynamic: rgba(255, 255, 255, 0.07);
+  /* Borders */
+  --adm-border:         rgba(148, 184, 216, 0.13);
+  --adm-border-soft:    rgba(148, 184, 216, 0.07);
+  /* Text */
+  --adm-text:           #e8f2fa;
+  --adm-text-muted:     #8aaec6;
+  --adm-text-faint:     #4d6d85;
+  /* Layout */
+  --adm-sidebar-w:      240px;
+  --adm-topbar-h:       60px;
+}
+
+/* Fallback système si pas de [data-theme] sur <html> */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --adm-bg:             #070e18;
+    --adm-surface:        #0d1625;
+    --adm-surface-2:      #111d2e;
+    --adm-surface-3:      #152337;
+    --adm-surface-offset: rgba(255, 255, 255, 0.04);
+    --adm-surface-dynamic: rgba(255, 255, 255, 0.07);
+    --adm-border:         rgba(148, 184, 216, 0.13);
+    --adm-border-soft:    rgba(148, 184, 216, 0.07);
+    --adm-text:           #e8f2fa;
+    --adm-text-muted:     #8aaec6;
+    --adm-text-faint:     #4d6d85;
+  }
+}
+
 @import url('tokens.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 
@@ -83,7 +148,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--adm-text);
   white-space: nowrap;
   letter-spacing: 0.01em;
 }
@@ -130,10 +195,10 @@ body {
 }
 .adm-nav-icon svg { width: 16px; height: 16px; }
 
-.adm-nav-item:hover { background: rgba(255,255,255,0.055); color: var(--adm-text); }
+.adm-nav-item:hover { background: var(--adm-surface-dynamic); color: var(--adm-text); }
 
 /* États actifs par module */
-.adm-nav-item.active { color: #fff; font-weight: 600; }
+.adm-nav-item.active { color: var(--adm-text); font-weight: 600; }
 .adm-nav-item.active.mod-users    { background: rgba(200,200,210,0.10); }
 .adm-nav-item.active.mod-sommeil  { background: rgba(12,165,169,0.14); color: var(--sn-teal); }
 .adm-nav-item.active.mod-exercice { background: rgba(16,185,129,0.14); color: var(--sn-emerald); }
@@ -143,7 +208,7 @@ body {
 
 .adm-nav-badge {
   margin-left: auto;
-  background: rgba(255,255,255,0.07);
+  background: var(--adm-surface-dynamic);
   color: var(--adm-text-muted);
   font-size: 0.68rem; font-weight: 700;
   padding: 0.1rem 0.5rem;
@@ -167,7 +232,7 @@ body {
   font-size: 0.82rem;
   transition: background var(--t-fast), color var(--t-fast);
 }
-.adm-sidebar-back:hover { background: rgba(255,255,255,0.05); color: var(--adm-text); }
+.adm-sidebar-back:hover { background: var(--adm-surface-offset); color: var(--adm-text); }
 
 /* ══════════════════════════════════════════════════════════════════
    TOPBAR
@@ -193,7 +258,7 @@ body {
   transition: background var(--t-fast), color var(--t-fast);
   display: flex; align-items: center;
 }
-.adm-sidebar-toggle:hover { background: rgba(255,255,255,0.06); color: var(--adm-text); }
+.adm-sidebar-toggle:hover { background: var(--adm-surface-dynamic); color: var(--adm-text); }
 
 .adm-topbar-breadcrumb {
   display: flex;
@@ -212,13 +277,13 @@ body {
   position: relative;
   width: 36px; height: 36px;
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.04);
+  background: var(--adm-surface-offset);
   border: 1px solid var(--adm-border);
   display: flex; align-items: center; justify-content: center;
   color: var(--adm-text-muted);
   transition: background var(--t-fast), color var(--t-fast);
 }
-.adm-topbar-btn:hover { background: rgba(255,255,255,0.08); color: var(--adm-text); }
+.adm-topbar-btn:hover { background: var(--adm-surface-dynamic); color: var(--adm-text); }
 
 .adm-notif-dot {
   position: absolute; top: 7px; right: 7px;
@@ -266,13 +331,13 @@ body {
   font-family: var(--font-display);
   font-size: 1.6rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--adm-text);
   line-height: 1.2;
 }
 .adm-page-subtitle { font-size: 0.88rem; color: var(--adm-text-muted); margin-top: 0.3rem; }
 
 .adm-date-badge {
-  background: rgba(255,255,255,0.05);
+  background: var(--adm-surface-offset);
   border: 1px solid var(--adm-border);
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-full);
@@ -299,7 +364,7 @@ body {
   gap: 1rem;
   transition: border-color var(--t-fast), transform var(--t-fast);
 }
-.adm-kpi-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.12); }
+.adm-kpi-card:hover { transform: translateY(-2px); border-color: var(--adm-border); }
 
 .adm-kpi-icon {
   width: 44px; height: 44px;
@@ -318,7 +383,7 @@ body {
 .kpi-consult .adm-kpi-icon { background: rgba(251,146,60,0.15);  color: var(--sn-orange); }
 
 .adm-kpi-info { display: flex; flex-direction: column; }
-.adm-kpi-value { font-size: 1.6rem; font-weight: 700; color: #fff; line-height: 1; }
+.adm-kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--adm-text); line-height: 1; }
 .adm-kpi-label { font-size: 0.78rem; color: var(--adm-text-muted); margin-top: 0.3rem; }
 
 .adm-kpi-trend {
@@ -409,7 +474,7 @@ body {
   display: flex; align-items: center; justify-content: center;
 }
 .adm-mc-icon svg { width: 20px; height: 20px; }
-.adm-mc-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.adm-mc-title { font-size: 0.95rem; font-weight: 600; color: var(--adm-text); }
 .adm-mc-desc  { font-size: 0.8rem; color: var(--adm-text-muted); line-height: 1.55; flex: 1; }
 .adm-mc-arrow {
   font-size: 1.1rem;
@@ -440,7 +505,7 @@ body {
   gap: 1rem;
   flex-wrap: wrap;
 }
-.adm-table-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.adm-table-title { font-size: 0.95rem; font-weight: 600; color: var(--adm-text); }
 
 .adm-table {
   width: 100%;
@@ -464,7 +529,7 @@ body {
   color: var(--adm-text);
 }
 .adm-table tbody tr:last-child td { border-bottom: none; }
-.adm-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+.adm-table tbody tr:hover { background: var(--adm-surface-offset); }
 
 /* ── Badges admin ─────────────────────────────────────────────── */
 .adm-badge {
@@ -517,9 +582,9 @@ body {
   border-color: var(--adm-border);
 }
 .adm-btn-outline:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--adm-surface-offset);
   color: var(--adm-text);
-  border-color: rgba(255,255,255,0.15);
+  border-color: var(--adm-border);
 }
 
 .adm-btn-danger {
@@ -587,7 +652,7 @@ body {
   justify-content: space-between;
   gap: 0.75rem;
 }
-.adm-card-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.adm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--adm-text); }
 .adm-card-body  { padding: 1.25rem; }
 .adm-card-footer {
   padding: 0.85rem 1.25rem;
@@ -609,7 +674,7 @@ body {
   gap: 0.5rem;
 }
 .adm-stat-panel-label { font-size: 0.78rem; color: var(--adm-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-.adm-stat-panel-value { font-size: 2rem; font-weight: 700; color: #fff; line-height: 1; }
+.adm-stat-panel-value { font-size: 2rem; font-weight: 700; color: var(--adm-text); line-height: 1; }
 .adm-stat-panel-note  { font-size: 0.8rem; color: var(--adm-text-faint); }
 
 /* ── Sommeil admin spécifique ────────────────────────────────── */
@@ -659,7 +724,7 @@ body {
   border: 1px solid transparent;
   transition: all var(--t-fast);
 }
-.adm-page-btn:hover { background: rgba(255,255,255,0.05); color: var(--adm-text); }
+.adm-page-btn:hover { background: var(--adm-surface-offset); color: var(--adm-text); }
 .adm-page-btn.active { background: var(--sn-teal); color: #fff; border-color: var(--sn-teal); }
 
 /* ── Search bar admin ────────────────────────────────────────── */
@@ -701,7 +766,7 @@ body {
   text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--sn-emerald); margin-bottom: 0.4rem; display: block;
 }
-.sn-admin-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: #fff; }
+.sn-admin-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--adm-text); }
 .sn-admin-text  { font-size: 0.88rem; color: var(--adm-text-muted); line-height: 1.6; }
 .sn-admin-actions { display: flex; gap: 0.65rem; flex-wrap: wrap; align-items: flex-start; }
 .sn-admin-btn { /* hérite de .adm-btn */ }
@@ -716,10 +781,10 @@ body {
 .sn-admin-panel-soft { border-color: var(--adm-border-soft); }
 .sn-admin-metric-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.65rem; }
 .sn-admin-eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--adm-text-faint); margin-bottom: 0.3rem; }
-.sn-admin-metric-value { font-size: 2.5rem; font-weight: 700; color: #fff; line-height: 1; }
+.sn-admin-metric-value { font-size: 2.5rem; font-weight: 700; color: var(--adm-text); line-height: 1; }
 .sn-admin-metric-icon { font-size: 2rem; color: var(--sn-emerald); opacity: 0.5; }
 .sn-admin-panel-header { margin-bottom: 0.75rem; }
-.sn-admin-panel-title { font-size: 1rem; font-weight: 600; color: #fff; }
+.sn-admin-panel-title { font-size: 1rem; font-weight: 600; color: var(--adm-text); }
 .sn-admin-panel-body { display: flex; flex-direction: column; gap: 0.85rem; }
 .sn-admin-panel-note { font-size: 0.8rem; color: var(--adm-text-faint); margin-top: 0.5rem; }
 .sn-admin-info {
@@ -730,7 +795,7 @@ body {
   border: 1px solid var(--adm-border-soft);
   border-radius: var(--radius);
 }
-.sn-admin-info-title { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem; }
+.sn-admin-info-title { font-size: 0.9rem; font-weight: 600; color: var(--adm-text); margin-bottom: 0.2rem; }
 
 /* Modal de confirmation admin */
 .sn-confirm-modal {
@@ -740,7 +805,7 @@ body {
 .sn-confirm-modal[hidden] { display: none; }
 .sn-confirm-modal__backdrop {
   position: absolute; inset: 0;
-  background: rgba(5, 10, 18, 0.75);
+  background: oklch(from var(--adm-bg) l c h / 0.75);
   backdrop-filter: blur(4px);
 }
 .sn-confirm-modal__dialog {
@@ -749,12 +814,12 @@ body {
   background: var(--adm-surface-2);
   border: 1px solid var(--adm-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-lg, 0 24px 64px oklch(0 0 0 / 0.3));
   animation: sn-scale-in 200ms var(--ease) both;
 }
 .sn-confirm-modal__content { padding: 1.75rem; }
 .sn-confirm-modal__eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--adm-text-faint); margin-bottom: 0.6rem; }
-.sn-confirm-modal__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: #fff; margin-bottom: 0.65rem; }
+.sn-confirm-modal__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--adm-text); margin-bottom: 0.65rem; }
 .sn-confirm-modal__message { font-size: 0.9rem; color: var(--adm-text-muted); line-height: 1.6; margin-bottom: 1.5rem; }
 .sn-confirm-modal__actions { display: flex; justify-content: flex-end; gap: 0.65rem; }
 .sn-modal-open { overflow: hidden; }
@@ -771,7 +836,7 @@ body {
   gap: 0.85rem;
 }
 .mood-admin-card h5 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sn-lavender); }
-.mood-admin-card h2 { font-family: var(--font-display); font-size: 1.4rem; color: #fff; }
+.mood-admin-card h2 { font-family: var(--font-display); font-size: 1.4rem; color: var(--adm-text); }
 .mood-admin-card p  { font-size: 0.88rem; color: var(--adm-text-muted); line-height: 1.6; }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -807,7 +872,34 @@ body {
 ========================================================= */
 
 /* ---------- Variables fallback ---------- */
-:root {
+[data-theme="light"], :root:not([data-theme]) {
+  --sn-admin-bg:             #f4f6f9;
+  --sn-admin-surface:        #ffffff;
+  --sn-admin-surface-2:      #f0f4f8;
+  --sn-admin-surface-3:      #e8edf3;
+  --sn-admin-border:         rgba(0, 60, 100, 0.10);
+  --sn-admin-border-strong:  rgba(0, 60, 100, 0.18);
+  --sn-admin-text:           #0f2233;
+  --sn-admin-text-soft:      #2c4a63;
+  --sn-admin-text-muted:     #5a7a96;
+  --sn-admin-accent:         #0aa8b0;
+  --sn-admin-accent-dark:    #087f87;
+  --sn-admin-accent-soft:    rgba(10, 168, 176, 0.12);
+  --sn-admin-primary-soft:   rgba(37, 99, 235, 0.12);
+  --sn-admin-primary:        #2563eb;
+  --sn-admin-danger:         #dc2626;
+  --sn-admin-danger-soft:    rgba(220, 38, 38, 0.10);
+  --sn-admin-warning:        #d97706;
+  --sn-admin-warning-soft:   rgba(217, 119, 6, 0.12);
+  --sn-admin-success:        #16a34a;
+  --sn-admin-success-soft:   rgba(22, 163, 74, 0.12);
+  --sn-admin-shadow:         0 20px 55px rgba(0, 60, 100, 0.12);
+  --sn-admin-radius:         22px;
+  --sn-admin-radius-md:      16px;
+  --sn-admin-radius-sm:      12px;
+}
+
+[data-theme="dark"] {
   --sn-admin-bg: #07111f;
   --sn-admin-surface: #0b1f36;
   --sn-admin-surface-2: #102947;
@@ -850,7 +942,7 @@ body.sn-admin-body {
 }
 
 .sn-admin-shell {
-  background: linear-gradient(180deg, rgba(10, 25, 44, 0.98), rgba(8, 20, 36, 0.98));
+  background: var(--adm-surface-2);
   border: 1px solid var(--sn-admin-border);
   border-radius: 28px;
   box-shadow: var(--sn-admin-shadow);
@@ -863,8 +955,8 @@ body.sn-admin-body {
 
 /* ---------- Navbar admin ---------- */
 .sn-admin-navbar {
-  background: linear-gradient(90deg, rgba(7, 20, 36, 0.96), rgba(11, 28, 49, 0.96)) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: var(--adm-surface) !important;
+  border-bottom: 1px solid var(--adm-border);
   backdrop-filter: blur(10px);
 }
 
@@ -889,17 +981,17 @@ body.sn-admin-body {
 .sn-admin-brand-text strong {
   font-size: 0.95rem;
   letter-spacing: 0.08em;
-  color: #1ecad3;
+  color: var(--sn-admin-accent);
 }
 
 .sn-admin-brand-text small {
   font-size: 0.72rem;
   letter-spacing: 0.16em;
-  color: #a8bfd6;
+  color: var(--sn-admin-text-muted);
 }
 
 .sn-admin-nav .nav-link {
-  color: #d7e5f0 !important;
+  color: var(--sn-admin-text-soft) !important;
   font-weight: 500;
   border-radius: 10px;
   padding: 0.55rem 0.95rem !important;
@@ -908,8 +1000,8 @@ body.sn-admin-body {
 
 .sn-admin-nav .nav-link:hover,
 .sn-admin-nav .nav-link:focus {
-  background: rgba(255,255,255,0.06);
-  color: #ffffff !important;
+  background: var(--adm-surface-dynamic);
+  color: var(--adm-text) !important;
 }
 
 /* ---------- Page structure ---------- */
@@ -1014,16 +1106,16 @@ button.sn-btn {
 }
 
 .sn-btn-outline {
-  background: rgba(255,255,255,0.02);
-  border-color: rgba(255,255,255,0.14);
+  background: var(--adm-surface-offset);
+  border-color: var(--adm-border);
   color: var(--sn-admin-text) !important;
 }
 
 .sn-btn-outline:hover,
 .sn-btn-outline:focus {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.22);
-  color: #ffffff !important;
+  background: var(--adm-surface-dynamic);
+  border-color: var(--adm-border);
+  color: var(--adm-text) !important;
 }
 
 .sn-admin-btn-block {
@@ -1032,15 +1124,15 @@ button.sn-btn {
 
 /* ---------- Panels ---------- */
 .sn-admin-panel {
-  background: linear-gradient(180deg, rgba(11, 28, 49, 0.96), rgba(9, 23, 41, 0.96));
+  background: var(--adm-surface-2);
   border: 1px solid var(--sn-admin-border);
   border-radius: var(--sn-admin-radius);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  box-shadow: inset 0 1px 0 var(--adm-surface-offset);
   overflow: hidden;
 }
 
 .sn-admin-panel-soft {
-  background: linear-gradient(180deg, rgba(12, 31, 56, 0.95), rgba(10, 26, 47, 0.95));
+  background: var(--adm-surface-3, var(--adm-surface-2));
 }
 
 .sn-admin-panel-highlight {
@@ -1052,7 +1144,7 @@ button.sn-btn {
 
 .sn-admin-panel-header {
   padding: 1.35rem 1.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--adm-border);
 }
 
 .sn-admin-panel-header-inline {
@@ -1081,7 +1173,7 @@ button.sn-btn {
   min-height: 34px;
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
+  background: var(--adm-surface-dynamic);
   color: var(--sn-admin-text-soft);
   font-size: 0.84rem;
   font-weight: 700;
@@ -1108,7 +1200,7 @@ button.sn-btn {
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1;
   margin: 0;
-  color: #ffffff;
+  color: var(--adm-text);
   font-weight: 800;
 }
 
@@ -1137,8 +1229,8 @@ button.sn-btn {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--adm-surface-offset);
+  border: 1px solid var(--adm-border);
   border-radius: 16px;
   padding: 1.15rem 1.2rem;
 }
@@ -1201,8 +1293,8 @@ button.sn-btn {
   width: 100%;
   min-height: 48px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: var(--adm-surface-offset) !important;
+  border: 1px solid var(--adm-border) !important;
   color: #f8fcff !important;
   padding: 0.75rem 0.95rem;
   font-size: 0.95rem;
@@ -1218,12 +1310,12 @@ button.sn-btn {
 .form-control.sn-admin-input:focus {
   border-color: rgba(30,202,211,0.65) !important;
   box-shadow: 0 0 0 4px rgba(30,202,211,0.12) !important;
-  background: rgba(255,255,255,0.07) !important;
+  background: var(--adm-surface-dynamic) !important;
   color: #fff !important;
 }
 
 .sn-admin-input option {
-  color: #111;
+  color: var(--adm-text);
 }
 
 .sn-admin-textarea {
@@ -1240,7 +1332,7 @@ button.sn-btn {
   flex-wrap: wrap;
   margin-top: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--adm-border);
 }
 
 .sn-admin-form-note {
@@ -1330,19 +1422,19 @@ button.sn-btn {
 
 .sn-admin-table thead th {
   padding: 1rem 0.9rem;
-  background: rgba(255,255,255,0.04);
+  background: var(--adm-surface-offset);
   color: var(--sn-admin-text-soft);
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--adm-border);
   white-space: nowrap;
 }
 
 .sn-admin-table tbody td {
   padding: 1rem 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--adm-border);
   vertical-align: middle;
   color: var(--sn-admin-text);
 }
@@ -1352,7 +1444,7 @@ button.sn-btn {
 }
 
 .sn-admin-table tbody tr:hover {
-  background: rgba(255,255,255,0.025);
+  background: var(--adm-surface-offset);
 }
 
 .sn-admin-cell-main {
@@ -1361,7 +1453,7 @@ button.sn-btn {
 
 .sn-admin-cell-title {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--adm-text);
   font-size: 0.98rem;
   margin-bottom: 0.2rem;
 }
@@ -1444,7 +1536,7 @@ button.sn-btn {
   font-weight: 700;
   transition: all 0.18s ease;
   cursor: pointer;
-  background: rgba(255,255,255,0.03);
+  background: var(--adm-surface-offset);
   color: #eef8ff;
 }
 
@@ -1464,13 +1556,13 @@ button.sn-btn {
 }
 
 .sn-admin-action-ghost {
-  background: rgba(255,255,255,0.04);
+  background: var(--adm-surface-offset);
   color: #eaf6ff;
-  border-color: rgba(255,255,255,0.08);
+  border-color: var(--adm-border);
 }
 
 .sn-admin-action-ghost:hover {
-  background: rgba(255,255,255,0.08);
+  background: var(--adm-surface-dynamic);
   color: #fff;
 }
 
@@ -1507,13 +1599,13 @@ button.sn-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.04);
+  background: var(--adm-surface-offset);
   color: var(--sn-admin-accent);
   font-size: 1.6rem;
 }
 
 .sn-admin-empty h3 {
-  color: #fff;
+  color: var(--adm-text);
   font-size: 1.25rem;
   font-weight: 800;
   margin-bottom: 0.45rem;
@@ -1533,8 +1625,8 @@ button.sn-btn {
 }
 
 .sn-admin-meta-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--adm-surface-offset);
+  border: 1px solid var(--adm-border);
   border-radius: 16px;
   padding: 1rem;
 }
@@ -1543,7 +1635,7 @@ button.sn-btn {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--adm-text);
 }
 
 /* ---------- Modal ---------- */
@@ -1560,7 +1652,7 @@ button.sn-btn {
 .sn-confirm-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(2, 8, 16, 0.72);
+  background: oklch(from var(--adm-bg) l c h / 0.72);
   backdrop-filter: blur(4px);
 }
 
@@ -1573,10 +1665,10 @@ button.sn-btn {
 }
 
 .sn-confirm-modal__content {
-  background: linear-gradient(180deg, rgba(11, 28, 49, 0.98), rgba(9, 23, 41, 0.98));
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--adm-surface-2);
+  border: 1px solid var(--adm-surface-dynamic);
   border-radius: 24px;
-  box-shadow: 0 28px 60px rgba(0,0,0,0.38);
+  box-shadow: var(--shadow-lg, 0 28px 60px oklch(0 0 0 / 0.25));
   padding: 1.6rem;
 }
 
@@ -1591,7 +1683,7 @@ button.sn-btn {
 
 .sn-confirm-modal__title {
   margin: 0 0 0.55rem;
-  color: #fff;
+  color: var(--adm-text);
   font-size: 1.45rem;
   font-weight: 800;
 }
@@ -1724,7 +1816,7 @@ body.sn-modal-open {
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.1;
   font-weight: 700;
-  color: #f8fbff;
+  color: var(--adm-text);
 }
 
 .adm-title-icon {
@@ -1757,7 +1849,7 @@ body.sn-modal-open {
 .adm-page-subtitle {
   margin-top: 0.75rem;
   margin-bottom: 0;
-  color: #7fa4c4;
+  color: var(--adm-text-muted);
   font-size: 1rem;
   line-height: 1.6;
   max-width: 720px;
@@ -1781,9 +1873,9 @@ body.sn-modal-open {
   min-height: 44px;
   padding: 0 0.85rem;
   border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: #dbe8f3;
+  background: var(--adm-surface-offset);
+  border: 1px solid var(--adm-border);
+  color: var(--adm-text);
 }
 
 .adm-search-mini svg {
@@ -1795,14 +1887,14 @@ body.sn-modal-open {
   background: transparent !important;
   border: none !important;
   outline: none !important;
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
   font-size: 0.92rem;
   min-width: 180px;
   box-shadow: none !important;
 }
 
 .adm-search-mini input::placeholder {
-  color: rgba(255,255,255,0.55) !important;
+  color: var(--adm-text-faint) !important;
 }
 
 /* Select filtre */
@@ -1810,9 +1902,9 @@ body.sn-modal-open {
   min-height: 44px;
   padding: 0 0.9rem;
   border-radius: 12px;
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  color: #ffffff !important;
+  background: var(--adm-surface-offset) !important;
+  border: 1px solid var(--adm-border) !important;
+  color: var(--adm-text) !important;
   font-size: 0.92rem;
   outline: none;
   box-shadow: none !important;
@@ -1825,8 +1917,8 @@ body.sn-modal-open {
 }
 
 .adm-filter-select option {
-  background: #0d1b2a;
-  color: #ffffff;
+  background: var(--adm-surface);
+  color: var(--adm-text);
 }
 
 /* ---------- Boutons principaux ---------- */
@@ -1842,7 +1934,7 @@ body.sn-modal-open {
   text-decoration: none !important;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
   cursor: pointer;
   transition: all 0.18s ease;
 }
@@ -1854,31 +1946,31 @@ body.sn-modal-open {
 /* Bouton Ajouter */
 .adm-btn-green {
   background: linear-gradient(180deg, #22c55e, #16a34a);
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
   box-shadow: 0 10px 22px rgba(34, 197, 94, 0.18);
 }
 
 .adm-btn-green:hover {
   background: linear-gradient(180deg, #2dd26a, #15803d);
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
 }
 
 /* ---------- En-tête tableau ---------- */
 .adm-table {
   width: 100%;
   border-collapse: collapse;
-  color: #ecf5fb;
+  color: var(--adm-text);
 }
 
 .adm-table thead th {
-  background: rgba(255,255,255,0.03);
-  color: #dce8f3 !important;
+  background: var(--adm-surface-offset);
+  color: var(--adm-text-muted) !important;
   font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 1rem 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--adm-border);
   white-space: nowrap;
 }
 
@@ -1886,7 +1978,7 @@ body.sn-modal-open {
 .adm-sort-btn {
   background: transparent;
   border: none;
-  color: #dce8f3 !important;
+  color: var(--adm-text-muted) !important;
   font-weight: 800;
   font-size: 0.82rem;
   cursor: pointer;
@@ -1897,22 +1989,22 @@ body.sn-modal-open {
 }
 
 .adm-sort-btn:hover {
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
 }
 
 .adm-sort-btn.is-active {
-  color: #67e8f9 !important;
+  color: var(--sn-teal) !important;
 }
 
 .adm-sort-arrows {
-  color: #7fb2c7;
+  color: var(--adm-text-faint);
   font-size: 0.8rem;
 }
 
 /* Colonne actions bien visible */
 .adm-col-actions,
 .adm-table th.adm-col-actions {
-  color: #67e8f9 !important;
+  color: var(--sn-teal) !important;
   text-align: center;
 }
 
@@ -1920,23 +2012,23 @@ body.sn-modal-open {
 .adm-table tbody td {
   color: #f2f8fc;
   padding: 1rem 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--adm-border);
   vertical-align: middle;
 }
 
 .adm-table tbody tr:hover {
-  background: rgba(255,255,255,0.025);
+  background: var(--adm-surface-offset);
 }
 
 .adm-td-title {
-  color: #ffffff;
+  color: var(--adm-text);
   font-weight: 700;
 }
 
 .adm-td-excerpt {
   display: block;
   margin-top: 0.2rem;
-  color: #9db6c8;
+  color: var(--adm-text-muted);
   font-size: 0.85rem;
 }
 
@@ -1948,8 +2040,8 @@ body.sn-modal-open {
   min-height: 28px;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.08);
-  color: #dce8f3;
+  background: var(--adm-surface-dynamic);
+  color: var(--adm-text-muted);
   font-weight: 700;
 }
 
@@ -1962,7 +2054,7 @@ body.sn-modal-open {
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--adm-text);
 }
 
 .adm-status-badge.good,
@@ -2014,7 +2106,7 @@ body.sn-modal-open {
 
 .adm-btn-blue:hover {
   background: rgba(59,130,246,0.25);
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
 }
 
 /* Modifier */
@@ -2026,7 +2118,7 @@ body.sn-modal-open {
 
 .adm-btn-yellow:hover {
   background: rgba(245,158,11,0.25);
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
 }
 
 /* Supprimer */
@@ -2038,7 +2130,7 @@ body.sn-modal-open {
 
 .adm-btn-red:hover {
   background: rgba(239,68,68,0.25);
-  color: #ffffff !important;
+  color: var(--adm-text) !important;
 }
 
 /* SVG visibles dans les boutons */
@@ -2055,14 +2147,14 @@ body.sn-modal-open {
 
 /* ---------- Titre du tableau ---------- */
 .adm-table-title {
-  color: #f8fbff !important;
+  color: var(--adm-text) !important;
   font-size: 1.05rem;
   font-weight: 800;
   margin: 0;
 }
 
 .adm-table-count {
-  color: #8fb3c8;
+  color: var(--adm-text-muted);
   font-weight: 700;
 }
 

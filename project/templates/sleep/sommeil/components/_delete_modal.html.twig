@@ -1,49 +1,28 @@
-<div id="deleteModal"
-     style="
-         position: fixed;
-         inset: 0;
-         z-index: 999999;
-         display: none;
-         align-items: center;
-         justify-content: center;
-         padding: 24px;
-         background: rgba(10, 40, 45, 0.35);
-         backdrop-filter: blur(4px);
-     ">
+<div class="ac-modal" id="deleteModal" hidden>
+    <div class="ac-modal-content">
 
-    <div class="sl-delete-dialog"
-         style="
-             width: min(460px, 100%);
-             background: #e9fbfc;
-             border: 1px solid #b3ecf1;
-             border-radius: 22px;
-             padding: 28px;
-             box-shadow: 0 24px 60px rgba(19, 97, 99, 0.25);
-         ">
+        <div class="ac-row-between" style="margin-bottom: 1rem;">
+            <h3 style="font-size: 1rem; font-weight: 700;">Supprimer cette nuit ?</h3>
+            <button type="button" class="ac-icon-btn"
+                    onclick="closeDeleteModal()" aria-label="Fermer">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
 
-        <h2 style="margin: 0 0 12px; color: #06283a; font-size: 1.6rem; font-weight: 800;">
-            Supprimer cette nuit ?
-        </h2>
-
-        <p id="deleteModalBody" style="margin: 0 0 20px; color: #06283a; font-size: 1rem;">
+        <p id="deleteModalBody" style="color: var(--color-text-muted); margin-bottom: 1.25rem;">
             Supprimer cette nuit ? Action irréversible.
         </p>
 
         <form id="deleteForm" method="post">
             <input type="hidden" name="_token" value="">
-
-            <div style="display: flex; gap: 10px; justify-content: flex-start;">
-                <button type="button"
-                        class="rv-btn rv-btn--secondary"
-                        onclick="closeDeleteModal()">
-                    Annuler
-                </button>
-
-                <button type="submit"
-                        class="rv-btn rv-btn--danger">
+            <div class="ac-row-end">
+                <button type="button" class="ac-ghost-btn" onclick="closeDeleteModal()">Annuler</button>
+                <button type="submit" class="ac-danger-btn">
+                    <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
                     Supprimer
                 </button>
             </div>
         </form>
+
     </div>
 </div>

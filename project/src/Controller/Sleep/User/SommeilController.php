@@ -14,18 +14,15 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\User;
 
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
 {
     #[Route('/', name: 'app_sommeil_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $em): Response
+    public function index(): Response
     {
-        $sommeils = $em->getRepository(Sommeil::class)->findAll();
-
-        return $this->render('sleep/sommeil/index.html.twig', [
-            'sommeils' => $sommeils,
-        ]);
+        return $this->redirectToRoute('app_sommeil_list');
     }
 
     #[Route('/list', name: 'app_sommeil_list', methods: ['GET'])]
@@ -131,7 +128,7 @@ final class SommeilController extends AbstractController
             if ($form->isValid()) {
                 $sommeil->setCreatedAt(new \DateTimeImmutable());
                 $sommeil->setUpdatedAt(new \DateTimeImmutable());
-                $sommeil->setUserId(1);
+                $sommeil->setUser($this->getUser());
 
                 $em->persist($sommeil);
                 $em->flush();
