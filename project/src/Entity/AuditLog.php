@@ -33,7 +33,7 @@ class AuditLog
     #[ORM\Column(name: 'mac_address', type: Types::STRING, length: 17, nullable: true)]
     private ?string $macAddress = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 191, nullable: true)]
     private ?string $location = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]

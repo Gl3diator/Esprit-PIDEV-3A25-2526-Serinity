@@ -33,22 +33,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $googleId = null;
 
     /** Sensitive: password hash, never expose in API payloads. */
-    #[ORM\Column(type: Types::STRING, length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 191)]
     private string $password;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 191)]
     private string $role;
 
-    #[ORM\Column(name: 'presence_status', type: Types::STRING, length: 255)]
+    #[ORM\Column(name: 'presence_status', type: Types::STRING, length: 191)]
     private string $presenceStatus;
 
-    #[ORM\Column(name: 'account_status', type: Types::STRING, length: 255)]
+    #[ORM\Column(name: 'account_status', type: Types::STRING, length: 191)]
     private string $accountStatus;
 
     #[ORM\Column(name: 'face_recognition_enabled', type: Types::BOOLEAN)]
     private bool $faceRecognitionEnabled;
 
-    #[ORM\Column(name: 'totp_secret_encrypted', type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'totp_secret_encrypted', type: Types::STRING, length: 191, nullable: true)]
     private ?string $totpSecretEncrypted = null;
 
     #[ORM\Column(name: 'is_two_factor_enabled', type: Types::BOOLEAN)]
