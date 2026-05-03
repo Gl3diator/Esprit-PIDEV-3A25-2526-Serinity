@@ -39,11 +39,30 @@ abstract class AbstractUserUiController extends AbstractController
      */
     protected function buildNav(string $activeRoute): array
     {
+        $user = $this->getUser();
+        $role = $user ? $user->getRole() : '';
+
+        $consultationNav = $role === 'PATIENT' ? [
+            'label' => 'Rendez-vous',
+            'route' => 'app_patient_rdv',
+            'icon' => 'medical_services',
+            'section' => 'modules',
+            'children' => [
+                ['label' => 'Doctors', 'route' => 'app_doctors', 'icon' => 'people'],
+                ['label' => 'Mes rendez vous', 'route' => 'app_patient_rdv', 'icon' => 'calendar_month'],
+            ],
+        ] : [
+            'label' => 'Gestion des rendez vous',
+            'route' => 'app_therapist_rdv',
+            'icon' => 'calendar_month',
+            'section' => 'modules',
+        ];
+
         $items = [
             ['label' => 'Dashboard', 'route' => 'user_ui_dashboard', 'icon' => 'dashboard', 'section' => 'home'],
             ['label' => 'Profile', 'route' => 'user_ui_profile', 'icon' => 'person', 'section' => 'home'],
             ['label' => 'Settings', 'route' => 'user_ui_settings', 'icon' => 'settings', 'section' => 'home'],
-            ['label' => 'Consultations', 'route' => 'user_ui_consultations', 'icon' => 'medical_services', 'section' => 'modules'],
+            $consultationNav,
             ['label' => 'Exercises', 'route' => 'user_ui_exercises', 'icon' => 'fitness_center', 'section' => 'modules'],
             ['label' => 'Forum', 'route' => 'user_ui_forum', 'icon' => 'forum', 'section' => 'modules'],
             [
