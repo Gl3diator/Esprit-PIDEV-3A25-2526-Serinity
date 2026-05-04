@@ -72,10 +72,16 @@ parameters:
 
 
     app.openweather.api_key: '%env(string:OPENWEATHER_API_KEY)%'
-    app.openweather.lat:     '%env(float:OPENWEATHER_LAT)%'
-    app.openweather.lon:     '%env(float:OPENWEATHER_LON)%'
-    app.lm_studio.base_url:  '%env(string:LM_STUDIO_BASE_URL)%'
-    app.lm_studio.model:     '%env(string:LM_STUDIO_MODEL)%'
+
+    app.openweather.lat: '%env(float:OPENWEATHER_LAT)%'
+    app.openweather.lon: '%env(float:OPENWEATHER_LON)%'
+    app.lm_studio.base_url: '%env(string:LM_STUDIO_BASE_URL)%'
+    app.lm_studio.model: '%env(string:LM_STUDIO_MODEL)%'
+    app.mood_ml_api_enabled: '%env(bool:MOOD_ML_API_ENABLED)%'
+    app.mood_ml_api_base_url: '%env(string:MOOD_ML_API_BASE_URL)%'
+    app.mood_ml_api_prediction_route: '%env(string:MOOD_ML_API_PREDICTION_ROUTE)%'
+    app.mood_ml_api_key: '%env(string:MOOD_ML_API_KEY)%'
+    app.mood_ml_api_timeout: '%env(float:MOOD_ML_API_TIMEOUT)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -245,6 +251,15 @@ services:
     App\Service\SpamRateLimiterService:
         arguments:
             $spamBanDurationMinutes: '%app.spam_ban_duration_minutes%'
+
+    App\Service\AI\MoodPredictionClient:
+        arguments:
+            $enabled: '%app.mood_ml_api_enabled%'
+            $baseUrl: '%app.mood_ml_api_base_url%'
+            $predictionRoute: '%app.mood_ml_api_prediction_route%'
+            $apiKey: '%app.mood_ml_api_key%'
+            $timeout: '%app.mood_ml_api_timeout%'
+            $httpClient: '@http_client'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
