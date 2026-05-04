@@ -31,6 +31,17 @@ export default class extends Controller {
         'editEntryId',
         'editMoodLevelValue',
         'editSubmitButton',
+        'predictionButton',
+        'predictionModal',
+        'predictionRange',
+        'predictionScore',
+        'predictionTrend',
+        'predictionConfidence',
+        'predictionLabel',
+        'predictionWarning',
+        'predictionForecast',
+        'predictionInsights',
+        'predictionRecommendations',
     ];
 
     static values = {
@@ -39,6 +50,7 @@ export default class extends Controller {
         summaryUrl: String,
         updateUrlTemplate: String,
         deleteUrlTemplate: String,
+        predictionUrl: String,
     };
 
     connect() {
@@ -339,6 +351,265 @@ export default class extends Controller {
         }
 
         this.editModalTarget.hidden = true;
+    }
+
+        openPredictionModal(event = null) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        if (!this.hasPredictionModalTarget) {
+            return;
+        }
+
+        this.predictionModalTarget.hidden = false;
+        this.loadPrediction();
+    }
+
+    closePredictionModal(event = null) {
+        if (
+            event
+            && event.type === 'click'
+            && event.currentTarget === this.predictionModalTarget
+            && event.target !== this.predictionModalTarget
+        ) {
+            return;
+        }
+
+        if (this.hasPredictionModalTarget) {
+            this.predictionModalTarget.hidden = true;
+        }
+    }
+
+    async loadPrediction() {
+        if (!this.hasPredictionUrlValue) {
+            this.showToast('Prediction endpoint is not configured.', 'error');
+            return;
+        }
+
+        this.setPredictionLoading(true);
+
+        try {
+            const response = await fetch(this.predictionUrlValue, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
+            const body = await this.readJson(response);
+
+            if (!response.ok || !body?.success || !body.data?.prediction) {
+                throw new Error(body?.message || 'Failed to load next week prediction.');
+            }
+
+            this.renderPrediction(body.data);
+        } catch (error) {
+            this.showToast(error.message || 'Failed to load next week prediction.', 'error');
+            this.renderPredictionError(error.message || 'Prediction unavailable.');
+        } finally {
+            this.setPredictionLoading(false);
+        }
+    }
+
+    renderPrediction(data) {
+        const request = data.request || {};
+        const prediction = data.prediction || {};
+
+        if (this.hasPredictionRangeTarget) {
+            const from = request.weekStart || '--';
+            const to = request.weekEnd || '--';
+            const entries = Number(request.inputEntries || prediction.inputEntries || 0);
+            this.predictionRangeTarget.textContent = `Based on your entries from ${from} → ${to} (${entries} entries).`;
+        }
+
+        if (this.hasPredictionScoreTarget) {
+            this.predictionScoreTarget.textContent = this.formatPredictionNumber(
+                prediction.predictedNextWeekScore ?? prediction.nextWeekAverage ?? 0,
+            );
+        }
+
+        if (this.hasPredictionTrendTarget) {
+            this.predictionTrendTarget.textContent = this.formatPredictionLabel(prediction.trend || 'stable');
+        }
+
+        if (this.hasPredictionConfidenceTarget) {
+            this.predictionConfidenceTarget.textContent = String(Number(prediction.confidence || 0));
+        }
+
+        if (this.hasPredictionLabelTarget) {
+            this.predictionLabelTarget.textContent = this.formatPredictionLabel(prediction.label || 'watch');
+        }
+
+        if (this.hasPredictionWarningTarget) {
+            const warning = typeof prediction.warning === 'string' ? prediction.warning.trim() : '';
+            this.predictionWarningTarget.hidden = warning === '';
+
+            const warningText = this.predictionWarningTarget.querySelector('p');
+            if (warningText) {
+                warningText.textContent = warning || 'Prediction quality is limited.';
+            }
+        }
+
+        if (this.hasPredictionForecastTarget) {
+            this.renderPredictionForecast(prediction.dailyForecast || []);
+        }
+
+        if (this.hasPredictionInsightsTarget) {
+            this.renderPredictionList(
+                this.predictionInsightsTarget,
+                prediction.insights || [],
+                'No specific ML insight detected yet.',
+            );
+        }
+
+        if (this.hasPredictionRecommendationsTarget) {
+            this.renderPredictionList(
+                this.predictionRecommendationsTarget,
+                prediction.recommendations || [],
+                'No recommendation available yet.',
+            );
+        }
+    }
+
+    renderPredictionError(message) {
+        if (this.hasPredictionRangeTarget) {
+            this.predictionRangeTarget.textContent = message;
+        }
+
+        if (this.hasPredictionScoreTarget) {
+            this.predictionScoreTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionTrendTarget) {
+            this.predictionTrendTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionConfidenceTarget) {
+            this.predictionConfidenceTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionLabelTarget) {
+            this.predictionLabelTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionForecastTarget) {
+            this.predictionForecastTarget.replaceChildren();
+            this.predictionForecastTarget.appendChild(this.createPredictionBadge('Prediction unavailable', 'secondary'));
+        }
+    }
+
+    renderPredictionForecast(forecast) {
+        this.predictionForecastTarget.replaceChildren();
+
+        if (!Array.isArray(forecast) || forecast.length === 0) {
+            this.predictionForecastTarget.appendChild(this.createPredictionBadge('No forecast available', 'secondary'));
+            return;
+        }
+
+        forecast.forEach((day) => {
+            const date = day.date || '--';
+            const score = this.formatPredictionNumber(day.predictedMoodLevel ?? 0);
+            const label = this.formatPredictionLabel(day.label || 'watch');
+
+            this.predictionForecastTarget.appendChild(
+                this.createPredictionBadge(`${date} · ${score}/5 · ${label}`, day.label || 'watch'),
+            );
+        });
+    }
+
+    renderPredictionList(target, items, emptyText) {
+        target.replaceChildren();
+
+        if (!Array.isArray(items) || items.length === 0) {
+            const item = document.createElement('li');
+            item.textContent = emptyText;
+            target.appendChild(item);
+            return;
+        }
+
+        items.forEach((text) => {
+            const item = document.createElement('li');
+            item.textContent = String(text);
+            target.appendChild(item);
+        });
+    }
+
+    createPredictionBadge(text, label = 'secondary') {
+        const badge = document.createElement('span');
+        badge.className = `ac-badge ${this.predictionBadgeClass(label)}`;
+        badge.textContent = text;
+
+        return badge;
+    }
+
+    predictionBadgeClass(label) {
+        const normalized = String(label).toLowerCase();
+
+        if (normalized === 'stable' || normalized === 'improving') {
+            return 'ac-badge-success';
+        }
+
+        if (normalized === 'watch' || normalized === 'declining') {
+            return 'ac-badge-warning';
+        }
+
+        if (normalized === 'fragile') {
+            return 'ac-badge-danger';
+        }
+
+        return 'ac-badge-secondary';
+    }
+
+    setPredictionLoading(isLoading) {
+        if (this.hasPredictionButtonTarget) {
+            this.predictionButtonTarget.disabled = isLoading;
+            this.predictionButtonTarget.textContent = isLoading ? 'Loading prediction...' : 'Next week prediction';
+        }
+
+        if (!isLoading || !this.hasPredictionForecastTarget) {
+            return;
+        }
+
+        if (this.hasPredictionRangeTarget) {
+            this.predictionRangeTarget.textContent = 'Generating your next week prediction...';
+        }
+
+        if (this.hasPredictionScoreTarget) {
+            this.predictionScoreTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionTrendTarget) {
+            this.predictionTrendTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionConfidenceTarget) {
+            this.predictionConfidenceTarget.textContent = '--';
+        }
+
+        if (this.hasPredictionLabelTarget) {
+            this.predictionLabelTarget.textContent = '--';
+        }
+
+        this.predictionForecastTarget.replaceChildren();
+        this.predictionForecastTarget.appendChild(this.createPredictionBadge('Loading forecast...', 'secondary'));
+    }
+
+    formatPredictionNumber(value) {
+        const number = Number(value);
+
+        if (!Number.isFinite(number)) {
+            return '0';
+        }
+
+        return number.toFixed(2).replace(/\.00$/, '');
+    }
+
+    formatPredictionLabel(value) {
+        return String(value)
+            .replaceAll('_', ' ')
+            .toLowerCase()
+            .replace(/^\w/, (letter) => letter.toUpperCase());
     }
 
     async submitEdit(event) {
