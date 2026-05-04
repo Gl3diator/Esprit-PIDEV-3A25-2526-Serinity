@@ -349,6 +349,9 @@
     }
 }
 .btn-mini{
+    display:inline-flex;
+    align-items:center;
+    gap:.35rem;
     border:none;
     text-decoration:none;
     padding:.52rem .7rem;
@@ -811,16 +814,16 @@ new Chart(document.getElementById('emergencyChart'), {
                         <div class="action-group">
 
                             <a href="{{ path('app_dashboard_rdv_show', {id: rdv.id}) }}" class="btn-mini btn-view">
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye"></i> View
                             </a>
 
                             {% if rdv.status == 'EN_ATTENTE' %}
                                 <a href="{{ path('app_rdv_accept', {id: rdv.id}) }}" class="btn-mini btn-ok">
-                                    <i class="bi bi-check2"></i>
+                                    <i class="bi bi-check2"></i> Accept
                                 </a>
 
                                 <a href="{{ path('app_rdv_refuse', {id: rdv.id}) }}" class="btn-mini btn-no">
-                                    <i class="bi bi-x-lg"></i>
+                                    <i class="bi bi-x-lg"></i> Refuse
                                 </a>
                             {% endif %}
 
