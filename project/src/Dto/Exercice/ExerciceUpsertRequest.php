@@ -25,5 +25,22 @@ final class ExerciceUpsertRequest
     #[Assert\Length(max: 2000)]
     public ?string $description = null;
 
+    #[Assert\Length(max: 3000)]
+    public ?string $benefits = null;
+
+    /**
+     * @var list<array{title:string,description:string}>|null
+     */
+    public ?array $guidedInstructions = null;
+
+    #[Assert\Length(max: 3000)]
+    public ?string $tips = null;
+
+    #[Assert\Length(max: 512)]
+    public ?string $imageUrl = null;
+
+    #[Assert\Length(max: 50)]
+    public ?string $theme = null;
+
     public bool $isActive = true;
 }

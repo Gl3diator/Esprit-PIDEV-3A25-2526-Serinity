@@ -3,6 +3,23 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
+        .exercise-session-shell {
+            --exercise-accent: var(--primary);
+            --exercise-tint: rgba(219, 234, 254, .52);
+        }
+        .exercise-session-shell[data-exercise-theme="calm"],
+        .exercise-session-shell[data-exercise-theme="relaxation"] {
+            --exercise-accent: #2f6f6d;
+            --exercise-tint: rgba(207, 225, 223, .6);
+        }
+        .exercise-session-shell[data-exercise-theme="focus"] {
+            --exercise-accent: #355d6e;
+            --exercise-tint: rgba(191, 219, 254, .55);
+        }
+        .exercise-session-shell[data-exercise-theme="active"] {
+            --exercise-accent: #b45309;
+            --exercise-tint: rgba(254, 215, 170, .5);
+        }
         .ac-breathing-card {
             border: 1px solid var(--border);
             border-radius: 14px;
@@ -86,6 +103,46 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        .ac-guide-current {
+            border: 1px solid color-mix(in srgb, var(--exercise-accent) 24%, white);
+            border-radius: 12px;
+            padding: .9rem 1rem;
+            background: var(--exercise-tint);
+            margin-bottom: .9rem;
+        }
+        .ac-guide-step {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: .5rem .65rem;
+            margin-bottom: .35rem;
+            transition: background .2s ease, border-color .2s ease, color .2s ease;
+        }
+        .ac-guide-step.is-active {
+            background: var(--exercise-tint);
+            border-color: color-mix(in srgb, var(--exercise-accent) 32%, white);
+            font-weight: 700;
+        }
+        .ac-session-hero {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--surface-soft);
+            margin-bottom: 1rem;
+        }
+        .ac-session-hero img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+        .ac-session-hero-body {
+            padding: 1rem 1.1rem;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--exercise-accent) 8%, white), rgba(255,255,255,.96));
+        }
+        .ac-session-copy {
+            line-height: 1.65;
+            white-space: pre-line;
+        }
     </style>
 {% endblock %}
 
@@ -95,7 +152,32 @@
     <div class="ac-main">
         {% include 'access_control/components/_topbar.html.twig' with { title: 'Session active', subtitle: session.exercice.title, username: userName } %}
 
-        <section class="ac-card" data-session-root data-target-seconds="{{ (session.exercice.durationMinutes ?? 1) * 60 }}">
+        <section class="ac-card exercise-session-shell" data-exercise-theme="{{ exerciseTheme }}" data-session-root data-target-seconds="{{ (session.exercice.durationMinutes ?? 1) * 60 }}">
+            {% if session.exercice.imageUrl or session.exercice.description or session.exercice.tips %}
+                <div class="ac-session-hero">
+                    {% if session.exercice.imageUrl %}
+                        <img src="{{ session.exercice.imageUrl }}" alt="{{ session.exercice.title }}">
+                    {% endif %}
+                    <div class="ac-session-hero-body">
+                        <div class="ac-row-between" style="gap:.75rem; align-items:flex-start;">
+                            <div>
+                                <p class="ac-muted" style="margin:0;">{{ exerciseTheme|title }} session</p>
+                                <h4 style="margin:.2rem 0 0;">{{ session.exercice.title }}</h4>
+                            </div>
+                            {% if session.exercice.theme %}
+                                <span class="ac-badge ac-badge-secondary">{{ session.exercice.theme|title }}</span>
+                            {% endif %}
+                        </div>
+                        {% if session.exercice.description %}
+                            <p class="ac-muted ac-session-copy" style="margin:.75rem 0 0;">{{ session.exercice.description }}</p>
+                        {% endif %}
+                        {% if session.exercice.tips %}
+                            <p class="ac-session-copy" style="margin:.75rem 0 0; color:var(--text);"><strong>Tip:</strong> {{ session.exercice.tips }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="ac-row-between" style="margin-bottom: 1rem;">
                 <div>
                     <h3 style="margin:0;">{{ session.exercice.title }}</h3>
@@ -133,31 +215,75 @@
                 <button class="ac-ghost-btn" type="button" data-session-resume hidden>Resume</button>
             </div>
 
+            <div class="ac-card" style="margin:0 0 1rem; padding:1rem; border:1px solid rgba(59, 130, 246, .24); background:linear-gradient(180deg, rgba(239, 246, 255, .85), rgba(248, 250, 252, .96));">
+                <div class="ac-row-between" style="gap:.75rem; align-items:center; margin-bottom:.75rem;">
+                    <div>
+                        <p class="ac-muted" style="margin:0;">Guided instructions</p>
+                        <h4 style="margin:.2rem 0 0;">Follow each step calmly</h4>
+                    </div>
+                    <span class="ac-badge ac-badge-secondary">Guide</span>
+                </div>
+                <div class="ac-guide-current">
+                    <p class="ac-muted" style="margin:0;">Current step</p>
+                    <h5 style="margin:.2rem 0 .35rem;" data-guide-current-label>Step 1 of {{ guidedInstructions|length }}</h5>
+                    <h6 style="margin:0 0 .35rem; color:var(--text);" data-guide-current-title>{{ (guidedInstructions|first).title ?: 'Step 1' }}</h6>
+                    <p style="margin:0; color:var(--text);" data-guide-current-text>{{ (guidedInstructions|first).description }}</p>
+                </div>
+                <ol style="margin:0; padding-left:1.2rem; color:var(--text); line-height:1.65;" data-guide-steps>
+                    {% for step in guidedInstructions %}
+                        <li
+                            class="ac-guide-step{% if loop.first %} is-active{% endif %}"
+                            data-guide-step
+                            data-guide-step-index="{{ loop.index0 }}"
+                            data-guide-step-title="{{ step.title ?: 'Step ' ~ loop.index }}"
+                            data-guide-step-description="{{ step.description }}"
+                            style="margin-bottom:.45rem;"
+                        >
+                            <strong>{{ step.title ?: 'Step ' ~ loop.index }}</strong><br>
+                            <span>{{ step.description }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+
             <div class="ac-card" style="margin:0 0 1rem; padding:1rem;">
                 <div class="ac-row-between" style="gap:.75rem; align-items:center; margin-bottom:.75rem;">
                     <div>
                         <p class="ac-muted" style="margin:0;">Ambient sound</p>
                         <h4 style="margin:.2rem 0 0;">{{ audioMood }} soundtrack</h4>
+                        {% if audioTracks is defined and audioTracks is not empty %}
+                        <p class="ac-muted" style="margin:.35rem 0 0;" data-audio-current>
+                            {{ audioTitle ?: 'Ambient track' }}
+                        </p>
+                        {% endif %}
                     </div>
                     <span class="ac-badge ac-badge-secondary">{{ audioType|default('ambient')|capitalize }}</span>
                 </div>
 
-                <audio id="ambient-audio" loop preload="auto" playsinline {% if audioUrl %}data-audio-url="{{ audioUrl }}"{% endif %}>
-                    {% if audioUrl %}
-                        <source src="{{ audioUrl }}" type="audio/mpeg">
-                    {% endif %}
-                </audio>
+                {% if audioTracks is defined and audioTracks is not empty %}
+                    <audio id="ambient-audio" loop preload="auto" playsinline {% if audioUrl %}data-audio-url="{{ audioUrl }}"{% endif %}>
+                        {% if audioUrl %}
+                            <source src="{{ audioUrl }}" type="audio/mpeg">
+                        {% endif %}
+                    </audio>
+                {% endif %}
 
                 <p class="ac-muted" style="margin:0 0 .75rem;" data-audio-status>
-                    Relaxing background music will start automatically when playback is allowed.
+                    {% if audioTracks is defined and audioTracks is not empty %}
+                        Relaxing background music will start automatically when playback is allowed.
+                    {% else %}
+                        Ambient audio is currently unavailable. You can continue the session without sound.
+                    {% endif %}
                 </p>
 
-                <div class="ac-row-end" style="gap:.5rem;">
-                    <button class="ac-btn ac-btn-primary" type="button" data-audio-play hidden>Play ambient music</button>
-                    <button class="ac-ghost-btn" type="button" data-audio-pause>Pause music</button>
-                    <button class="ac-ghost-btn" type="button" data-audio-resume>Resume music</button>
-                    <button class="ac-ghost-btn" type="button" data-audio-stop>Stop music</button>
-                </div>
+                {% if audioTracks is defined and audioTracks is not empty %}
+                    <div class="ac-row-end" style="gap:.5rem;">
+                        <button class="ac-btn ac-btn-primary" type="button" data-audio-play hidden>Play ambient music</button>
+                        <button class="ac-ghost-btn" type="button" data-audio-pause>Pause music</button>
+                        <button class="ac-ghost-btn" type="button" data-audio-resume>Resume music</button>
+                        <button class="ac-ghost-btn" type="button" data-audio-stop>Stop music</button>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="ac-breathing-card">
@@ -217,10 +343,15 @@
             const resumeButton = root.querySelector('[data-session-resume]');
             const ambientAudioNode = document.getElementById('ambient-audio');
             const audioStatusNode = root.querySelector('[data-audio-status]');
+            const audioCurrentNode = root.querySelector('[data-audio-current]');
             const audioPlayButton = root.querySelector('[data-audio-play]');
             const audioPauseButton = root.querySelector('[data-audio-pause]');
             const audioResumeButton = root.querySelector('[data-audio-resume]');
             const audioStopButton = root.querySelector('[data-audio-stop]');
+            const guideCurrentLabelNode = root.querySelector('[data-guide-current-label]');
+            const guideCurrentTitleNode = root.querySelector('[data-guide-current-title]');
+            const guideCurrentTextNode = root.querySelector('[data-guide-current-text]');
+            const guideStepNodes = Array.from(root.querySelectorAll('[data-guide-step]'));
             const breathCircleNode = root.querySelector('[data-breath-circle]');
             const breathLabelNode = root.querySelector('[data-breath-label]');
             const breathCountNode = root.querySelector('[data-breath-count]');
@@ -294,31 +425,67 @@
                 }
             };
 
+            const updateAudioCurrent = (title) => {
+                if (!audioCurrentNode) {
+                    return;
+                }
+
+                const cleanTitle = title && title.trim() !== '' ? title.trim() : 'Ambient track';
+                audioCurrentNode.textContent = cleanTitle;
+            };
+
+            const updateGuideStep = (progressPercent) => {
+                if (guideStepNodes.length === 0) {
+                    return;
+                }
+
+                const boundedProgress = Math.max(0, Math.min(100, progressPercent));
+                const activeIndex = Math.min(4, Math.floor(boundedProgress / 20));
+                const activeStep = guideStepNodes[activeIndex] || guideStepNodes[0];
+
+                guideStepNodes.forEach((stepNode, index) => {
+                    stepNode.classList.toggle('is-active', index === activeIndex);
+                });
+
+                if (guideCurrentLabelNode) {
+                    guideCurrentLabelNode.textContent = `Step ${activeIndex + 1} of ${guideStepNodes.length}`;
+                }
+                if (guideCurrentTitleNode && activeStep) {
+                    guideCurrentTitleNode.textContent = activeStep.dataset.guideStepTitle || `Step ${activeIndex + 1}`;
+                }
+                if (guideCurrentTextNode && activeStep) {
+                    guideCurrentTextNode.textContent = activeStep.dataset.guideStepDescription || '';
+                }
+            };
+
             const setAudioManualMode = (enabled) => {
                 if (audioPlayButton) {
                     audioPlayButton.hidden = !enabled;
                 }
             };
 
+            const ensureAudioElement = () => ambientAudioNode;
+
             const resolveAudioSource = () => {
-                if (!ambientAudioNode) {
-                    console.warn('[Serinity] Ambient audio element not found.');
+                const audioNode = ensureAudioElement();
+                if (!audioNode) {
                     return '';
                 }
 
-                const currentSourceNode = ambientAudioNode.querySelector('source');
+                const currentSourceNode = audioNode.querySelector('source');
                 const currentSource = currentSourceNode ? currentSourceNode.getAttribute('src') || '' : '';
-                const datasetSource = ambientAudioNode.dataset.audioUrl || '';
-                const finalSource = currentSource || datasetSource || '';
+                const datasetSource = audioNode.dataset.audioUrl || '';
+                const finalSource = datasetSource || currentSource || '';
 
                 if (currentSourceNode && currentSourceNode.getAttribute('src') !== finalSource) {
                     currentSourceNode.setAttribute('src', finalSource);
                 }
-                if (ambientAudioNode.getAttribute('src') !== finalSource) {
-                    ambientAudioNode.setAttribute('src', finalSource);
+                if (audioNode.getAttribute('src') !== finalSource) {
+                    audioNode.setAttribute('src', finalSource);
                 }
                 if (finalSource !== '') {
-                    ambientAudioNode.load();
+                    audioNode.src = finalSource;
+                    audioNode.load();
                 }
 
                 console.info('[Serinity] Ambient audio source resolved.', {
@@ -330,28 +497,40 @@
             };
 
             function playAudio() {
+                const audioNode = ensureAudioElement();
                 const source = resolveAudioSource();
-                if (!ambientAudioNode || source === '') {
+                if (!audioNode || source === '') {
                     updateAudioStatus('Ambient music is unavailable right now.');
                     console.warn('[Serinity] Ambient audio playback skipped because no source URL was available.');
                     setAudioManualMode(false);
                     return Promise.resolve();
                 }
 
+                console.info('[Serinity] Selected ambient audio URL.', {
+                    audioUrl: source,
+                });
+
                 console.info('[Serinity] Attempting ambient audio playback.', {
                     source,
                     autoplayIntent: sessionStorage.getItem('serinity:auto-play-audio') === '1',
                 });
 
-                return ambientAudioNode.play()
+                audioNode.src = source;
+
+                return audioNode.play()
                     .then(() => {
                         updateAudioStatus('Relaxing ambient music is playing.');
-                        console.info('[Serinity] Ambient audio autoplay succeeded.');
+                        console.info('[Serinity] Ambient audio play success.', {
+                            audioUrl: source,
+                        });
                         setAudioManualMode(false);
                     })
                     .catch((error) => {
                         updateAudioStatus('Autoplay was blocked. Tap Play ambient music to start.');
-                        console.warn('[Serinity] Ambient audio autoplay failed.', error);
+                        console.error('[Serinity] Ambient audio play error.', {
+                            audioUrl: source,
+                            error,
+                        });
                         setAudioManualMode(true);
                     });
             }
@@ -398,6 +577,7 @@
                             ? 'Session paused. Resume when you are ready.'
                             : (pct >= 100 ? 'Target reached. You can finish the session.' : 'Session in progress.');
                     }
+                    updateGuideStep(pct);
                 }
                 if (statusNode) {
                     statusNode.textContent = running ? 'Running' : 'Paused';
@@ -412,6 +592,9 @@
 
             render();
             resolveAudioSource();
+            if (audioCurrentNode) {
+                updateAudioCurrent({{ audioTitle|default('Ambient track')|json_encode|raw }});
+            }
 
             if (ambientAudioNode) {
                 ambientAudioNode.addEventListener('error', () => {
@@ -497,11 +680,11 @@
                 };
 
                 const shouldAutoplay = sessionStorage.getItem('serinity:auto-play-audio') === '1';
-                if (shouldAutoplay) {
+                if (ambientAudioNode && shouldAutoplay) {
                     playAudio().finally(() => {
                         sessionStorage.removeItem('serinity:auto-play-audio');
                     });
-                } else {
+                } else if (ambientAudioNode) {
                     console.info('[Serinity] No preserved autoplay intent found; trying normal playback.');
                     playAudio();
                 }
@@ -519,3 +702,4 @@
         })();
     </script>
 {% endblock %}
+

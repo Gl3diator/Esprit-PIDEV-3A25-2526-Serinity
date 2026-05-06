@@ -35,6 +35,21 @@ class Exercice
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $benefits = null;
+
+    #[ORM\Column(name: 'guided_instructions', type: Types::JSON, nullable: true)]
+    private ?array $guidedInstructions = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $tips = null;
+
+    #[ORM\Column(name: 'image_url', type: Types::STRING, length: 512, nullable: true)]
+    private ?string $imageUrl = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+    private ?string $theme = null;
+
     #[ORM\Column(name: 'is_active', type: Types::BOOLEAN)]
     private bool $isActive = true;
 
@@ -122,6 +137,93 @@ class Exercice
     public function setDescription(?string $description): self
     {
         $this->description = $description === null ? null : trim($description);
+
+        return $this;
+    }
+
+    public function getBenefits(): ?string
+    {
+        return $this->benefits;
+    }
+
+    public function setBenefits(?string $benefits): self
+    {
+        $this->benefits = $benefits === null ? null : trim($benefits);
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{title:string,description:string}>|null
+     */
+    public function getGuidedInstructions(): ?array
+    {
+        return $this->guidedInstructions;
+    }
+
+    /**
+     * @param list<array{title:string,description:string}>|null $guidedInstructions
+     */
+    public function setGuidedInstructions(?array $guidedInstructions): self
+    {
+        if ($guidedInstructions === null || $guidedInstructions === []) {
+            $this->guidedInstructions = null;
+
+            return $this;
+        }
+
+        $normalized = [];
+        foreach ($guidedInstructions as $instruction) {
+            $title = trim((string) ($instruction['title'] ?? ''));
+            $description = trim((string) ($instruction['description'] ?? ''));
+            if ($title === '' && $description === '') {
+                continue;
+            }
+
+            $normalized[] = [
+                'title' => $title,
+                'description' => $description,
+            ];
+        }
+
+        $this->guidedInstructions = $normalized !== [] ? $normalized : null;
+
+        return $this;
+    }
+
+    public function getTips(): ?string
+    {
+        return $this->tips;
+    }
+
+    public function setTips(?string $tips): self
+    {
+        $this->tips = $tips === null ? null : trim($tips);
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $this->imageUrl = $imageUrl === null ? null : trim($imageUrl);
+
+        return $this;
+    }
+
+    public function getTheme(): ?string
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(?string $theme): self
+    {
+        $normalized = $theme === null ? '' : trim($theme);
+        $this->theme = $normalized === '' ? null : $normalized;
 
         return $this;
     }

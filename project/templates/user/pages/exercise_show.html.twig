@@ -1,5 +1,39 @@
 {% extends 'access_control/layout.html.twig' %}
 {% block title %}Exercise detail | Serinity{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .exercise-hero {
+            overflow: hidden;
+            padding: 0;
+        }
+        .exercise-hero-banner {
+            width: 100%;
+            max-height: 240px;
+            object-fit: cover;
+            display: block;
+        }
+        .exercise-hero-body {
+            padding: 1.2rem;
+        }
+        .exercise-rich-copy {
+            color: var(--text);
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+        .exercise-guide-grid {
+            display: grid;
+            gap: .85rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        .exercise-guide-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: .95rem;
+            background: var(--surface-soft);
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
 <div class="ac-app-layout">
@@ -14,19 +48,26 @@
             <section class="ac-card"><p style="color: var(--danger);">{{ message }}</p></section>
         {% endfor %}
 
-        <section class="ac-card ac-grid-two">
-            <article>
+        <section class="ac-card exercise-hero">
+            {% if item.exercice.imageUrl %}
+                <img class="exercise-hero-banner" src="{{ item.exercice.imageUrl }}" alt="{{ item.exercice.title }}">
+            {% endif %}
+            <div class="exercise-hero-body ac-grid-two">
+                <article>
                 <h3 style="margin-top:0;">{{ item.exercice.title }}</h3>
                 <p class="ac-muted">{{ item.exercice.description ?: 'No description available.' }}</p>
                 <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.75rem;">
                     <span class="ac-badge ac-badge-secondary">{{ item.exercice.type }}</span>
                     <span class="ac-badge ac-badge-secondary">Level {{ item.exercice.level }}</span>
                     <span class="ac-badge ac-badge-secondary">{{ item.exercice.durationMinutes }} min</span>
+                    {% if item.exercice.theme %}
+                        <span class="ac-badge ac-badge-secondary">{{ item.exercice.theme|title }}</span>
+                    {% endif %}
                     <span class="ac-badge {{ item.status == 'COMPLETED' ? 'ac-badge-success' : (item.status == 'NOT_STARTED' ? 'ac-badge-secondary' : 'ac-badge-warning') }}">{{ item.statusMessage ?? item.status }}</span>
                 </div>
-            </article>
+                </article>
 
-            <aside>
+                <aside>
                 <h4 style="margin-top:0;">Resources</h4>
                 {% if item.exercice.resources is empty %}
                     <p class="ac-muted">No resources available yet.</p>
@@ -40,8 +81,38 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-            </aside>
+                </aside>
+            </div>
         </section>
+
+        {% if item.exercice.benefits %}
+            <section class="ac-card">
+                <h4 style="margin-top:0;">Why this exercise helps</h4>
+                <p class="exercise-rich-copy" style="margin-bottom:0;">{{ item.exercice.benefits }}</p>
+            </section>
+        {% endif %}
+
+        {% if item.exercice.guidedInstructions is not empty %}
+            <section class="ac-card">
+                <h4 style="margin-top:0;">Guided instructions</h4>
+                <div class="exercise-guide-grid">
+                    {% for step in item.exercice.guidedInstructions %}
+                        <article class="exercise-guide-card">
+                            <p class="ac-muted" style="margin:0 0 .3rem;">Step {{ loop.index }}</p>
+                            <h5 style="margin:0 0 .35rem;">{{ step.title ?: 'Step ' ~ loop.index }}</h5>
+                            <p style="margin:0; color:var(--text); line-height:1.6;">{{ step.description }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if item.exercice.tips %}
+            <section class="ac-card">
+                <h4 style="margin-top:0;">Tips for a better session</h4>
+                <p class="exercise-rich-copy" style="margin-bottom:0;">{{ item.exercice.tips }}</p>
+            </section>
+        {% endif %}
 
         <section class="ac-card">
             <div class="ac-row-end" style="gap:.5rem;">

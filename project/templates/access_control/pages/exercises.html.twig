@@ -41,6 +41,24 @@
                 <label>Level<input class="ac-input" name="level" type="number" value="1"></label>
                 <label>Duration (minutes)<input class="ac-input" name="durationMinutes" type="number" value="10"></label>
                 <label class="ac-col-span-2">Description<textarea class="ac-input" name="description" rows="3"></textarea></label>
+                <label class="ac-col-span-2">Benefits<textarea class="ac-input" name="benefits" rows="3" placeholder="Explain why this exercise helps."></textarea></label>
+                <label class="ac-col-span-2">Tips<textarea class="ac-input" name="tips" rows="3" placeholder="Helpful reminders, posture tips, or pacing notes."></textarea></label>
+                <label>Theme
+                    <select class="ac-input" name="theme">
+                        <option value="">Default</option>
+                        <option value="calm">Calm</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="active">Active</option>
+                        <option value="focus">Focus</option>
+                        <option value="relaxation">Relaxation</option>
+                    </select>
+                </label>
+                <label class="ac-col-span-2">Guided instructions
+                    <textarea class="ac-input" name="guidedInstructions" rows="8" placeholder="Sit comfortably and relax your shoulders.
+Bring your attention to your breathing.
+Prepare: Stretch your arms slowly.
+Hold the stretch for 30 seconds."></textarea>
+                </label>
                 <label class="ac-col-span-2">
                     <span class="ac-label">Active</span>
                     <input type="checkbox" name="isActive" value="1" checked>
@@ -141,6 +159,13 @@
                         <label>Level<input class="ac-input" type="text" value="{{ ex.level }}" readonly></label>
                         <label>Duration<input class="ac-input" type="text" value="{{ ex.durationMinutes }} min" readonly></label>
                         <label>Description<textarea class="ac-input" rows="3" readonly>{{ ex.description }}</textarea></label>
+                        <label>Benefits<textarea class="ac-input" rows="3" readonly>{{ ex.benefits }}</textarea></label>
+                        <label>Tips<textarea class="ac-input" rows="3" readonly>{{ ex.tips }}</textarea></label>
+                        <label>Image path<input class="ac-input" type="text" value="{{ ex.imageUrl }}" readonly></label>
+                        <label>Theme<input class="ac-input" type="text" value="{{ ex.theme }}" readonly></label>
+                        <label>Guided instructions
+                            <textarea class="ac-input" rows="6" readonly>{% for step in ex.guidedInstructions|default([]) %}{{ step.title ?: 'Step ' ~ loop.index }}: {{ step.description }}{% if not loop.last %}\n{% endif %}{% endfor %}</textarea>
+                        </label>
                         <label>Resources
                             <textarea class="ac-input" rows="4" readonly>{% if ex.resources is empty %}No resources{% else %}{% for resource in ex.resources %}{{ resource.title }} ({{ resource.resourceType }}) - {{ resource.resourceUrl }}{% if not loop.last %}\n{% endif %}{% endfor %}{% endif %}</textarea>
                         </label>

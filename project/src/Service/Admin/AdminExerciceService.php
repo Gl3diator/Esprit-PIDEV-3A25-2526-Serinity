@@ -53,6 +53,11 @@ final readonly class AdminExerciceService
             ->setLevel($request->level)
             ->setDurationMinutes($request->durationMinutes)
             ->setDescription($request->description)
+            ->setBenefits($request->benefits)
+            ->setGuidedInstructions($request->guidedInstructions)
+            ->setTips($request->tips)
+            ->setImageUrl($request->imageUrl)
+            ->setTheme($request->theme)
             ->setIsActive($request->isActive);
 
         $this->entityManager->persist($exercice);
@@ -74,6 +79,11 @@ final readonly class AdminExerciceService
             ->setLevel($request->level)
             ->setDurationMinutes($request->durationMinutes)
             ->setDescription($request->description)
+            ->setBenefits($request->benefits)
+            ->setGuidedInstructions($request->guidedInstructions)
+            ->setTips($request->tips)
+            ->setImageUrl($request->imageUrl)
+            ->setTheme($request->theme)
             ->setIsActive($request->isActive)
             ->setUpdatedAt(new \DateTimeImmutable());
 
@@ -268,6 +278,11 @@ final readonly class AdminExerciceService
             'level' => $exercice->getLevel(),
             'durationMinutes' => $exercice->getDurationMinutes(),
             'description' => $exercice->getDescription(),
+            'benefits' => $exercice->getBenefits(),
+            'guidedInstructions' => $exercice->getGuidedInstructions() ?? [],
+            'tips' => $exercice->getTips(),
+            'imageUrl' => $exercice->getImageUrl(),
+            'theme' => $exercice->getTheme(),
             'isActive' => $exercice->isActive(),
             'resources' => $resources,
             'createdAt' => $exercice->getCreatedAt()->format('c'),

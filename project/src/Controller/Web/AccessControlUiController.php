@@ -529,7 +529,13 @@ final class AccessControlUiController extends AbstractController
             return $this->redirectToRoute('ac_ui_exercises');
         }
 
-        $dto = $this->exerciseDtoFromRequest($request);
+        try {
+            $dto = $this->exerciseDtoFromRequest($request);
+        } catch (\InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('ac_ui_exercises');
+        }
 
         if (!$this->isDtoValid($validator, $dto)) {
             return $this->redirectToRoute('ac_ui_exercises');
@@ -559,7 +565,13 @@ final class AccessControlUiController extends AbstractController
                 return $this->redirectToRoute('ac_ui_exercises_edit', ['id' => $id]);
             }
 
-            $dto = $this->exerciseDtoFromRequest($request);
+            try {
+                $dto = $this->exerciseDtoFromRequest($request, $exercice);
+            } catch (\InvalidArgumentException $exception) {
+                $this->addFlash('error', $exception->getMessage());
+
+                return $this->redirectToRoute('ac_ui_exercises_edit', ['id' => $id]);
+            }
             if (!$this->isDtoValid($validator, $dto)) {
                 return $this->redirectToRoute('ac_ui_exercises_edit', ['id' => $id]);
             }
@@ -574,6 +586,7 @@ final class AccessControlUiController extends AbstractController
             'nav' => $this->buildNav('ac_ui_exercises'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
             'exercice' => $exercice,
+            'guidedInstructionsText' => $this->guidedInstructionsToText($exercice['guidedInstructions'] ?? []),
         ]);
     }
 
@@ -735,7 +748,7 @@ final class AccessControlUiController extends AbstractController
         return $this->redirectToRoute('ac_ui_exercises');
     }
 
-    private function exerciseDtoFromRequest(Request $request): ExerciceUpsertRequest
+    private function exerciseDtoFromRequest(Request $request, ?array $existingExercise = null): ExerciceUpsertRequest
     {
         $dto = new ExerciceUpsertRequest();
         $dto->title = trim((string) $request->request->get('title', ''));
@@ -744,11 +757,78 @@ final class AccessControlUiController extends AbstractController
         $dto->durationMinutes = max(1, min(300, (int) $request->request->get('durationMinutes', 10)));
         $description = trim((string) $request->request->get('description', ''));
         $dto->description = $description !== '' ? $description : null;
+        $benefits = trim((string) $request->request->get('benefits', ''));
+        $dto->benefits = $benefits !== '' ? $benefits : null;
+        $tips = trim((string) $request->request->get('tips', ''));
+        $dto->tips = $tips !== '' ? $tips : null;
+        $existingImageUrl = trim((string) ($existingExercise['imageUrl'] ?? ''));
+        $dto->imageUrl = $existingImageUrl !== '' ? $existingImageUrl : null;
+        $theme = trim((string) $request->request->get('theme', ''));
+        $dto->theme = $theme !== '' ? $theme : null;
+        $dto->guidedInstructions = $this->parseGuidedInstructions((string) $request->request->get('guidedInstructions', ''));
         $dto->isActive = $request->request->has('isActive');
 
         return $dto;
     }
 
+    /**
+     * @return list<array{title:string,description:string}>|null
+     */
+    private function parseGuidedInstructions(string $rawInstructions): ?array
+    {
+        $lines = preg_split('/\R/u', trim($rawInstructions)) ?: [];
+        $instructions = [];
+        $stepNumber = 1;
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $title = sprintf('Step %d', $stepNumber);
+            $description = $line;
+            if (preg_match('/^([^:]+)\s*:\s*(.+)$/', $line, $matches) === 1) {
+                $candidateTitle = trim((string) ($matches[1] ?? ''));
+                $candidateDescription = trim((string) ($matches[2] ?? ''));
+                if ($candidateTitle !== '' && $candidateDescription !== '') {
+                    $title = $candidateTitle;
+                    $description = $candidateDescription;
+                }
+            }
+
+            $instructions[] = [
+                'title' => $title,
+                'description' => $description,
+            ];
+            ++$stepNumber;
+        }
+
+        return $instructions !== [] ? $instructions : null;
+    }
+
+    /**
+     * @param list<array{title:string,description:string}> $guidedInstructions
+     */
+    private function guidedInstructionsToText(array $guidedInstructions): string
+    {
+        $lines = [];
+        foreach ($guidedInstructions as $instruction) {
+            $title = trim((string) ($instruction['title'] ?? ''));
+            $description = trim((string) ($instruction['description'] ?? ''));
+            if ($description === '') {
+                continue;
+            }
+
+            if ($title === '' || preg_match('/^step\s+\d+$/i', $title) === 1) {
+                $lines[] = $description;
+                continue;
+            }
+
+            $lines[] = $title . ': ' . $description;
+        }
+
+        return implode("\n", $lines);
+    }
     /**
      * @param list<array{0:string,1:int}> $rows
      */
