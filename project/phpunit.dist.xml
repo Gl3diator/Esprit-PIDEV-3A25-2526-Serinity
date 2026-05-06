@@ -10,16 +10,21 @@
     bootstrap="tests/bootstrap.php"
     cacheDirectory=".phpunit.cache"
 >
-    <php>
-        <ini name="display_errors" value="1" />
-        <ini name="error_reporting" value="-1" />
-        <server name="APP_ENV" value="test" force="true" />
-        <server name="SHELL_VERBOSITY" value="-1" />
+<php>
+    <ini name="display_errors" value="1" />
+    <ini name="error_reporting" value="-1" />
 
-        <!-- ###+ sensiolabs/gotenberg-bundle ### -->
-        <env name="GOTENBERG_DSN" value="http://gotenberg:3000"/>
-        <!-- ###- sensiolabs/gotenberg-bundle ### -->
-    </php>
+    <server name="APP_ENV" value="test" force="true" />
+    <server name="APP_DEBUG" value="1" force="true" />
+    <server name="KERNEL_CLASS" value="App\Kernel" force="true" />
+    <server name="SHELL_VERBOSITY" value="-1" />
+
+    <env name="OPENROUTER_API_KEY" value="test-api-key" />
+
+    <!-- ###+ sensiolabs/gotenberg-bundle ### -->
+    <env name="GOTENBERG_DSN" value="http://gotenberg:3000"/>
+    <!-- ###- sensiolabs/gotenberg-bundle ### -->
+</php>
 
     <testsuites>
         <testsuite name="Project Test Suite">

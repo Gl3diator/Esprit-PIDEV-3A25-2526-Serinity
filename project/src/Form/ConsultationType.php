@@ -56,28 +56,26 @@ class ConsultationType extends AbstractType
                 'label' => 'Rendez-vous approuvés',
                 'placeholder' => 'Choisir un rendez-vous validé',
 
-                'choice_label' => static function (RendezVous $rdv): string {
-                    $patient = $rdv->getPatient();
+              'choice_label' => static function (RendezVous $rdv): string {
+    $patient = $rdv->getPatient();
 
-                    $name = null;
+    $name = null;
 
-                    if ($patient && $patient->getProfile()) {
-                        $name = trim(
-                            ($patient->getProfile()->getFirstName() ?? '') . ' ' .
-                            ($patient->getProfile()->getLastName() ?? '')
-                        );
-                    }
+    if ($patient !== null && $patient->getProfile() !== null) {
+        $name = trim(
+            ($patient->getProfile()->getFirstName() ?? '') . ' ' .
+            ($patient->getProfile()->getLastName() ?? '')
+        );
+    }
 
-                    if (!$name) {
-                        $name = $patient?->getEmail() ?? 'Patient';
-                    }
+    if ($name === null || $name === '') {
+        $name = $patient?->getEmail() ?? 'Patient';
+    }
 
-                    $date = $rdv->getDateTime()
-                        ? $rdv->getDateTime()->format('d/m/Y H:i')
-                        : 'Sans date';
+    $date = $rdv->getDateTime()->format('d/m/Y H:i');
 
-                    return $name . ' - ' . $date;
-                },
+    return $name . ' - ' . $date;
+},
 
                 'query_builder' => function (
                     EntityRepository $er

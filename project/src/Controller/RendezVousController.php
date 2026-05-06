@@ -23,6 +23,10 @@ public function new(
 ): Response {
     $patient = $this->getUser();
 
+    if (!$patient instanceof User) {
+        return $this->redirectToRoute('ac_ui_login');
+    }
+
     $doctor = $em->createQueryBuilder()
         ->select('u', 'p')
         ->from(User::class, 'u')
@@ -53,12 +57,12 @@ public function new(
     }
 
     return $this->render('rdv/new.html.twig', [
-        'form'   => $form->createView(),
-        'doctor' => $doctor,
-         'userName' => $patient->getEmail(),
+        'form'     => $form->createView(),
+        'doctor'   => $doctor,
+        'nav'      => $this->buildNav('app_patient_rdv'),
+        'userName' => $patient->getEmail(),
     ]);
 }
-
 
     #[Route('/user/mes-rdv', name: 'app_patient_rdv', methods: ['GET'])]
     public function mesRdv(EntityManagerInterface $em): Response

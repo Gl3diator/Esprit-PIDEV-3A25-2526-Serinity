@@ -1,6 +1,9 @@
 parameters:
     level: 8
-
+    ignoreErrors:
+        -
+            message: '#Property App\\Entity\\.*::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            identifier: property.unusedType
     paths:
         - src/Entity/Sleep
         - src/Form/Sleep
@@ -8,3 +11,21 @@ parameters:
         - src/Repository/Sleep
         - src/Service/Sleep
         - tests/Service/Sleep
+        - src/Entity/Rapport
+        - src/Entity/RendezVous
+        - src/Entity/Consultations
+        - src/Form/RendezVousAcceptType
+        - src/Form/RendezVousType
+        - src/Form/ConsultationType
+        - src/Controller/ConsultationDashboardController
+        - src/Controller/DoctorController
+        - src/Controller/MedicalAiConsultation
+        - src/Controller/RapportController
+        - src/Controller/RendezVousController
+        - src/Repository/ConsultationRepository
+        - src/Repository/RendezVousRepository
+        - src/Repository/RapportRepository
+        - src/Service/Sleep
+        - src/Service/Sleep
+        - src/Service/Sleep
+ 

@@ -11,6 +11,7 @@ class RendezVous
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line property.unusedType */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: "rendezVousPatient")]
@@ -32,39 +33,34 @@ class RendezVous
 
     private ?string $description = null;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
-#[Assert\NotNull(message: "La date est obligatoire")]
-#[Assert\GreaterThan("now", message: "La date doit être dans le futur")]
-private ?\DateTimeInterface $dateTime = null;
-
-#[ORM\OneToOne(mappedBy: 'rendezVous', targetEntity: Consultation::class)]
-private ?Consultation $consultation = null;
  
+#[ORM\OneToOne(mappedBy: 'rendezVous', targetEntity: Consultation::class, cascade: ['persist', 'remove'])]
+private ?Consultation $consultation = null;
 
     
     #[ORM\Column(length: 30)]
     private string $status = "EN_ATTENTE";
 
-    
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $createdAt;
+ 
 
+ #[ORM\Column(type: "datetime_immutable", nullable: true)]
+#[Assert\NotNull(message: "La date est obligatoire")]
+#[Assert\GreaterThan("now", message: "La date doit être dans le futur")]
+private ?\DateTimeImmutable $dateTime = null;
 
+#[ORM\Column(type: "datetime_immutable")]
+private \DateTimeImmutable $createdAt;
 
-
-    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
-    #[ORM\Column(type: "datetime", nullable: true)]
-private ?\DateTimeInterface $proposedDateTime = null;
+#[ORM\Column(type: "datetime_immutable", nullable: true)]
+private ?\DateTimeImmutable $proposedDateTime = null;
 
 #[ORM\Column(type: "text", nullable: true)]
 private ?string $doctorNote = null;
 
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTime();
-    }
-
+public function __construct()
+{
+    $this->createdAt = new \DateTimeImmutable();
+}
  
  
 public function getConsultation(): ?Consultation
@@ -97,13 +93,27 @@ public function setConsultation(?Consultation $consultation): self
 
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; return $this; }
-
-    public function getDateTime(): \DateTimeInterface { return $this->dateTime; }
-    public function setDateTime(\DateTimeInterface $dateTime): self { $this->dateTime = $dateTime; return $this; }
+ 
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): self { $this->status = $status; return $this; }
 
+ public function getDateTime(): \DateTimeInterface
+{
+    return $this->dateTime;
+}
+
+public function setDateTime(\DateTimeInterface $dateTime): self
+{
+    $this->dateTime = \DateTimeImmutable::createFromInterface($dateTime);
+
+    return $this;
+}
+
+public function getCreatedAt(): \DateTimeInterface
+{
+    return $this->createdAt;
+}
 
 public function getProposedDateTime(): ?\DateTimeInterface
 {
@@ -112,10 +122,12 @@ public function getProposedDateTime(): ?\DateTimeInterface
 
 public function setProposedDateTime(?\DateTimeInterface $date): self
 {
-    $this->proposedDateTime = $date;
+    $this->proposedDateTime = $date !== null
+        ? \DateTimeImmutable::createFromInterface($date)
+        : null;
+
     return $this;
 }
-
 public function getDoctorNote(): ?string
 {
     return $this->doctorNote;

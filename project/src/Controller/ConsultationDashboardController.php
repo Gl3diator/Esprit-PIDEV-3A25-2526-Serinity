@@ -78,11 +78,11 @@ PROMPT;
                 ];
             }
 
-            return [
-                'level' => $decoded['level'] ?? 'unknown',
-                'title' => $decoded['title'] ?? '',
-                'reason' => $decoded['reason'] ?? '',
-            ];
+          return [
+    'level' => (string) $decoded['level'],
+    'title' => isset($decoded['title']) ? (string) $decoded['title'] : '',
+    'reason' => isset($decoded['reason']) ? (string) $decoded['reason'] : '',
+];
         } catch (\Throwable) {
             return [
                 'level' => 'unknown',
@@ -247,15 +247,11 @@ public function showRdv(RendezVous $rdv): Response
         throw $this->createAccessDeniedException();
     }
 
-        $effectiveDateTime = $rdv->getProposedDateTime() ?? $rdv->getDateTime();
+$effectiveDateTime = $rdv->getProposedDateTime() ?? $rdv->getDateTime();
 
-        if (!$effectiveDateTime) {
-            throw $this->createNotFoundException('Date du rendez-vous non disponible.');
-        }
+$now = new \DateTime();
 
-    $now = new \DateTime();
-
-    $rdvDate = \DateTime::createFromInterface($effectiveDateTime);
+$rdvDate = \DateTime::createFromInterface($effectiveDateTime);
 
     /**
      * open 1h before
