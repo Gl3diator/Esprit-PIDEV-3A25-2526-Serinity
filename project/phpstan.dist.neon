@@ -1,8 +1,10 @@
 parameters:
-    level: 6
+    level: 8
+
     paths:
-        - bin/
-        - config/
-        - public/
-        - src/
-        - tests/
+        - src/Entity/Sleep
+        - src/Form/Sleep
+        - src/Controller/Sleep
+        - src/Repository/Sleep
+        - src/Service/Sleep
+        - tests/Service/Sleep

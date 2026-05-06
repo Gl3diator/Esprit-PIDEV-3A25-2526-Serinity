@@ -1,0 +1,44 @@
+pack/
+
+### Symfony ###
+/project/var/
+/project/vendor/
+/project/public/bundles/
+/project/public/build/
+###> Symfony generated frontend assets ###
+/project/public/assets/@symfony/
+/project/public/assets/controllers/
+/project/public/assets/styles/
+/project/public/assets/app-*.js
+/project/public/assets/stimulus_bootstrap-*.js
+/project/public/assets/importmap.json
+/project/public/assets/manifest.json
+/project/public/build/
+
+/project/node_modules/
+
+###> Local environment ###
+/project/.env.local
+/project/.env.*.local
+
+### IDE ###
+/project/.idea/
+/project/.vscode/
+
+### OS ###
+/project/.DS_Store
+/project/Thumbs.db
+
+### Logs ###
+/project/*.log
+
+### Cache ###
+/project/.cache/
+
+/project/pack/
+
+### PHPUnit ###
+/project/phpunit.xml
+/project/.phpunit.result.cache
+
+
