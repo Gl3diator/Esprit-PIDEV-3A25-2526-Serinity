@@ -8,6 +8,7 @@ use App\Dto\Exercice\CompleteControlRequest;
 use App\Service\AmbientSoundService;
 use App\Service\QuoteService;
 use App\Service\User\ContextAwarePlanner;
+use App\Service\User\ExerciseProfileService;
 use App\Service\User\FatigueResolver;
 use App\Service\User\YouTubeRecommendationService;
 use App\Service\User\UserExerciceService;
@@ -31,6 +32,7 @@ final class ExerciceController extends AbstractUserUiController
         private readonly QuoteService $quoteService,
         private readonly WeatherService $weatherService,
         private readonly ContextAwarePlanner $contextAwarePlanner,
+        private readonly ExerciseProfileService $exerciseProfileService,
         private readonly FatigueResolver $fatigueResolver,
         private readonly YouTubeRecommendationService $youTubeRecommendationService,
         private readonly PaginatorInterface $paginator,
@@ -45,6 +47,7 @@ final class ExerciceController extends AbstractUserUiController
         $user = $this->currentUser();
         $catalogRows = $this->userExerciceService->catalog($user)->data['items'] ?? [];
         $summary = $this->userExerciceService->summary($user)->data;
+        $exerciseProfile = $this->exerciseProfileService->classify($user)->data;
 
         $search = mb_strtolower(trim((string) $request->query->get('q', '')));
         $type = trim((string) $request->query->get('type', ''));
@@ -113,7 +116,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->render('user/pages/exercises.html.twig', [
             'nav' => $this->buildNav('user_ui_exercises'),
             'userName' => $user->getEmail(),
-            'catalog' => $this->paginator->paginate($catalog, max(1, $request->query->getInt('page', 1)), 9),
+            'catalog' => $this->paginator->paginate($catalog, max(1, $request->query->getInt('page', 1)), 3),
             'availableTypes' => $availableTypes,
             'availableLevels' => $availableLevels,
             'filters' => [
@@ -124,6 +127,7 @@ final class ExerciceController extends AbstractUserUiController
                 'fatigue' => $fatigue,
             ],
             'summary' => $summary,
+            'exerciseProfile' => $exerciseProfile,
             'quote' => $quote,
             'weather' => $weather,
             'plan' => $plan,
@@ -264,8 +268,13 @@ final class ExerciceController extends AbstractUserUiController
             'nav' => $this->buildNav('user_ui_exercises'),
             'userName' => $userName,
             'session' => $sessionData,
+            'guidedInstructions' => $this->resolveGuidedInstructions($sessionData),
+            'exerciseTheme' => $this->resolveExerciseTheme($sessionData),
             'audioUrl' => (string) ($ambientSound['audioUrl'] ?? ''),
             'audioTitle' => (string) ($ambientSound['title'] ?? ''),
+            'audioAvailable' => (bool) ($ambientSound['available'] ?? false),
+            'audioTags' => $ambientSound['tags'] ?? [],
+            'audioTracks' => $ambientSound['tracks'] ?? [],
             'audioType' => (string) ($ambientSound['type'] ?? ''),
             'audioMood' => ucfirst($moment),
         ]);
@@ -281,6 +290,118 @@ final class ExerciceController extends AbstractUserUiController
             $hour >= 12 => 'afternoon',
             default => 'morning',
         };
+    }
+
+    /**
+     * @param array<string,mixed> $sessionData
+     * @return list<array{title:string,description:string}>
+     */
+    private function resolveGuidedInstructions(array $sessionData): array
+    {
+        $exercise = is_array($sessionData['exercice'] ?? null) ? $sessionData['exercice'] : [];
+        $storedInstructions = $exercise['guidedInstructions'] ?? null;
+        if (is_array($storedInstructions)) {
+            $normalized = [];
+            foreach ($storedInstructions as $instruction) {
+                if (!is_array($instruction)) {
+                    continue;
+                }
+
+                $title = trim((string) ($instruction['title'] ?? ''));
+                $description = trim((string) ($instruction['description'] ?? ''));
+                if ($title === '' && $description === '') {
+                    continue;
+                }
+
+                $normalized[] = [
+                    'title' => $title !== '' ? $title : 'Step',
+                    'description' => $description,
+                ];
+            }
+
+            if ($normalized !== []) {
+                return $normalized;
+            }
+        }
+
+        $title = strtolower(trim((string) ($exercise['title'] ?? '')));
+        $type = strtolower(trim((string) ($exercise['type'] ?? '')));
+        $haystack = trim($title . ' ' . $type);
+
+        if ($this->containsAny($haystack, ['breath', 'breathing', 'respiration', 'reset'])) {
+            return [
+                ['title' => 'Prepare', 'description' => 'Sit comfortably and relax your shoulders.'],
+                ['title' => 'Inhale', 'description' => 'Inhale slowly through your nose.'],
+                ['title' => 'Follow', 'description' => 'Follow the breathing circle rhythm.'],
+                ['title' => 'Release', 'description' => 'Exhale gently and release tension.'],
+                ['title' => 'Continue', 'description' => 'Continue until the session ends.'],
+            ];
+        }
+
+        if ($this->containsAny($haystack, ['mindfulness', 'body scan', 'scan', 'attention'])) {
+            return [
+                ['title' => 'Settle', 'description' => 'Sit or lie down in a comfortable position.'],
+                ['title' => 'Notice', 'description' => 'Bring your attention gently to your body.'],
+                ['title' => 'Observe', 'description' => 'Notice any tension without judging it.'],
+                ['title' => 'Soften', 'description' => 'Breathe slowly and let your shoulders soften.'],
+                ['title' => 'Return', 'description' => 'Return your focus calmly whenever your mind wanders.'],
+            ];
+        }
+
+        if ($this->containsAny($haystack, ['reframe', 'cbt', 'thought', 'cognitive'])) {
+            return [
+                ['title' => 'Identify', 'description' => 'Identify the thought you want to reframe.'],
+                ['title' => 'Question', 'description' => 'Ask yourself if the thought is fully accurate.'],
+                ['title' => 'Reframe', 'description' => 'Look for a kinder or more balanced perspective.'],
+                ['title' => 'Repeat', 'description' => 'Repeat the new thought slowly.'],
+                ['title' => 'Reflect', 'description' => 'Notice how your mood changes.'],
+            ];
+        }
+
+        if ($this->containsAny($haystack, ['yoga', 'stretch', 'posture', 'sun'])) {
+            return [
+                ['title' => 'Move', 'description' => 'Move slowly and avoid forcing the posture.'],
+                ['title' => 'Breathe', 'description' => 'Keep breathing naturally.'],
+                ['title' => 'Hold', 'description' => 'Hold the position gently.'],
+                ['title' => 'Release', 'description' => 'Release the posture slowly.'],
+                ['title' => 'Rest', 'description' => 'Rest before repeating.'],
+            ];
+        }
+
+        return [
+            ['title' => 'Prepare', 'description' => 'Prepare your space and get comfortable.'],
+            ['title' => 'Follow', 'description' => 'Follow the session rhythm at your own pace.'],
+            ['title' => 'Focus', 'description' => 'Keep your attention on the exercise.'],
+            ['title' => 'Pause', 'description' => 'Pause if you need to.'],
+            ['title' => 'Reflect', 'description' => 'Finish gently and reflect on how you feel.'],
+        ];
+    }
+
+    /**
+     * @param array<string,mixed> $sessionData
+     */
+    private function resolveExerciseTheme(array $sessionData): string
+    {
+        $exercise = is_array($sessionData['exercice'] ?? null) ? $sessionData['exercice'] : [];
+        $theme = strtolower(trim((string) ($exercise['theme'] ?? '')));
+
+        return in_array($theme, ['calm', 'balanced', 'active', 'focus', 'relaxation'], true)
+            ? $theme
+            : 'balanced';
+    }
+
+    /**
+     * @param list<string> $needles
+     */
+    private function containsAny(string $haystack, array $needles): bool
+    {
+        foreach ($needles as $needle) {
+            if (str_contains($haystack, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

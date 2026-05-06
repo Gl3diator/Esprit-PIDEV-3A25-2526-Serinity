@@ -59,6 +59,8 @@ parameters:
     app.user_lon: '%env(float:USER_LON)%'
     app.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
     app.gemini_model: '%env(string:GEMINI_MODEL)%'
+    app.exercise_profile_api_base_url: 'http://127.0.0.1:8001'
+    app.exercise_profile_api_timeout: 2.0
 
 services:
     # default configuration for services in *this* file
@@ -193,6 +195,10 @@ services:
             $defaultLatitude: '%app.user_lat%'
             $defaultLongitude: '%app.user_lon%'
 
+    App\Command\ExportExerciseProfileDatasetCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Service\User\YouTubeRecommendationService:
         arguments:
             $apiKey: '%app.youtube_api_key%'
@@ -206,6 +212,11 @@ services:
         arguments:
             $cachePool: '@cache.app'
             $environment: '%kernel.environment%'
+
+    App\Service\User\ExerciseProfileApiClient:
+        arguments:
+            $baseUrl: '%app.exercise_profile_api_base_url%'
+            $timeout: '%app.exercise_profile_api_timeout%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

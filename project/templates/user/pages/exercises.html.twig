@@ -15,6 +15,13 @@
         {% endfor %}
 
         <section class="ac-card">
+            <h3>Your Exercise Profile: {{ exerciseProfile.displayLabel ?? 'Not enough data' }}</h3>
+            <p class="ac-muted" style="margin: .45rem 0 0;">
+                {{ exerciseProfile.explanation ?? 'Complete more sessions to learn which exercises suit you best.' }}
+            </p>
+        </section>
+
+        <section class="ac-card">
             <h3>My exercise progress</h3>
             <div class="ac-cards ac-cards-two">
                 <div id="user_exercise_status_chart" style="width:100%; height:320px; min-height:320px;"></div>
