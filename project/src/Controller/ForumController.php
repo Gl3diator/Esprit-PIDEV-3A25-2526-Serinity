@@ -44,7 +44,7 @@ class ForumController extends AbstractController
         UserNavService $navService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -75,7 +75,7 @@ class ForumController extends AbstractController
         UserNavService $navService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -109,7 +109,7 @@ class ForumController extends AbstractController
         UserNavService $navService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -140,7 +140,7 @@ class ForumController extends AbstractController
         UserNavService $navService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -172,7 +172,7 @@ class ForumController extends AbstractController
         UserNavService $navService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -214,7 +214,7 @@ class ForumController extends AbstractController
         SpamRateLimiterService $spamRateLimiterService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -241,7 +241,6 @@ class ForumController extends AbstractController
             // Check spam rate limit for replies before creating reply
             $rateLimit = $spamRateLimiterService->checkReplyCreationSpam($currentUser->getId());
             if (!$rateLimit->isAccepted()) {
-                // Ban user for 12 hours due to spam
                 $spamRateLimiterService->banUserForSpam($currentUser);
                 $remainingSeconds = $spamRateLimiterService->getRemainingBanSeconds($currentUser);
                 $this->addFlash('danger', sprintf(
@@ -319,7 +318,7 @@ class ForumController extends AbstractController
         ThreadService $threadService,
     ): Response {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -453,7 +452,7 @@ class ForumController extends AbstractController
     public function editReply(Reply $reply, Request $request, ForumCurrentUserService $currentUserService, ReplyService $replyService): Response
     {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 
@@ -474,7 +473,7 @@ class ForumController extends AbstractController
     public function deleteReply(Reply $reply, Request $request, ForumCurrentUserService $currentUserService, ReplyService $replyService): Response
     {
         $currentUser = $currentUserService->requireUser();
-        if ($currentUserService->isBackofficeUser($currentUser)) {
+        if ($currentUserService->isAdmin($currentUser)) {
             return $this->redirectToRoute('app_admin_forum');
         }
 

@@ -795,18 +795,6 @@ final class AccessControlUiController extends AbstractController
         return $chart;
     }
 
-    #[Route('/admin/forum', name: 'ac_ui_forum', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function forum(): Response
-    {
-        return $this->render('access_control/pages/coming_soon.html.twig', [
-            'nav' => $this->buildNav('ac_ui_forum'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
-            'title' => 'Forum',
-            'subtitle' => 'Forum moderation and insights are coming soon.',
-        ]);
-    }
-
     #[Route('/admin/mood', name: 'ac_ui_mood', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     public function mood(): Response
@@ -1135,7 +1123,7 @@ final class AccessControlUiController extends AbstractController
             ['section' => 'Users management', 'label' => 'Users', 'route' => 'ac_ui_users', 'icon' => 'group'],
             ['section' => 'Users management', 'label' => 'Consultations', 'route' => 'ac_ui_consultations', 'icon' => 'medical_services'],
             ['section' => 'Users management', 'label' => 'Exercises', 'route' => 'ac_ui_exercises', 'icon' => 'self_improvement'],
-            ['section' => 'Users management', 'label' => 'Forum', 'route' => 'ac_ui_forum', 'icon' => 'forum'],
+            ['section' => 'Users management', 'label' => 'Forum', 'route' => 'app_admin_forum', 'icon' => 'forum'],
             [
                 'section' => 'Users management',
                 'label' => 'Mood',

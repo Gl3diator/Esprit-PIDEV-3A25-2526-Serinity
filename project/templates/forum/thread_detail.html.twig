@@ -343,21 +343,7 @@
                     const now = Date.now();
                     pruneLocalActions(now);
 
-                    if (localBlockedUntil > now) {
-                        const waitSeconds = Math.max(1, Math.ceil((localBlockedUntil - now) / 1000));
-                        showWarning(buildWarningMessage('Too many follow/unfollow actions.', waitSeconds));
-
-                        return;
-                    }
-
-                    if (localActionTimestamps.length >= FOLLOW_MAX_ACTIONS) {
-                        localBlockedUntil = localActionTimestamps[0] + FOLLOW_WINDOW_MS;
-                        const waitSeconds = Math.max(1, Math.ceil((localBlockedUntil - now) / 1000));
-                        showWarning(buildWarningMessage('Too many follow/unfollow actions.', waitSeconds));
-
-                        return;
-                    }
-
+                    
                     localActionTimestamps.push(now);
 
                     pendingToggles += 1;
