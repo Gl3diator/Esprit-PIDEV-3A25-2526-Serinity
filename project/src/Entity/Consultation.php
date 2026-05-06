@@ -38,8 +38,7 @@ private ?RendezVous $rendezVous = null;
     #[ORM\JoinColumn(nullable: false)]
     private ?User $doctor = null;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $dateConsultation;
+   
 
     #[ORM\Column(type: "text", nullable: true)]
     #[Assert\Length(max: 255)]
@@ -60,11 +59,12 @@ private ?RendezVous $rendezVous = null;
     #[Assert\Length(min: 3, minMessage: "Min 3 caractères")]
     private ?string $notes = null;
 
-    public function __construct()
-    {
-        $this->dateConsultation = new \DateTime();
-    }
-
+ #[ORM\Column(type: "datetime_immutable")]
+private \DateTimeImmutable $dateConsultation;
+public function __construct()
+{
+    $this->dateConsultation = new \DateTimeImmutable();
+}
     public function getId(): ?int { return $this->id; }
 
     public function getRapport(): ?Rapport { return $this->rapport; }
@@ -75,10 +75,7 @@ private ?RendezVous $rendezVous = null;
 
     public function getDoctor(): ?User { return $this->doctor; }
     public function setDoctor(?User $doctor): self { $this->doctor = $doctor; return $this; }
-
-    public function getDateConsultation(): \DateTimeInterface { return $this->dateConsultation; }
-    public function setDateConsultation(\DateTimeInterface $date): self { $this->dateConsultation = $date; return $this; }
-
+ 
     public function getDiagnostic(): ?string { return $this->diagnostic; }
     public function setDiagnostic(?string $diagnostic): self { $this->diagnostic = $diagnostic; return $this; }
 
@@ -87,4 +84,16 @@ private ?RendezVous $rendezVous = null;
 
     public function getNotes(): ?string { return $this->notes; }
     public function setNotes(?string $notes): self { $this->notes = $notes; return $this; }
+
+    public function getDateConsultation(): \DateTimeInterface
+{
+    return $this->dateConsultation;
+}
+
+public function setDateConsultation(\DateTimeInterface $dateConsultation): self
+{
+    $this->dateConsultation = \DateTimeImmutable::createFromInterface($dateConsultation);
+
+    return $this;
+}
 }
