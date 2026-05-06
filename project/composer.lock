@@ -4,15 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
 
-
-
-    "content-hash": "4067da50cb8d6679ece6dcd682ed7605",
-
-=======
     "content-hash": "9330c29ca96e6b5560d95f23cc57364b",
->>>>>>> 10a2545 (finale changes to merge)
     "packages": [
         {
             "name": "ankane/onnxruntime",
