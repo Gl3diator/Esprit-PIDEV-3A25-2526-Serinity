@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Service\User;
 
 use App\Entity\User;
+use Psr\Log\LoggerInterface;
 
 final readonly class CoachChatService
 {
     public function __construct(
         private CoachInsightService $coachInsightService,
         private GeminiClient $geminiClient,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -22,14 +24,30 @@ final readonly class CoachChatService
     {
         $coach = $this->normalizeCoachContext($coachContext) ?? $this->coachInsightService->getInsight($user);
         $prompt = $this->buildPrompt($message, $coach['report'], $coach['insight']);
+        $this->logger->info('Coach chat reply requested.', [
+            'user_id' => $user->getId(),
+            'message_length' => mb_strlen($message),
+            'prompt_length' => mb_strlen($prompt),
+            'context_source' => $coachContext !== null ? 'session' : 'insight_service',
+        ]);
         $reply = $this->geminiClient->generateCoachChatReply($prompt);
 
         if ($reply !== null) {
+            $this->logger->info('Coach chat Gemini reply generated.', [
+                'user_id' => $user->getId(),
+                'reply_length' => mb_strlen($reply),
+            ]);
+
             return [
                 'reply' => $this->trimReply($reply),
                 'source' => 'gemini',
             ];
         }
+
+        $this->logger->warning('Coach chat falling back to local reply because Gemini returned no usable content.', [
+            'user_id' => $user->getId(),
+            'message_length' => mb_strlen($message),
+        ]);
 
         return [
             'reply' => $this->localFallbackReply($message, $coach['report'], $coach['insight']),

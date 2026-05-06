@@ -35,6 +35,10 @@ final class JwtAuthenticator extends AbstractAuthenticator
             return false;
         }
 
+        if ($path === '/user/exercises/coach/chat' && $this->extractToken($request) === null) {
+            return false;
+        }
+
         return $this->extractToken($request) !== null
             && (
                 str_starts_with($path, '/api/')

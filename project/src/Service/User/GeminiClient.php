@@ -13,6 +13,8 @@ final readonly class GeminiClient
     private const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent';
     private const REQUEST_TIMEOUT_SECONDS = 30.0;
     private const REQUEST_MAX_DURATION_SECONDS = 30.0;
+    private const MAX_ATTEMPTS = 3;
+    private const RETRY_DELAY_MICROSECONDS = 1000000;
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -47,7 +49,7 @@ final readonly class GeminiClient
             'has_api_key' => trim($this->apiKey) !== '',
         ]);
 
-        if (trim($this->apiKey) === '' || trim($this->model) === '') {
+        if (!$this->hasUsableConfiguration()) {
             $this->logger->warning('Gemini coach client skipped because configuration is incomplete.', [
                 'has_api_key' => trim($this->apiKey) !== '',
                 'has_model' => trim($this->model) !== '',
@@ -56,172 +58,35 @@ final readonly class GeminiClient
             return null;
         }
 
-        $requestOptions = [
-            'query' => ['key' => $this->apiKey],
-            'json' => [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $this->buildPrompt($report)],
-                        ],
-                    ],
-                ],
-            ],
-            'timeout' => self::REQUEST_TIMEOUT_SECONDS,
-            'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
-        ];
-
-        for ($attempt = 1; $attempt <= 2; ++$attempt) {
-            try {
-                $this->logger->info('Gemini coach HTTP request is about to be sent.', [
-                    'model' => $this->model,
-                    'attempt' => $attempt,
-                    'timeout' => self::REQUEST_TIMEOUT_SECONDS,
-                    'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
-                ]);
-
-                $response = $this->httpClient->request('POST', sprintf(self::BASE_URL, rawurlencode($this->model)), $requestOptions);
-
-                $statusCode = $response->getStatusCode();
-                $rawBody = $response->getContent(false);
-                $this->logger->info('Gemini coach HTTP response received.', [
-                    'model' => $this->model,
-                    'attempt' => $attempt,
-                    'status_code' => $statusCode,
-                    'raw_body' => $rawBody,
-                ]);
-
-                if ($statusCode !== 200) {
-                    $this->logger->warning('Gemini coach request returned a non-200 response.', [
-                        'attempt' => $attempt,
-                        'status_code' => $statusCode,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                if (trim($rawBody) === '') {
-                    $this->logger->warning('Gemini coach response body was empty.', [
-                        'attempt' => $attempt,
-                        'status_code' => $statusCode,
-                    ]);
-
-                    return null;
-                }
-
-                try {
-                    $payload = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
-                } catch (\JsonException $exception) {
-                    $this->logger->warning('Gemini coach HTTP response contained invalid JSON.', [
-                        'exception_class' => $exception::class,
-                        'exception_message' => $exception->getMessage(),
-                        'attempt' => $attempt,
-                        'status_code' => $statusCode,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                if (!is_array($payload)) {
-                    $this->logger->warning('Gemini coach HTTP response JSON was not an object.', [
-                        'attempt' => $attempt,
-                        'status_code' => $statusCode,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                $candidateText = $this->extractCandidateText($payload);
-                if ($candidateText === '') {
-                    $this->logger->warning('Gemini coach response did not contain candidate text.', [
-                        'attempt' => $attempt,
-                        'status_code' => $statusCode,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                try {
-                    $coachPayload = json_decode($candidateText, true, 512, JSON_THROW_ON_ERROR);
-                } catch (\JsonException $exception) {
-                    $this->logger->warning('Gemini coach candidate text contained invalid JSON.', [
-                        'exception_class' => $exception::class,
-                        'exception_message' => $exception->getMessage(),
-                        'attempt' => $attempt,
-                        'candidate_text' => $candidateText,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                $insight = $this->normalizeInsight($coachPayload);
-                if ($insight === null) {
-                    $this->logger->warning('Gemini coach response JSON did not match the expected insight structure.', [
-                        'attempt' => $attempt,
-                        'candidate_text' => $candidateText,
-                        'raw_body' => $rawBody,
-                    ]);
-
-                    return null;
-                }
-
-                if ($attempt > 1) {
-                    $this->logger->info('Gemini coach retry succeeded.', [
-                        'model' => $this->model,
-                        'attempt' => $attempt,
-                    ]);
-                }
-
-                return $insight;
-            } catch (TransportExceptionInterface $exception) {
-                $message = $exception->getMessage();
-                $isTimeout = $this->isTimeoutException($message);
-
-                $this->logger->warning($isTimeout ? 'Gemini coach request timed out.' : 'Gemini transport failed. Verify PHP curl extension and network access.', [
-                    'exception_class' => $exception::class,
-                    'exception_message' => $message,
-                    'model' => $this->model,
-                    'attempt' => $attempt,
-                    'curl_loaded' => extension_loaded('curl'),
-                    'likely_fopen_transport' => str_contains(strtolower($message), 'fopen') || !extension_loaded('curl'),
-                ]);
-
-                if ($isTimeout && $attempt === 1) {
-                    $this->logger->info('Retrying Gemini coach request after timeout.', [
-                        'model' => $this->model,
-                        'next_attempt' => 2,
-                    ]);
-                    usleep(300000);
-
-                    continue;
-                }
-
-                if ($isTimeout && $attempt === 2) {
-                    $this->logger->warning('Gemini coach retry failed after timeout.', [
-                        'model' => $this->model,
-                        'attempt' => $attempt,
-                    ]);
-                }
-
-                return null;
-            } catch (\Throwable $exception) {
-                $this->logger->warning('Gemini coach request failed unexpectedly.', [
-                    'exception_class' => $exception::class,
-                    'exception_message' => $exception->getMessage(),
-                    'model' => $this->model,
-                    'attempt' => $attempt,
-                ]);
-
-                return null;
-            }
+        $candidateText = $this->requestCandidateText($this->buildPrompt($report), 'coach');
+        if ($candidateText === null) {
+            return null;
         }
 
-        return null;
+        try {
+            $coachPayload = json_decode($candidateText, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            $this->logger->warning('Gemini coach candidate text contained invalid JSON.', [
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
+                'candidate_text' => $candidateText,
+                'fallback_reason' => 'invalid_candidate_json',
+            ]);
+
+            return null;
+        }
+
+        $insight = $this->normalizeInsight($coachPayload);
+        if ($insight === null) {
+            $this->logger->warning('Gemini coach response JSON did not match the expected insight structure.', [
+                'candidate_text' => $candidateText,
+                'fallback_reason' => 'unexpected_insight_structure',
+            ]);
+
+            return null;
+        }
+
+        return $insight;
     }
 
     public function generateCoachChatReply(string $prompt): ?string
@@ -229,56 +94,20 @@ final readonly class GeminiClient
         $this->logger->info('Gemini coach chat client invoked.', [
             'model' => $this->model,
             'has_api_key' => trim($this->apiKey) !== '',
+            'prompt_length' => mb_strlen($prompt),
         ]);
 
-        if (trim($this->apiKey) === '' || trim($this->model) === '' || trim($prompt) === '') {
-            return null;
-        }
-
-        try {
-            $response = $this->httpClient->request('POST', sprintf(self::BASE_URL, rawurlencode($this->model)), [
-                'query' => ['key' => $this->apiKey],
-                'json' => [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $prompt],
-                            ],
-                        ],
-                    ],
-                ],
-                'timeout' => self::REQUEST_TIMEOUT_SECONDS,
-                'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $rawBody = $response->getContent(false);
-            if ($statusCode !== 200 || trim($rawBody) === '') {
-                $this->logger->warning('Gemini coach chat request returned an unusable response.', [
-                    'status_code' => $statusCode,
-                    'raw_body' => $rawBody,
-                ]);
-
-                return null;
-            }
-
-            $payload = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
-            if (!is_array($payload)) {
-                return null;
-            }
-
-            $reply = $this->extractCandidateText($payload);
-
-            return $reply !== '' ? $reply : null;
-        } catch (\Throwable $exception) {
-            $this->logger->warning('Gemini coach chat request failed.', [
-                'exception_class' => $exception::class,
-                'exception_message' => $exception->getMessage(),
-                'model' => $this->model,
+        if (!$this->hasUsableConfiguration() || trim($prompt) === '') {
+            $this->logger->warning('Gemini coach chat client skipped because configuration or prompt is incomplete.', [
+                'has_api_key' => trim($this->apiKey) !== '',
+                'has_model' => trim($this->model) !== '',
+                'has_prompt' => trim($prompt) !== '',
             ]);
 
             return null;
         }
+
+        return $this->requestCandidateText($prompt, 'coach chat');
     }
 
     /** @param array<string,mixed> $report */
@@ -436,6 +265,45 @@ PROMPT;
     }
 
     /**
+     * @param array<string,mixed> $payload
+     * @return array{
+     *     candidate_count:int,
+     *     first_candidate_has_content:bool,
+     *     first_candidate_part_count:int,
+     *     text_part_count:int,
+     *     blank_text_part_count:int
+     * }
+     */
+    private function candidatePayloadDiagnostics(array $payload): array
+    {
+        $candidates = is_array($payload['candidates'] ?? null) ? $payload['candidates'] : [];
+        $firstCandidate = is_array($candidates[0] ?? null) ? $candidates[0] : [];
+        $content = is_array($firstCandidate['content'] ?? null) ? $firstCandidate['content'] : [];
+        $parts = is_array($content['parts'] ?? null) ? $content['parts'] : [];
+        $textPartCount = 0;
+        $blankTextPartCount = 0;
+
+        foreach ($parts as $part) {
+            if (!is_array($part) || !is_string($part['text'] ?? null)) {
+                continue;
+            }
+
+            ++$textPartCount;
+            if (trim($part['text']) === '') {
+                ++$blankTextPartCount;
+            }
+        }
+
+        return [
+            'candidate_count' => count($candidates),
+            'first_candidate_has_content' => $content !== [],
+            'first_candidate_part_count' => count($parts),
+            'text_part_count' => $textPartCount,
+            'blank_text_part_count' => $blankTextPartCount,
+        ];
+    }
+
+    /**
      * @return array{
      *     summary:string,
      *     strengths:list<string>,
@@ -484,6 +352,228 @@ PROMPT;
     private function stringValue(mixed $value): string
     {
         return is_string($value) ? trim($value) : '';
+    }
+
+    private function hasUsableConfiguration(): bool
+    {
+        return trim($this->apiKey) !== '' && trim($this->model) !== '';
+    }
+
+    private function requestCandidateText(string $prompt, string $context): ?string
+    {
+        $requestOptions = [
+            'query' => ['key' => $this->apiKey],
+            'json' => [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                        ],
+                    ],
+                ],
+            ],
+            'timeout' => self::REQUEST_TIMEOUT_SECONDS,
+            'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
+        ];
+
+        for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; ++$attempt) {
+            try {
+                $this->logger->info(sprintf('Gemini %s HTTP request is about to be sent.', $context), [
+                    'model' => $this->model,
+                    'attempt' => $attempt,
+                    'max_attempts' => self::MAX_ATTEMPTS,
+                    'timeout' => self::REQUEST_TIMEOUT_SECONDS,
+                    'max_duration' => self::REQUEST_MAX_DURATION_SECONDS,
+                ]);
+
+                $response = $this->httpClient->request('POST', sprintf(self::BASE_URL, rawurlencode($this->model)), $requestOptions);
+                $statusCode = $response->getStatusCode();
+                $rawBody = $response->getContent(false);
+
+                $shouldRetry = $this->shouldRetryStatusCode($statusCode, $attempt);
+                $this->logger->info(sprintf('Gemini %s HTTP response received.', $context), [
+                    'model' => $this->model,
+                    'attempt' => $attempt,
+                    'max_attempts' => self::MAX_ATTEMPTS,
+                    'status_code' => $statusCode,
+                    'retry_triggered' => $shouldRetry,
+                    'raw_body' => $rawBody,
+                ]);
+
+                if ($statusCode !== 200) {
+                    $this->logger->warning($this->httpFailureMessage($context, $statusCode, $rawBody), [
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'status_code' => $statusCode,
+                        'retry_triggered' => $shouldRetry,
+                        'retry_blocked' => in_array($statusCode, [403, 429], true),
+                        'raw_body' => $rawBody,
+                        'fallback_reason' => sprintf('http_%d', $statusCode),
+                    ]);
+
+                    if ($shouldRetry) {
+                        $this->logRetryScheduled($context, $attempt, sprintf('http_%d', $statusCode), $statusCode);
+                        usleep(self::RETRY_DELAY_MICROSECONDS);
+
+                        continue;
+                    }
+
+                    return null;
+                }
+
+                if (trim($rawBody) === '') {
+                    $this->logger->warning(sprintf('Gemini %s response body was empty.', $context), [
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'status_code' => $statusCode,
+                        'retry_triggered' => false,
+                        'fallback_reason' => 'empty_response_body',
+                    ]);
+
+                    return null;
+                }
+
+                try {
+                    $payload = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
+                } catch (\JsonException $exception) {
+                    $this->logger->warning(sprintf('Gemini %s HTTP response contained invalid JSON.', $context), [
+                        'exception_class' => $exception::class,
+                        'exception_message' => $exception->getMessage(),
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'status_code' => $statusCode,
+                        'retry_triggered' => false,
+                        'raw_body' => $rawBody,
+                        'fallback_reason' => 'invalid_http_json',
+                    ]);
+
+                    return null;
+                }
+
+                if (!is_array($payload)) {
+                    $this->logger->warning(sprintf('Gemini %s HTTP response JSON was not an object.', $context), [
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'status_code' => $statusCode,
+                        'retry_triggered' => false,
+                        'raw_body' => $rawBody,
+                        'fallback_reason' => 'unexpected_http_json_shape',
+                    ]);
+
+                    return null;
+                }
+
+                $candidateDiagnostics = $this->candidatePayloadDiagnostics($payload);
+                $candidateText = $this->extractCandidateText($payload);
+                if ($candidateText === '') {
+                    $this->logger->warning(sprintf('Gemini %s response did not contain candidate text.', $context), [
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'status_code' => $statusCode,
+                        'retry_triggered' => false,
+                        'candidate_diagnostics' => $candidateDiagnostics,
+                        'raw_body' => $rawBody,
+                        'fallback_reason' => 'empty_candidate_text',
+                    ]);
+
+                    return null;
+                }
+
+                if ($attempt > 1) {
+                    $this->logger->info(sprintf('Gemini %s retry succeeded.', $context), [
+                        'model' => $this->model,
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                    ]);
+                }
+
+                return $candidateText;
+            } catch (TransportExceptionInterface $exception) {
+                $message = $exception->getMessage();
+                $isTimeout = $this->isTimeoutException($message);
+                $shouldRetry = $isTimeout && $attempt < self::MAX_ATTEMPTS;
+                $fallbackReason = $isTimeout ? 'transport_timeout' : 'transport_error';
+
+                $this->logger->warning(
+                    sprintf(
+                        'Gemini %s %s.',
+                        $context,
+                        $isTimeout ? 'request timed out' : 'transport failed'
+                    ),
+                    [
+                        'exception_class' => $exception::class,
+                        'exception_message' => $message,
+                        'model' => $this->model,
+                        'attempt' => $attempt,
+                        'max_attempts' => self::MAX_ATTEMPTS,
+                        'retry_triggered' => $shouldRetry,
+                        'curl_loaded' => extension_loaded('curl'),
+                        'likely_fopen_transport' => str_contains(strtolower($message), 'fopen') || !extension_loaded('curl'),
+                        'fallback_reason' => $fallbackReason,
+                    ]
+                );
+
+                if ($shouldRetry) {
+                    $this->logRetryScheduled($context, $attempt, $fallbackReason, null);
+                    usleep(self::RETRY_DELAY_MICROSECONDS);
+
+                    continue;
+                }
+
+                return null;
+            } catch (\Throwable $exception) {
+                $this->logger->warning(sprintf('Gemini %s request failed unexpectedly.', $context), [
+                    'exception_class' => $exception::class,
+                    'exception_message' => $exception->getMessage(),
+                    'model' => $this->model,
+                    'attempt' => $attempt,
+                    'max_attempts' => self::MAX_ATTEMPTS,
+                    'retry_triggered' => false,
+                    'fallback_reason' => 'unexpected_exception',
+                ]);
+
+                return null;
+            }
+        }
+
+        $this->logger->warning(sprintf('Gemini %s exhausted all attempts and will return null for fallback handling.', $context), [
+            'model' => $this->model,
+            'max_attempts' => self::MAX_ATTEMPTS,
+            'fallback_reason' => 'attempts_exhausted',
+        ]);
+
+        return null;
+    }
+
+    private function shouldRetryStatusCode(int $statusCode, int $attempt): bool
+    {
+        return $statusCode === 503 && $attempt < self::MAX_ATTEMPTS;
+    }
+
+    private function logRetryScheduled(string $context, int $attempt, string $reason, ?int $statusCode): void
+    {
+        $this->logger->info(sprintf('Gemini %s retry scheduled.', $context), [
+            'model' => $this->model,
+            'attempt' => $attempt,
+            'next_attempt' => $attempt + 1,
+            'max_attempts' => self::MAX_ATTEMPTS,
+            'status_code' => $statusCode,
+            'retry_reason' => $reason,
+            'retry_delay_seconds' => 1,
+        ]);
+    }
+
+    private function httpFailureMessage(string $context, int $statusCode, string $rawBody): string
+    {
+        return match ($statusCode) {
+            403 => sprintf('Gemini %s request was rejected (403). Check API key validity or API access.', $context),
+            404 => sprintf('Gemini %s request failed because the configured Gemini model was not found (404).', $context),
+            429 => sprintf('Gemini %s request hit Gemini quota limits (429).', $context),
+            503 => sprintf('Gemini %s request failed because Gemini is temporarily unavailable (503).', $context),
+            default => trim($rawBody) === ''
+                ? sprintf('Gemini %s request returned an empty response body.', $context)
+                : sprintf('Gemini %s request returned an unusable response.', $context),
+        };
     }
 
     private function isTimeoutException(string $message): bool
