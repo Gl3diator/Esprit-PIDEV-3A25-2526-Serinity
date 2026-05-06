@@ -85,6 +85,12 @@ final class AccessControlUiController extends AbstractController
         ]);
     }
 
+    #[Route('/verify-email', name: 'ac_ui_verify_email', methods: ['GET'])]
+    public function verifyEmail(): Response
+    {
+        return $this->render('access_control/pages/verify_email.html.twig');
+    }
+
     #[Route('/dashboard', name: 'ac_ui_dashboard_legacy', methods: ['GET'])]
     public function dashboardLegacy(): Response
     {
@@ -138,6 +144,7 @@ final class AccessControlUiController extends AbstractController
             email: $request->query->get('email'),
             role: $request->query->get('role'),
             accountStatus: $request->query->get('accountStatus'),
+            riskLevel: $request->query->get('riskLevel'),
         );
 
         $result = $this->userManagementService->getUsersPaginated($filterRequest);
@@ -158,6 +165,10 @@ final class AccessControlUiController extends AbstractController
                 'state' => $profile?->getState() ?? '',
                 'aboutMe' => $profile?->getAboutMe() ?? '',
                 'profileImageUrl' => $profile?->getProfileImageUrl() ?? '',
+                'riskLevel' => $user->getRiskLevel(),
+                'riskPrediction' => null,
+                'riskConfidence' => null,
+                'riskEvaluatedAt' => null,
             ];
         }, array_filter(
             $result['users'],
@@ -177,6 +188,7 @@ final class AccessControlUiController extends AbstractController
                 'email' => $filterRequest->email,
                 'role' => $filterRequest->role,
                 'accountStatus' => $filterRequest->accountStatus,
+                'riskLevel' => $filterRequest->riskLevel,
             ],
         ]);
     }
@@ -1119,7 +1131,7 @@ final class AccessControlUiController extends AbstractController
     private function buildNav(string $activeRoute): array
     {
         $moodChildRoutes = ['ac_ui_mood', 'ac_ui_emotion', 'ac_ui_influence'];
-        $sleepChildRoutes = ['ac_ui_sleep', 'ac_ui_sleep_reves'];
+        $sleepChildRoutes = ['app_admin_sommeil_index'];
         $items = [
             ['section' => 'Admin self-management', 'label' => 'Dashboard', 'route' => 'ac_ui_dashboard', 'icon' => 'dashboard'],
             ['section' => 'Admin self-management', 'label' => 'Profile', 'route' => 'ac_ui_profile', 'icon' => 'person'],
@@ -1130,6 +1142,7 @@ final class AccessControlUiController extends AbstractController
             ['section' => 'Users management', 'label' => 'Consultations', 'route' => 'ac_ui_consultations', 'icon' => 'medical_services'],
             ['section' => 'Users management', 'label' => 'Exercises', 'route' => 'ac_ui_exercises', 'icon' => 'self_improvement'],
             ['section' => 'Users management', 'label' => 'Forum', 'route' => 'ac_ui_forum', 'icon' => 'forum'],
+            ['section' => 'Users management', 'label' => 'Sleep', 'route' => 'app_admin_sommeil_index', 'icon' => 'nights_stay'],
             [
                 'section' => 'Users management',
                 'label' => 'Mood',
@@ -1141,22 +1154,13 @@ final class AccessControlUiController extends AbstractController
                     ['label' => 'Influence management', 'route' => 'ac_ui_influence', 'icon' => 'tune'],
                 ],
             ],
-            [
-                'section' => 'Users management',
-                'label' => 'Sleep',
-                'route' => 'ac_ui_sleep',
-                'icon' => 'hotel',
-                'children' => [
-                    ['label' => 'Sommeil', 'route' => 'ac_ui_sleep', 'icon' => 'bedtime'],
-                    ['label' => 'Reves management', 'route' => 'ac_ui_sleep_reves', 'icon' => 'nights_stay'],
-                ],
-            ],
+
         ];
 
         return array_map(
             static function (array $item) use ($activeRoute, $moodChildRoutes, $sleepChildRoutes): array {
                 $isMoodGroup = $item['route'] === 'ac_ui_mood' && isset($item['children']);
-                $isSleepGroup = $item['route'] === 'ac_ui_sleep' && isset($item['children']);
+                $isSleepGroup = $item['route'] === 'app_admin_sommeil_index' && isset($item['children']);
                 $active = $item['route'] === $activeRoute;
 
                 if ($isMoodGroup) {

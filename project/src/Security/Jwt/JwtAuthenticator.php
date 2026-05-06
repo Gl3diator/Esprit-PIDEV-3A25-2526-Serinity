@@ -31,7 +31,7 @@ final class JwtAuthenticator extends AbstractAuthenticator
     public function supports(Request $request): ?bool
     {
         $path = $request->getPathInfo();
-        if (preg_match('#^/api/auth/(login|signin|register|signup|refresh|logout|forgot-password|verify-reset-code|reset-password|reset/send|reset/confirm|face/login|google/connect|google/callback|2fa/check)$#', $path) === 1) {
+        if (preg_match('#^/api/auth/(login|signin|register|signup|refresh|logout|forgot-password|verify-reset-code|reset-password|reset/send|reset/confirm|verify-email|verify-email/resend|face/login|google/connect|google/callback|2fa/check)$#', $path) === 1) {
             return false;
         }
 
@@ -40,6 +40,9 @@ final class JwtAuthenticator extends AbstractAuthenticator
                 str_starts_with($path, '/api/')
                 || str_starts_with($path, '/admin')
                 || str_starts_with($path, '/user')
+                || str_starts_with($path, '/forum')
+                || str_starts_with($path, '/threads')
+                || str_starts_with($path, '/notifications')
                 || str_starts_with($path, '/sommeil')
                 || str_starts_with($path, '/reve')
                 || $path === '/dashboard'

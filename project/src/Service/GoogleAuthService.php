@@ -13,6 +13,7 @@ use App\Enum\PresenceStatus;
 use App\Enum\UserRole;
 use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
+use App\Service\Risk\UserRiskService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -27,6 +28,8 @@ final readonly class GoogleAuthService
         private UserPasswordHasherInterface $passwordHasher,
         private JwtService $jwtService,
         private TokenGenerator $tokenGenerator,
+        private AccountAccessService $accountAccessService,
+        private UserRiskService $userRiskService,
     ) {
     }
 
@@ -73,9 +76,16 @@ final readonly class GoogleAuthService
 
     private function loginUser(User $user): ServiceResult
     {
+        $eligibilityResult = $this->accountAccessService->checkLoginEligibility($user);
+        if ($eligibilityResult !== null) {
+            return $eligibilityResult;
+        }
+
         $this->sessionService->revokeActiveSessions($user);
         $session = $this->sessionService->createSession($user);
         $this->auditLogService->log($session, AuditAction::USER_LOGIN);
+        $this->entityManager->flush();
+        $this->userRiskService->evaluateAndStore($user, true);
         $this->entityManager->flush();
 
         return ServiceResult::success('Login successful.', $this->buildAuthPayload($user, $session->getRefreshToken()));
@@ -112,6 +122,8 @@ final readonly class GoogleAuthService
 
         $this->entityManager->persist($user);
         $this->entityManager->persist($profile);
+        $this->entityManager->flush();
+        $this->userRiskService->evaluateAndStore($user, true);
         $this->entityManager->flush();
 
         return ServiceResult::success('Registration successful.', $this->buildAuthPayload($user, $session->getRefreshToken()));

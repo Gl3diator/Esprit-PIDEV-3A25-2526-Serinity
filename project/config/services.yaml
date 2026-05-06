@@ -21,6 +21,10 @@ parameters:
     app.password_reset_rate_limit_attempts: '%env(int:PASSWORD_RESET_RATE_LIMIT_ATTEMPTS)%'
     app.password_reset_rate_limit_window_seconds: '%env(int:PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS)%'
     app.password_reset_max_resends: '%env(int:PASSWORD_RESET_MAX_RESENDS)%'
+    app.email_verification_code_ttl_minutes: '%env(int:EMAIL_VERIFICATION_CODE_TTL_MINUTES)%'
+    app.email_verification_rate_limit_attempts: '%env(int:EMAIL_VERIFICATION_RATE_LIMIT_ATTEMPTS)%'
+    app.email_verification_rate_limit_window_seconds: '%env(int:EMAIL_VERIFICATION_RATE_LIMIT_WINDOW_SECONDS)%'
+    app.email_verification_max_resends: '%env(int:EMAIL_VERIFICATION_MAX_RESENDS)%'
     app.whatsapp_phone: '%env(string:WHATSAPP_PHONE)%'
     app.whatsapp_api_key: '%env(string:WHATSAPP_API_KEY)%'
     app.face_auth_similarity_threshold: '%env(float:FACE_AUTH_SIMILARITY_THRESHOLD)%'
@@ -50,6 +54,12 @@ parameters:
     app.ai_emotion_api_timeout: '%env(float:AI_EMOTION_API_TIMEOUT)%'
     app.ai_emotion_api_threshold: '%env(float:AI_EMOTION_API_THRESHOLD)%'
     app.ai_emotion_api_top_k: '%env(int:AI_EMOTION_API_TOP_K)%'
+    app.forum_upload_dir: '%kernel.project_dir%/public/uploads'
+    app.forum_imgbb_api_key: '%env(string:API_IMGBB)%'
+    app.forum_translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
+
+    app.account_ban_duration_minutes: '%env(int:ACCOUNT_BAN_DURATION_MINUTES)%'
+    app.spam_ban_duration_minutes: '%env(int:SPAM_BAN_DURATION_MINUTES)%'
     app.ntfy_base_url: '%env(string:NTFY_BASE_URL)%'
     app.ntfy_doctor_topic: '%env(string:NTFY_DOCTOR_TOPIC)%'
     app.ntfy_enabled: '%env(bool:NTFY_ENABLED)%'
@@ -59,7 +69,19 @@ parameters:
     app.user_lon: '%env(float:USER_LON)%'
     app.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
     app.gemini_model: '%env(string:GEMINI_MODEL)%'
-
+    app.openweather.api_key: '%env(string:OPENWEATHER_API_KEY)%'
+    app.openweather.lat: '%env(float:OPENWEATHER_LAT)%'
+    app.openweather.lon: '%env(float:OPENWEATHER_LON)%'
+    app.lm_studio.base_url: '%env(string:LM_STUDIO_BASE_URL)%'
+    app.lm_studio.model: '%env(string:LM_STUDIO_MODEL)%'
+    app.mood_ml_api_enabled: '%env(bool:MOOD_ML_API_ENABLED)%'
+    app.mood_ml_api_base_url: '%env(string:MOOD_ML_API_BASE_URL)%'
+    app.mood_ml_api_prediction_route: '%env(string:MOOD_ML_API_PREDICTION_ROUTE)%'
+    app.mood_ml_api_key: '%env(string:MOOD_ML_API_KEY)%'
+    app.mood_ml_api_timeout: '%env(float:MOOD_ML_API_TIMEOUT)%'
+    app.user_risk_detection_url: '%env(string:USER_RISK_DETECTION_URL)%'
+    app.user_risk_api_timeout: '%env(float:USER_RISK_API_TIMEOUT)%'
+    app.user_risk_cache_ttl_seconds: '%env(int:USER_RISK_CACHE_TTL_SECONDS)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -84,6 +106,15 @@ services:
             $imageRequestUrl: '%app.image_request_url%'
             $imageApiKey: '%app.image_api_key%'
 
+    App\Service\ForumImageUploadService:
+        arguments:
+            $uploadDir: '%app.forum_upload_dir%'
+            $imgbbApiKey: '%app.forum_imgbb_api_key%'
+
+    App\Service\TranslationService:
+        arguments:
+            $apiKey: '%app.forum_translate_api_key%'
+
     App\Service\MailerService:
         arguments:
             $host: '%app.phpmailer_host%'
@@ -100,6 +131,13 @@ services:
             $rateLimitAttempts: '%app.password_reset_rate_limit_attempts%'
             $rateLimitWindowSeconds: '%app.password_reset_rate_limit_window_seconds%'
             $maxResendAttempts: '%app.password_reset_max_resends%'
+
+    App\Service\EmailVerificationService:
+        arguments:
+            $codeTtlMinutes: '%app.email_verification_code_ttl_minutes%'
+            $verifyRateLimitAttempts: '%app.email_verification_rate_limit_attempts%'
+            $verifyRateLimitWindowSeconds: '%app.email_verification_rate_limit_window_seconds%'
+            $maxResendAttempts: '%app.email_verification_max_resends%'
 
     App\Service\User\JournalContentSanitizer:
         arguments:
@@ -206,6 +244,49 @@ services:
         arguments:
             $cachePool: '@cache.app'
             $environment: '%kernel.environment%'
+    App\Service\AccountAccessService:
+        arguments:
+            $banDurationMinutes: '%app.account_ban_duration_minutes%'
+
+    App\Service\SpamRateLimiterService:
+        arguments:
+            $spamBanDurationMinutes: '%app.spam_ban_duration_minutes%'
+
+    App\Service\AI\MoodPredictionClient:
+        arguments:
+            $enabled: '%app.mood_ml_api_enabled%'
+            $baseUrl: '%app.mood_ml_api_base_url%'
+            $predictionRoute: '%app.mood_ml_api_prediction_route%'
+            $apiKey: '%app.mood_ml_api_key%'
+            $timeout: '%app.mood_ml_api_timeout%'
+            $httpClient: '@http_client'
+
+    App\Service\Risk\UserRiskService:
+        arguments:
+            $riskDetectionUrl: '%app.user_risk_detection_url%'
+            $timeoutSeconds: '%app.user_risk_api_timeout%'
+            $cacheTtlSeconds: '%app.user_risk_cache_ttl_seconds%'
+            $httpClient: '@http_client'
+            $cachePool: '@cache.app'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+# -----------------------------------------------------------------------------
+# Module Sleep/Reve - services supplémentaires
+# -----------------------------------------------------------------------------
+    App\Service\Sleep\WeatherService:
+        arguments:
+            $apiKey:     '%app.openweather.api_key%'
+            $defaultLat: '%app.openweather.lat%'
+            $defaultLon: '%app.openweather.lon%'
+
+    App\Service\Sleep\HuggingFaceService:
+        arguments:
+            $httpClient: '@http_client'
+            $apiKey: '%env(string:HUGGINGFACE_API_KEY)%'
+
+    App\Service\Sleep\LmStudioService:
+        arguments:
+            $baseUrl: '%app.lm_studio.base_url%'
+            $model:   '%app.lm_studio.model%'
