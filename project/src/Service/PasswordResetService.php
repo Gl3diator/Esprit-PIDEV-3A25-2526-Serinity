@@ -130,12 +130,8 @@ final readonly class PasswordResetService
         $now = time();
         $windowStart = $now - $this->rateLimitWindowSeconds;
 
-        $attempts = $this->cache->get($cacheKey, static fn (ItemInterface $item): array => []);
-        if (!is_array($attempts)) {
-            $attempts = [];
-        }
-
-        $attempts = array_values(array_filter($attempts, static fn (mixed $timestamp): bool => is_int($timestamp) && $timestamp >= $windowStart));
+        $attempts = $this->cache->get($cacheKey, $this->emptyAttemptList(...));
+        $attempts = array_values(array_filter($attempts, static fn (int $timestamp): bool => $timestamp >= $windowStart));
 
         if (count($attempts) >= $this->rateLimitAttempts) {
             return false;
@@ -192,13 +188,9 @@ final readonly class PasswordResetService
 
     private function isCodeValid(string $email, string $code, \DateTimeImmutable $now): bool
     {
-        $state = $this->cache->get($this->resetCodeCacheKey($email), static fn (ItemInterface $item): array => []);
-        if (!is_array($state)) {
-            return false;
-        }
-
-        $codeHash = $state['codeHash'] ?? null;
-        $expiresAt = $state['expiresAt'] ?? null;
+        $state = $this->cache->get($this->resetCodeCacheKey($email), $this->emptyResetCodeState(...));
+        $codeHash = $state['codeHash'];
+        $expiresAt = $state['expiresAt'];
 
         if (!is_string($codeHash) || !is_int($expiresAt)) {
             return false;
@@ -229,9 +221,6 @@ final readonly class PasswordResetService
         }
 
         $attempts = $this->cache->get($key, static fn (ItemInterface $item): int => 0);
-        if (!is_int($attempts)) {
-            $attempts = 0;
-        }
 
         if ($attempts >= $this->maxResendAttempts) {
             return false;
@@ -246,5 +235,24 @@ final readonly class PasswordResetService
         });
 
         return true;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function emptyAttemptList(ItemInterface $item): array
+    {
+        return [];
+    }
+
+    /**
+     * @return array{codeHash:?string,expiresAt:?int}
+     */
+    private function emptyResetCodeState(ItemInterface $item): array
+    {
+        return [
+            'codeHash' => null,
+            'expiresAt' => null,
+        ];
     }
 }

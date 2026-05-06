@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Api;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class CallMeBotClient
@@ -64,7 +63,7 @@ final readonly class CallMeBotClient
             $body = mb_strtolower(trim($response->getContent(false)));
 
             return $body !== '' && !str_contains($body, 'error');
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('CallMeBot request failed.', [
                 'exception' => $exception,
             ]);

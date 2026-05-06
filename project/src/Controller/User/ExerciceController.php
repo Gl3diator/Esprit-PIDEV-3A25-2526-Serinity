@@ -255,13 +255,13 @@ final class ExerciceController extends AbstractUserUiController
     private function renderSessionPage(string $userName, array $sessionData, string $fatigue): Response
     {
         $weather = $this->weatherService->getCurrentWeather($this->defaultLatitude, $this->defaultLongitude);
-        $moment = $this->resolveMoment((string) ($weather['localTime'] ?? '12:00'));
+        $moment = $this->resolveMoment($weather['localTime']);
         $ambientSound = $this->ambientSoundService->getAmbientSound([
             'moment' => $moment,
             'fatigue' => $fatigue,
             'exerciseType' => (string) ($sessionData['exercice']['type'] ?? ''),
             'recommendationType' => (string) ($sessionData['exercice']['type'] ?? ''),
-            'weatherLabel' => (string) ($weather['weatherLabel'] ?? ''),
+            'weatherLabel' => $weather['weatherLabel'],
         ]);
 
         return $this->render('user/pages/exercise_session_start.html.twig', [
@@ -270,12 +270,12 @@ final class ExerciceController extends AbstractUserUiController
             'session' => $sessionData,
             'guidedInstructions' => $this->resolveGuidedInstructions($sessionData),
             'exerciseTheme' => $this->resolveExerciseTheme($sessionData),
-            'audioUrl' => (string) ($ambientSound['audioUrl'] ?? ''),
-            'audioTitle' => (string) ($ambientSound['title'] ?? ''),
-            'audioAvailable' => (bool) ($ambientSound['available'] ?? false),
-            'audioTags' => $ambientSound['tags'] ?? [],
-            'audioTracks' => $ambientSound['tracks'] ?? [],
-            'audioType' => (string) ($ambientSound['type'] ?? ''),
+            'audioUrl' => $ambientSound['audioUrl'],
+            'audioTitle' => $ambientSound['title'],
+            'audioAvailable' => $ambientSound['available'],
+            'audioTags' => $ambientSound['tags'],
+            'audioTracks' => $ambientSound['tracks'],
+            'audioType' => $ambientSound['type'],
             'audioMood' => ucfirst($moment),
         ]);
     }

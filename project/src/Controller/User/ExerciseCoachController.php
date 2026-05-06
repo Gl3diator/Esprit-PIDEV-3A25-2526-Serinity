@@ -165,7 +165,7 @@ final class ExerciseCoachController extends AbstractUserUiController
         return $this->buildPdfOutputSafely($html);
     }
 
-    /** @return FormInterface<array{recipientEmail:string}> */
+    /** @return FormInterface */
     private function createCoachReportEmailForm(string $userEmail): FormInterface
     {
         return $this->createForm(CoachReportEmailType::class, [

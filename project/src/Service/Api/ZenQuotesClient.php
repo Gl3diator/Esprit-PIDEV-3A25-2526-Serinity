@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Api;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ZenQuotesClient
@@ -32,9 +31,8 @@ final readonly class ZenQuotesClient
                 return null;
             }
 
-            /** @var mixed $payload */
             $payload = $response->toArray(false);
-            if (!is_array($payload) || $payload === [] || !is_array($payload[0])) {
+            if ($payload === [] || !is_array($payload[0])) {
                 return null;
             }
 
@@ -49,7 +47,7 @@ final readonly class ZenQuotesClient
                 'text' => $quote,
                 'author' => $author,
             ];
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('ZenQuotes request failed.', [
                 'exception' => $exception,
             ]);

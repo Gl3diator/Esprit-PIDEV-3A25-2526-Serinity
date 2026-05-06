@@ -88,7 +88,7 @@ final class JournalEntryController extends AbstractUserUiController
         $this->entityManager->flush();
         $this->applyEmotionTaggingSafely($entry);
         $this->callMeBotClient->sendJournalSavedNotification(
-            $entry->getTitle() ?? '',
+            $entry->getTitle(),
             $entry->getCreatedAt(),
         );
 

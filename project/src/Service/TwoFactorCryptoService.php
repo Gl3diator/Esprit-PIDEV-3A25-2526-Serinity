@@ -23,7 +23,7 @@ final readonly class TwoFactorCryptoService
 
         if ($this->canUseOpenSsl()) {
             $ivLength = openssl_cipher_iv_length(self::OPENSSL_CIPHER);
-            if ($ivLength === false || $ivLength <= 0) {
+            if ($ivLength <= 0) {
                 throw new \RuntimeException('Invalid OpenSSL IV length for two-factor secret encryption.');
             }
 
@@ -39,7 +39,7 @@ final readonly class TwoFactorCryptoService
                 '',
                 16,
             );
-            if (!is_string($ciphertext) || $ciphertext === '' || !is_string($tag) || strlen($tag) !== 16) {
+            if (!is_string($ciphertext) || $ciphertext === '' || strlen($tag) !== 16) {
                 throw new \RuntimeException('Unable to encrypt two-factor secret.');
             }
 
@@ -98,7 +98,7 @@ final readonly class TwoFactorCryptoService
         }
 
         $ivLength = openssl_cipher_iv_length(self::OPENSSL_CIPHER);
-        if ($ivLength === false || $ivLength <= 0 || strlen($raw) <= $ivLength + 16) {
+        if ($ivLength <= 0 || strlen($raw) <= $ivLength + 16) {
             return null;
         }
 

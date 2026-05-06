@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin\Api;
 
+use App\Entity\User;
 use App\Service\Admin\DashboardService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,7 +26,12 @@ final class DashboardController extends AbstractController
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function stats(): JsonResponse
     {
-        $stats = $this->dashboardService->getStatistics();
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Admin user not found.');
+        }
+
+        $stats = $this->dashboardService->getStatistics($user);
 
         return $this->json([
             'success' => true,

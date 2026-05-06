@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\User;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class ExerciseProfileApiClient
@@ -41,9 +40,6 @@ final readonly class ExerciseProfileApiClient
             }
 
             $payload = $response->toArray(false);
-            if (!is_array($payload)) {
-                return null;
-            }
 
             $profile = is_string($payload['profile'] ?? null) ? trim((string) $payload['profile']) : '';
             if ($profile === '') {
@@ -61,7 +57,7 @@ final readonly class ExerciseProfileApiClient
                 'profile' => $profile,
                 'probabilities' => $probabilities,
             ];
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('Exercise profile API request failed.', [
                 'exception' => $exception,
             ]);

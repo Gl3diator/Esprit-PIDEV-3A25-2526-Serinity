@@ -40,7 +40,7 @@ final readonly class ExerciseProfileService
             ]);
         }
 
-        $profile = $this->normalizeProfile((string) ($prediction['profile'] ?? 'balanced'));
+        $profile = $this->normalizeProfile($prediction['profile']);
 
         return ServiceResult::success('Exercise profile predicted successfully.', [
             'profile' => $profile,

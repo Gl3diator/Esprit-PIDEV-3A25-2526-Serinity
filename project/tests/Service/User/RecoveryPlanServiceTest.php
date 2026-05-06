@@ -11,8 +11,10 @@ use App\Repository\MoodEntryRepository;
 use App\Service\User\CriticalPeriodDetectionService;
 use App\Service\User\RecoveryPlanService;
 use App\Service\User\ResilienceScoreService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 final class RecoveryPlanServiceTest extends TestCase
 {
     public function testGenerateAdaptsPlanForWarningState(): void

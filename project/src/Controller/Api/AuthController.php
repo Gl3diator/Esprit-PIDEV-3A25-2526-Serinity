@@ -186,10 +186,11 @@ final class AuthController extends AbstractApiController
             return $this->failureRedirect($errorCode);
         }
 
+        /** @var array<string, mixed> $profile */
         $profile = $googleUser->toArray();
         $googleId = trim((string) $googleUser->getId());
-        $email = trim((string) ($googleUser->getEmail() ?? ''));
-        $name = trim((string) ($googleUser->getName() ?? ''));
+        $email = trim((string) ($profile['email'] ?? ''));
+        $name = trim((string) ($profile['name'] ?? $profile['given_name'] ?? ''));
         $isVerified = filter_var(
             $profile['email_verified'] ?? $profile['verified_email'] ?? false,
             FILTER_VALIDATE_BOOL,

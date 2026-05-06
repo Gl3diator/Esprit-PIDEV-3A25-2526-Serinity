@@ -161,7 +161,7 @@ final readonly class AvatarGenerator
             }
 
             $content = $response->getContent(false);
-            if (!is_string($content) || $content === '') {
+            if ($content === '') {
                 throw new \RuntimeException('Generated avatar image is empty.');
             }
 

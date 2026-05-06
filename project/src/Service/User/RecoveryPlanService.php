@@ -57,10 +57,10 @@ final readonly class RecoveryPlanService
 
         $topInfluence = $this->moodEntryRepository->findTopInfluenceWithinRange($user, $weekStart, $weekEnd);
         $triggerDetail = $this->buildTriggerDetail(
-            $critical['repeatedNegativeEmotion'] ?? null,
+            $critical['repeatedNegativeEmotion'],
             $topInfluence['label'] ?? null,
         );
-        $triggerProgress = isset($critical['repeatedNegativeEmotion']) && $critical['repeatedNegativeEmotion'] !== null ? 1 : 0;
+        $triggerProgress = $critical['repeatedNegativeEmotion'] !== null ? 1 : 0;
         $reviewProgress = $weeklyTrendReviewed ? 1 : 0;
         $objectives = [
             $this->buildObjective('Track your mood daily this week', 'calendar_today', null, $moodDays, $targets['moodDays'], 'days'),

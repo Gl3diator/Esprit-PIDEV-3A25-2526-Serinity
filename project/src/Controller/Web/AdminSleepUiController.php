@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Web;
 
+use App\Entity\User;
 use App\Service\Admin\AdminSleepService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,13 +31,13 @@ final class AdminSleepUiController extends AbstractController
     {
         return $this->render('access_control/pages/sleep_overview.html.twig', [
             'nav' => $this->buildNav('ac_ui_sleep'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'summary' => $this->adminSleepService->summary(),
             'sessions' => $this->adminSleepService->sessions(
                 $this->queryString($request, 'q'),
                 $this->queryString($request, 'quality'),
             ),
-            'qualities' => array_values(\App\Entity\SleepSession::QUALITY_LABELS),
+            'qualities' => \App\Entity\SleepSession::QUALITY_LABELS,
         ]);
     }
 
@@ -45,7 +46,7 @@ final class AdminSleepUiController extends AbstractController
     {
         return $this->render('access_control/pages/sleep_dreams.html.twig', [
             'nav' => $this->buildNav('ac_ui_sleep_reves'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'summary' => $this->adminSleepService->summary(),
             'dreams' => $this->adminSleepService->dreams(
                 $this->queryString($request, 'q'),
@@ -96,8 +97,9 @@ final class AdminSleepUiController extends AbstractController
 
         return array_map(
             static function (array $item) use ($activeRoute, $moodChildRoutes, $sleepChildRoutes): array {
-                $isMoodGroup = $item['route'] === 'ac_ui_mood' && isset($item['children']);
-                $isSleepGroup = $item['route'] === 'ac_ui_sleep' && isset($item['children']);
+                $children = $item['children'] ?? null;
+                $isMoodGroup = $item['route'] === 'ac_ui_mood' && is_array($children);
+                $isSleepGroup = $item['route'] === 'ac_ui_sleep' && is_array($children);
                 $active = $item['route'] === $activeRoute;
 
                 if ($isMoodGroup) {
@@ -106,7 +108,7 @@ final class AdminSleepUiController extends AbstractController
                     $active = in_array($activeRoute, $sleepChildRoutes, true);
                 }
 
-                if (!isset($item['children'])) {
+                if (!is_array($children)) {
                     return [
                         'section' => $item['section'],
                         'label' => $item['label'],
@@ -129,7 +131,7 @@ final class AdminSleepUiController extends AbstractController
                             'icon' => $child['icon'],
                             'active' => $child['route'] === $activeRoute,
                         ],
-                        $item['children'],
+                        $children,
                     ),
                 ];
             },
@@ -140,11 +142,18 @@ final class AdminSleepUiController extends AbstractController
     private function queryString(Request $request, string $key): ?string
     {
         $value = $request->query->get($key);
-        if (!is_scalar($value)) {
+        if ($value === null) {
             return null;
         }
         $trimmed = trim((string) $value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function currentUserEmail(): string
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user->getEmail() : 'Admin';
     }
 }

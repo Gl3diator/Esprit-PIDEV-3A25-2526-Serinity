@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\User;
 
-use App\Entity\MoodEmotion;
 use App\Entity\MoodEntry;
 use App\Entity\User;
 use App\Repository\JournalEntryRepository;
@@ -144,7 +143,7 @@ final readonly class CriticalPeriodDetectionService
     {
         $result = $this->detect($user, $days);
 
-        return ($result['status'] ?? 'stable') === 'critical';
+        return $result['status'] === 'critical';
     }
 
     /**
@@ -192,10 +191,6 @@ final readonly class CriticalPeriodDetectionService
 
         foreach ($entries as $entry) {
             foreach ($entry->getEmotions() as $emotion) {
-                if (!$emotion instanceof MoodEmotion) {
-                    continue;
-                }
-
                 $key = $this->normalize($emotion->getName());
                 if (!in_array($key, self::NEGATIVE_EMOTIONS, true)) {
                     continue;

@@ -26,9 +26,9 @@ final readonly class ExerciseRecommendationService
      */
     public function recommend(array $weather, array $catalogRows, string $fatigue = 'moderate'): array
     {
-        $hour = $this->extractHour((string) ($weather['localTime'] ?? '12:00'));
-        $temperature = (float) ($weather['temperature'] ?? 22);
-        $weatherCode = (int) ($weather['weatherCode'] ?? 0);
+        $hour = $this->extractHour($weather['localTime']);
+        $temperature = (float) $weather['temperature'];
+        $weatherCode = (int) $weather['weatherCode'];
         $weatherLabel = (string) ($weather['weatherLabel'] ?? 'Mild weather');
         $momentLabel = $this->resolveMomentLabel($hour);
         $context = $this->resolveContext($hour, $temperature, $weatherCode);
@@ -143,7 +143,7 @@ final readonly class ExerciseRecommendationService
             return $right['score'] <=> $left['score'];
         });
 
-        return $scored[0]['item'] ?? null;
+        return $scored[0]['item'];
     }
 
     /**

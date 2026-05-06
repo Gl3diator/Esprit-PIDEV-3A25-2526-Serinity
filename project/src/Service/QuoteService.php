@@ -26,8 +26,8 @@ final readonly class QuoteService
             return $this->fallbackQuote();
         }
 
-        $text = trim((string) ($quote['text'] ?? ''));
-        $author = trim((string) ($quote['author'] ?? ''));
+        $text = trim($quote['text']);
+        $author = trim($quote['author']);
 
         if ($text === '') {
             $text = self::FALLBACK_TEXT;

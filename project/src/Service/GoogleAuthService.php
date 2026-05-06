@@ -167,7 +167,7 @@ final readonly class GoogleAuthService
             return [null, null];
         }
 
-        $firstName = $parts[0] ?? null;
+        $firstName = $parts[0];
         $lastName = count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : null;
 
         return [$firstName, $lastName];

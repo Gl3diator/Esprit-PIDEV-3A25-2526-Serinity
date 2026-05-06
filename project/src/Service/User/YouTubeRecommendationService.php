@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\User;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class YouTubeRecommendationService
@@ -47,9 +46,8 @@ final readonly class YouTubeRecommendationService
                 return [];
             }
 
-            /** @var mixed $payload */
             $payload = $response->toArray(false);
-            if (!is_array($payload) || !is_array($payload['items'] ?? null)) {
+            if (!is_array($payload['items'] ?? null)) {
                 return [];
             }
 
@@ -79,7 +77,7 @@ final readonly class YouTubeRecommendationService
             }
 
             return $videos;
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('YouTube recommendation request failed.', [
                 'exception' => $exception,
                 'query' => $query,

@@ -10,8 +10,10 @@ use App\Entity\User;
 use App\Repository\JournalEntryRepository;
 use App\Repository\MoodEntryRepository;
 use App\Service\User\CriticalPeriodDetectionService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 final class CriticalPeriodDetectionServiceTest extends TestCase
 {
     public function testDetectReturnsCriticalWhenMultipleRiskSignalsArePresent(): void

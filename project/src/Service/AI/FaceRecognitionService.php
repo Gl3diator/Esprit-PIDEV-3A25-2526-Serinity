@@ -163,7 +163,7 @@ final class FaceRecognitionService
     }
 
     /**
-     * @return array<int, float>|array<int, array<int, float>>
+     * @return list<list<list<list<float>>>>
      */
     private function preprocessToTensor(string $imageBinary): array
     {
@@ -243,7 +243,7 @@ final class FaceRecognitionService
         $output = $prediction[array_key_first($prediction)] ?? [];
         $flattened = $this->flatten($output);
 
-        return array_values(array_map(static fn(mixed $value): float => (float) $value, $flattened));
+        return array_map(static fn(mixed $value): float => (float) $value, $flattened);
     }
 
     /**

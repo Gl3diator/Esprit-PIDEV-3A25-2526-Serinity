@@ -124,7 +124,7 @@ final class ExerciceController extends AbstractApiController
     private function queryString(Request $request, string $key): ?string
     {
         $value = $request->query->get($key);
-        if (!is_scalar($value)) {
+        if ($value === null) {
             return null;
         }
         $trimmed = trim((string) $value);
@@ -136,9 +136,6 @@ final class ExerciceController extends AbstractApiController
     {
         $value = $request->query->get($key);
         if ($value === null || $value === '') {
-            return null;
-        }
-        if (!is_scalar($value)) {
             return null;
         }
 

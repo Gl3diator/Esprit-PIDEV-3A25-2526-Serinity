@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class WeatherService
@@ -38,12 +37,7 @@ final readonly class WeatherService
                 return $this->fallbackWeather();
             }
 
-            /** @var mixed $payload */
             $payload = $response->toArray(false);
-            if (!is_array($payload)) {
-                return $this->fallbackWeather();
-            }
-
             $current = is_array($payload['current'] ?? null) ? $payload['current'] : [];
             $timezone = trim((string) ($payload['timezone'] ?? 'UTC'));
             if ($timezone === '') {
@@ -61,7 +55,7 @@ final readonly class WeatherService
                 'timezone' => $this->formatTimezoneLabel($timezone),
                 'weatherLabel' => $this->formatWeatherLabel((int) ($current['weather_code'] ?? 0)),
             ];
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('Open-Meteo request failed.', [
                 'exception' => $exception,
                 'latitude' => $latitude,

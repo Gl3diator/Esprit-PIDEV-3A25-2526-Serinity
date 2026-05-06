@@ -166,7 +166,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/user_management.html.twig', [
             'nav' => $this->buildNav('ac_ui_users'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'users' => $users,
             'pagination' => [
                 'page' => $result['page'],
@@ -194,7 +194,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/profile.html.twig', [
             'nav' => $this->buildNav('ac_ui_profile'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'readonly' => true,
             'pageTitle' => 'User preview',
             'pageSubtitle' => 'Read-only profile overview',
@@ -220,7 +220,7 @@ final class AccessControlUiController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $profile = $user?->getProfile();
+        $profile = $user->getProfile();
         if ($request->isMethod('POST')) {
             $email = mb_strtolower(trim((string) $request->request->get('email', '')));
             $username = trim((string) $request->request->get('username', ''));
@@ -266,7 +266,8 @@ final class AccessControlUiController extends AbstractController
                     $this->addFlash('error', 'Profile image upload failed. Please try again.');
                     return $this->redirectToRoute('ac_ui_profile');
                 }
-                if ($profileImage->getSize() !== null && $profileImage->getSize() > 5 * 1024 * 1024) {
+                $profileImageSize = $profileImage->getSize();
+                if ($profileImageSize !== false && $profileImageSize > 5 * 1024 * 1024) {
                     $this->addFlash('error', 'Profile image must be 5MB or smaller.');
                     return $this->redirectToRoute('ac_ui_profile');
                 }
@@ -304,10 +305,10 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/profile.html.twig', [
             'nav' => $this->buildNav('ac_ui_profile'),
-            'userName' => $user?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'profile' => [
                 'username' => $profile?->getUsername() ?? '',
-                'email' => $user?->getEmail() ?? '',
+                'email' => $user->getEmail(),
                 'firstName' => $profile?->getFirstName() ?? '',
                 'lastName' => $profile?->getLastName() ?? '',
                 'profileImageUrl' => $profile?->getProfileImageUrl() ?? '',
@@ -451,7 +452,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/sessions.html.twig', [
             'nav' => $this->buildNav('ac_ui_sessions'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'sessions' => $sessions,
         ]);
     }
@@ -478,7 +479,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/audit_logs.html.twig', [
             'nav' => $this->buildNav('ac_ui_audit_logs'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'auditLogs' => $auditLogs,
         ]);
     }
@@ -489,7 +490,7 @@ final class AccessControlUiController extends AbstractController
     {
         return $this->render('access_control/pages/coming_soon.html.twig', [
             'nav' => $this->buildNav('ac_ui_consultations'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'title' => 'Consultations',
             'subtitle' => 'Consultation analytics and moderation will be available soon.',
         ]);
@@ -503,7 +504,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/exercises.html.twig', [
             'nav' => $this->buildNav('ac_ui_exercises'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'summary' => $this->adminExerciceService->summary(),
             'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 8),
             'exerciseTypeChart' => $this->buildPieChart(
@@ -584,7 +585,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/exercise_edit.html.twig', [
             'nav' => $this->buildNav('ac_ui_exercises'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'exercice' => $exercice,
             'guidedInstructionsText' => $this->guidedInstructionsToText($exercice['guidedInstructions'] ?? []),
         ]);
@@ -628,7 +629,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/exercise_resources.html.twig', [
             'nav' => $this->buildNav('ac_ui_exercises'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'exercice' => $result->data['exercice'],
             'resources' => $this->paginator->paginate($result->data['resources'], max(1, $request->query->getInt('page', 1)), 8),
             'resourceCountChart' => $this->buildColumnChart(
@@ -704,7 +705,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/exercise_resource_edit.html.twig', [
             'nav' => $this->buildNav('ac_ui_exercises'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'resource' => $resource,
         ]);
     }
@@ -788,8 +789,8 @@ final class AccessControlUiController extends AbstractController
             $title = sprintf('Step %d', $stepNumber);
             $description = $line;
             if (preg_match('/^([^:]+)\s*:\s*(.+)$/', $line, $matches) === 1) {
-                $candidateTitle = trim((string) ($matches[1] ?? ''));
-                $candidateDescription = trim((string) ($matches[2] ?? ''));
+                $candidateTitle = trim($matches[1]);
+                $candidateDescription = trim($matches[2]);
                 if ($candidateTitle !== '' && $candidateDescription !== '') {
                     $title = $candidateTitle;
                     $description = $candidateDescription;
@@ -813,8 +814,8 @@ final class AccessControlUiController extends AbstractController
     {
         $lines = [];
         foreach ($guidedInstructions as $instruction) {
-            $title = trim((string) ($instruction['title'] ?? ''));
-            $description = trim((string) ($instruction['description'] ?? ''));
+            $title = trim($instruction['title']);
+            $description = trim($instruction['description']);
             if ($description === '') {
                 continue;
             }
@@ -875,7 +876,7 @@ final class AccessControlUiController extends AbstractController
     {
         return $this->render('access_control/pages/coming_soon.html.twig', [
             'nav' => $this->buildNav('ac_ui_forum'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'title' => 'Forum',
             'subtitle' => 'Forum moderation and insights are coming soon.',
         ]);
@@ -887,7 +888,7 @@ final class AccessControlUiController extends AbstractController
     {
         return $this->render('access_control/pages/mood_analytics.html.twig', [
             'nav' => $this->buildNav('ac_ui_mood'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
         ]);
     }
 
@@ -941,7 +942,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/emotion_management.html.twig', [
             'nav' => $this->buildNav('ac_ui_emotion'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'emotions' => $emotions,
             'direction' => $listState['direction'],
             'perPage' => $listState['perPage'],
@@ -1067,7 +1068,7 @@ final class AccessControlUiController extends AbstractController
 
         return $this->render('access_control/pages/influence_management.html.twig', [
             'nav' => $this->buildNav('ac_ui_influence'),
-            'userName' => $this->getUser()?->getEmail() ?? 'Admin',
+            'userName' => $this->currentUserEmail(),
             'influences' => $influences,
             'direction' => $listState['direction'],
             'perPage' => $listState['perPage'],
@@ -1235,8 +1236,9 @@ final class AccessControlUiController extends AbstractController
 
         return array_map(
             static function (array $item) use ($activeRoute, $moodChildRoutes, $sleepChildRoutes): array {
-                $isMoodGroup = $item['route'] === 'ac_ui_mood' && isset($item['children']);
-                $isSleepGroup = $item['route'] === 'ac_ui_sleep' && isset($item['children']);
+                $children = $item['children'] ?? null;
+                $isMoodGroup = $item['route'] === 'ac_ui_mood' && is_array($children);
+                $isSleepGroup = $item['route'] === 'ac_ui_sleep' && is_array($children);
                 $active = $item['route'] === $activeRoute;
 
                 if ($isMoodGroup) {
@@ -1324,5 +1326,12 @@ final class AccessControlUiController extends AbstractController
         }
 
         return false;
+    }
+
+    private function currentUserEmail(): string
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user->getEmail() : 'Admin';
     }
 }

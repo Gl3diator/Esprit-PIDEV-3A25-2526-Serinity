@@ -66,7 +66,7 @@ final class MoodAnalyticsController extends AbstractApiController
     private function queryString(Request $request, string $key): ?string
     {
         $value = $request->query->get($key);
-        if (!is_scalar($value)) {
+        if ($value === null) {
             return null;
         }
 
@@ -90,7 +90,7 @@ final class MoodAnalyticsController extends AbstractApiController
         ?int $max = null
     ): int {
         $value = $request->query->get($key);
-        if (!is_scalar($value) || !is_numeric((string) $value)) {
+        if ($value === null || !is_numeric((string) $value)) {
             return $default;
         }
 
@@ -109,7 +109,7 @@ final class MoodAnalyticsController extends AbstractApiController
             return null;
         }
 
-        if (!is_scalar($value) || !is_numeric((string) $value)) {
+        if (!is_numeric((string) $value)) {
             return null;
         }
 

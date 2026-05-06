@@ -22,7 +22,7 @@ final class AuthSessionAuthenticator extends AbstractAuthenticator
     {
     }
 
-    public function supports(Request $request): ?bool
+    public function supports(Request $request): bool
     {
         if (!str_starts_with($request->getPathInfo(), '/api')) {
             return false;
@@ -58,7 +58,7 @@ final class AuthSessionAuthenticator extends AbstractAuthenticator
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         return new JsonResponse([
             'success' => false,

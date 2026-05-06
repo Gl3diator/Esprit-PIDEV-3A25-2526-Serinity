@@ -107,7 +107,7 @@ final class DashboardController extends AbstractUserUiController
         $influenceDistribution = $this->moodEntryRepository->findInfluenceDistributionWithinRange($user, $fromDate, $toDate);
         $dayTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'DAY');
         $momentTypeCount = $this->moodEntryRepository->countTypeWithinRange($user, $fromDate, $toDate, 'MOMENT');
-        $criticalStatus = (string) ($summary['criticalPeriod']['status'] ?? 'stable');
+        $criticalStatus = (string) $summary['criticalPeriod']['status'];
         $supportiveQuote = in_array($criticalStatus, ['warning', 'critical'], true)
             ? $this->zenQuotesClient->fetchRandomQuote()
             : null;

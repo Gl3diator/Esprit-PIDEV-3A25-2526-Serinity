@@ -55,7 +55,7 @@ final class SleepController extends AbstractUserUiController
             'userName' => $user->getEmail(),
             'mode' => 'create',
             'session' => null,
-            'qualities' => array_values(\App\Entity\SleepSession::QUALITY_LABELS),
+            'qualities' => \App\Entity\SleepSession::QUALITY_LABELS,
         ]);
     }
 
@@ -116,7 +116,7 @@ final class SleepController extends AbstractUserUiController
             'userName' => $user->getEmail(),
             'mode' => 'edit',
             'session' => $session,
-            'qualities' => array_values(\App\Entity\SleepSession::QUALITY_LABELS),
+            'qualities' => \App\Entity\SleepSession::QUALITY_LABELS,
         ]);
     }
 

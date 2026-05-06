@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\AI;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class JournalEmotionClient
@@ -59,9 +58,6 @@ final readonly class JournalEmotionClient
             }
 
             $payload = $response->toArray(false);
-            if (!is_array($payload)) {
-                return null;
-            }
 
             $labels = $this->normalizeLabels($payload['labels'] ?? null);
             $topLabel = is_string($payload['top_label'] ?? null) ? trim((string) $payload['top_label']) : '';
@@ -86,7 +82,7 @@ final readonly class JournalEmotionClient
                     ? max(1, (int) $payload['top_k_used'])
                     : $this->topK,
             ];
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('Emotion AI request failed.', [
                 'exception' => $exception,
             ]);

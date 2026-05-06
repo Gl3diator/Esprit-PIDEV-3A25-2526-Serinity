@@ -174,8 +174,8 @@ class Exercice
 
         $normalized = [];
         foreach ($guidedInstructions as $instruction) {
-            $title = trim((string) ($instruction['title'] ?? ''));
-            $description = trim((string) ($instruction['description'] ?? ''));
+            $title = trim($instruction['title']);
+            $description = trim($instruction['description']);
             if ($title === '' && $description === '') {
                 continue;
             }

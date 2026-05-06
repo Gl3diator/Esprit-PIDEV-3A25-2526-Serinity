@@ -55,7 +55,7 @@ final class CoachChatController extends AbstractUserUiController
 
         $this->logger->info('Coach chat response ready.', [
             'user_id' => $this->currentUser()->getId(),
-            'source' => $reply['source'] ?? 'unknown',
+            'source' => $reply['source'],
         ]);
 
         return $this->json($reply);

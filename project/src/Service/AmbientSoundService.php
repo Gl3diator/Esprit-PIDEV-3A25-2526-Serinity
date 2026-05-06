@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class AmbientSoundService
@@ -83,10 +82,6 @@ final readonly class AmbientSoundService
      */
     public function getAmbientSound(array $context = []): array
     {
-        if (!is_array($context)) {
-            $context = [];
-        }
-
         $soundType = $this->resolveSoundType($context);
         $selectedTrack = $this->findBestTrack($context);
 
@@ -138,10 +133,6 @@ final readonly class AmbientSoundService
      */
     private function findBestTrack(array $context): ?array
     {
-        if (!is_array($context)) {
-            $context = [];
-        }
-
         $bestTrack = null;
         $bestScore = PHP_INT_MIN;
         $seenUrls = [];
@@ -203,11 +194,7 @@ final readonly class AmbientSoundService
                 return [];
             }
 
-            /** @var mixed $payload */
             $payload = $response->toArray(false);
-            if (!is_array($payload)) {
-                return [];
-            }
 
             return array_values(array_filter($payload, static function (mixed $station): bool {
                 if (!is_array($station)) {
@@ -219,7 +206,7 @@ final readonly class AmbientSoundService
 
                 return $url !== '' && $lastCheckOk === 1;
             }));
-        } catch (ExceptionInterface|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->warning('Radio Browser request failed.', [
                 'term' => $term,
                 'exception' => $exception,

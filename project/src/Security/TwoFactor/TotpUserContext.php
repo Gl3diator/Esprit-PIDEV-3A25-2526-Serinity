@@ -21,12 +21,12 @@ final readonly class TotpUserContext implements TwoFactorInterface
         return true;
     }
 
-    public function getTotpAuthenticationUsername(): ?string
+    public function getTotpAuthenticationUsername(): string
     {
         return $this->username;
     }
 
-    public function getTotpAuthenticationConfiguration(): ?TotpConfigurationInterface
+    public function getTotpAuthenticationConfiguration(): TotpConfigurationInterface
     {
         return new TotpConfiguration($this->secret, 'sha1', 30, 6);
     }
