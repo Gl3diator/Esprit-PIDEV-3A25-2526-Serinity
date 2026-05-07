@@ -45,6 +45,17 @@
                     <span class="material-symbols-outlined" style="font-size:18px;">cloud</span>
                     Météo sommeil
                 </button>
+
+                {# Bouton global IA sur la dernière nuit #}
+                {% set firstSommeil = sommeils|first %}
+                {% if firstSommeil %}
+                    <a href="{{ path('app_sommeil_prediction', { id: firstSommeil.id }) }}"
+                       class="ac-ghost-btn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">psychology</span>
+                        Prédiction IA
+                    </a>
+                {% endif %}
+
                 <button type="button" class="ac-btn ac-btn-primary"
                         onclick="openSommeilModal('{{ path('app_sommeil_new') }}')">
                     <span class="material-symbols-outlined" style="font-size:18px;">add</span>

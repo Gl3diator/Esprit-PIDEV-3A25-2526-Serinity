@@ -9,3 +9,13 @@ duree_sommeil,interruptions,temperature,bruit_niveau,humeur_reveil,qualite
 6,3,25,6,Neutre,Moyenne
 5,4,27,8,Fatigué,Mauvaise
 9,0,18,1,Énergisé,Excellente
+7.5,1,20,2,Reposé,Bonne
+8.5,0,19,1,Joyeux,Excellente
+6.5,2,23,4,Neutre,Moyenne
+5.5,3,26,6,Fatigué,Mauvaise
+7.8,1,21,2,Énergisé,Bonne
+8.2,0,18,1,Reposé,Excellente
+6.2,2,24,5,Neutre,Moyenne
+4.8,4,27,8,Fatigué,Mauvaise
+7.1,1,22,3,Joyeux,Bonne
+8.9,0,17,1,Énergisé,Excellente

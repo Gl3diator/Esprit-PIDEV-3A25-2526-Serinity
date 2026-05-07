@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\User;
+use App\Service\Sleep\SleepMachineLearningService;
 
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
@@ -217,6 +218,38 @@ final class SommeilController extends AbstractController
         ]);
     }
 
+    #[Route('/prediction/{id<\d+>}', name: 'app_sommeil_prediction', methods: ['GET'])]
+    public function prediction(
+        Sommeil $sommeil,
+        SleepMachineLearningService $sleepMachineLearningService
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof User || $sommeil->getUser() !== $user) {
+            throw $this->createAccessDeniedException('Accès refusé à cette nuit de sommeil.');
+        }
+
+        $bruitRaw = (string) ($sommeil->getBruitNiveau() ?? '');
+        $bruit = match (trim($bruitRaw)) {
+            '🔇 Aucun' => 0,
+            '🔉 Léger' => 1,
+            '🔊 Fort'  => 2,
+            default    => is_numeric($bruitRaw) ? (int) $bruitRaw : 0,
+        };
+
+        $result = $sleepMachineLearningService->predictSleepQuality(
+            (float) ($sommeil->getDureeSommeil() ?? 0),
+            (int) ($sommeil->getInterruptions() ?? 0),
+            (float) ($sommeil->getTemperature() ?? 0),
+            $bruit,
+            (string) ($sommeil->getHumeurReveil() ?? 'Neutre')
+        );
+
+        return $this->render('sleep/ml_prediction.html.twig', [
+            'sommeil' => $sommeil,
+            'result'  => $result,
+        ]);
+    }
     #[Route('/delete/{id<\d+>}', name: 'app_sommeil_delete', methods: ['POST'])]
     public function delete(Request $request, Sommeil $sommeil, EntityManagerInterface $em): Response
     {
