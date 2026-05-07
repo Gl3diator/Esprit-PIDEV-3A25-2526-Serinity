@@ -1,9 +1,0 @@
-parameters:
-    level: 8
-
-    paths:
-        - src/Service/User/JournalContentSanitizer.php
-        - src/Service/AI/JournalEmotionTagger.php
-        - tests/Service/User/JournalContentSanitizerTest.php
-        - tests/Service/AI/JournalEmotionTaggerTest.php
-        - tests/Entity/JournalEntryTest.php
