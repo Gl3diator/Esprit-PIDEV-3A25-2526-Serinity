@@ -118,6 +118,45 @@ final class SommeilController extends AbstractController
         ]);
     }
 
+    #[Route('/ia', name: 'app_sommeil_ia', methods: ['GET', 'POST'])]
+    public function ia(
+        Request $request,
+        SleepMachineLearningService $sleepMachineLearningService
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $result = null;
+
+        if ($request->isMethod('POST')) {
+            $submittedToken = (string) $request->request->get('_token', '');
+
+            if (!$this->isCsrfTokenValid('sleep_predict', $submittedToken)) {
+                $result = [
+                    'success' => false,
+                    'error' => 'Jeton CSRF invalide.',
+                ];
+            } else {
+                $dureeSommeil = (float) $request->request->get('dureeSommeil', 0);
+                $interruptions = (int) $request->request->get('interruptions', 0);
+                $temperature = (float) $request->request->get('temperature', 0);
+                $bruitNiveau = (int) $request->request->get('bruitNiveau', 0);
+                $humeurReveil = (string) $request->request->get('humeurReveil', 'Neutre');
+
+                $result = $sleepMachineLearningService->predictSleepQuality(
+                    $dureeSommeil,
+                    $interruptions,
+                    $temperature,
+                    $bruitNiveau,
+                    $humeurReveil
+                );
+            }
+        }
+
+        return $this->render('sleep/ml_prediction.html.twig', [
+            'result' => $result,
+        ]);
+    }
+
     #[Route('/new', name: 'app_sommeil_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
