@@ -25,15 +25,15 @@ final class SleepMachineLearningService
         $env = null;
 
         if (\DIRECTORY_SEPARATOR === '\\') {
-            $systemRoot = $_SERVER['SystemRoot']
-                ?? $_ENV['SystemRoot']
-                ?? getenv('SystemRoot')
-                ?? 'C:\\Windows';
+            $systemRoot = getenv('SystemRoot');
+            if (!is_string($systemRoot) || $systemRoot === '') {
+                $systemRoot = 'C:\\Windows';
+            }
 
-            $comSpec = $_SERVER['ComSpec']
-                ?? $_ENV['ComSpec']
-                ?? getenv('ComSpec')
-                ?? 'C:\\Windows\\System32\\cmd.exe';
+            $comSpec = getenv('ComSpec');
+            if (!is_string($comSpec) || $comSpec === '') {
+                $comSpec = 'C:\\Windows\\System32\\cmd.exe';
+            }
 
             $env = [
                 'SystemRoot' => $systemRoot,
