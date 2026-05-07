@@ -94,6 +94,8 @@
     {% include 'access_control/components/_sidebar.html.twig' with { items: nav } %}
     <div class="ac-main">
         {% include 'access_control/components/_topbar.html.twig' with { title: 'Session active', subtitle: session.exercice.title, username: userName } %}
+        {% set guidedInstructions = session.exercice.guidedInstructions|default([]) %}
+        {% set exerciseTheme = session.exercice.theme ?: 'balanced' %}
 
         <section class="ac-card" data-session-root data-target-seconds="{{ (session.exercice.durationMinutes ?? 1) * 60 }}">
             <div class="ac-row-between" style="margin-bottom: 1rem;">
@@ -101,8 +103,25 @@
                     <h3 style="margin:0;">{{ session.exercice.title }}</h3>
                     <p class="ac-muted" style="margin:.2rem 0 0;" data-session-copy>Session is running. Keep your pace.</p>
                 </div>
-                <div class="ac-badge ac-badge-warning" data-session-status>Running</div>
+                <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                    <span class="ac-badge ac-badge-secondary">Theme {{ exerciseTheme|capitalize }}</span>
+                    <div class="ac-badge ac-badge-warning" data-session-status>Running</div>
+                </div>
             </div>
+
+            {% if session.exercice.benefits %}
+                <section class="ac-card" style="margin:0 0 1rem; padding:1rem;">
+                    <p class="ac-muted" style="margin:0 0 .25rem;">Why this helps</p>
+                    <p style="margin:0; white-space: pre-line;">{{ session.exercice.benefits }}</p>
+                </section>
+            {% endif %}
+
+            {% if session.exercice.tips %}
+                <section class="ac-card" style="margin:0 0 1rem; padding:1rem;">
+                    <p class="ac-muted" style="margin:0 0 .25rem;">Tips</p>
+                    <p style="margin:0; white-space: pre-line;">{{ session.exercice.tips }}</p>
+                </section>
+            {% endif %}
 
             <div class="ac-cards" style="margin-bottom: 1rem;">
                 <article class="ac-stat-card">
@@ -160,25 +179,45 @@
                 </div>
             </div>
 
-            <div class="ac-breathing-card">
-                <div class="ac-breathing-head">
-                    <div>
-                        <p class="ac-muted" style="margin:0;">Guided breathing</p>
-                        <h4 style="margin:.2rem 0 0;">Breathing circle</h4>
+            {% if guidedInstructions is not empty %}
+                <section class="ac-card" style="margin:0 0 1rem; padding:1rem;">
+                    <div class="ac-row-between" style="gap:.75rem; align-items:flex-start; margin-bottom:.75rem;">
+                        <div>
+                            <p class="ac-muted" style="margin:0;">Guided instructions</p>
+                            <h4 style="margin:.2rem 0 0;">Follow your exercise steps</h4>
+                        </div>
+                        <span class="ac-badge ac-badge-secondary">{{ guidedInstructions|length }} step{{ guidedInstructions|length > 1 ? 's' : '' }}</span>
                     </div>
-                    <span class="ac-badge ac-badge-secondary" data-breath-cycle>Cycle 1</span>
-                </div>
-                <div class="ac-breathing-stage">
-                    <div class="ac-breathing-orbit" aria-hidden="true"></div>
-                    <div class="ac-breathing-circle is-inhale" data-breath-circle>
-                        <div class="ac-breathing-inner">
-                            <span class="ac-breathing-label" data-breath-label>Inhale deeply</span>
-                            <strong class="ac-breathing-count" data-breath-count>4s</strong>
+                    <div style="display:grid; gap:.75rem;">
+                        {% for step in guidedInstructions %}
+                            <article class="ac-card" style="margin:0; padding: .9rem 1rem;">
+                                <strong>{{ step.title }}</strong>
+                                <p class="ac-muted" style="margin:.35rem 0 0;">{{ step.description }}</p>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% else %}
+                <div class="ac-breathing-card">
+                    <div class="ac-breathing-head">
+                        <div>
+                            <p class="ac-muted" style="margin:0;">Guided breathing</p>
+                            <h4 style="margin:.2rem 0 0;">Breathing circle</h4>
+                        </div>
+                        <span class="ac-badge ac-badge-secondary" data-breath-cycle>Cycle 1</span>
+                    </div>
+                    <div class="ac-breathing-stage">
+                        <div class="ac-breathing-orbit" aria-hidden="true"></div>
+                        <div class="ac-breathing-circle is-inhale" data-breath-circle>
+                            <div class="ac-breathing-inner">
+                                <span class="ac-breathing-label" data-breath-label>Inhale deeply</span>
+                                <strong class="ac-breathing-count" data-breath-count>4s</strong>
+                            </div>
                         </div>
                     </div>
+                    <p class="ac-muted" style="margin:0;" data-breath-note>Inhale slowly and settle your rhythm.</p>
                 </div>
-                <p class="ac-muted" style="margin:0;" data-breath-note>Inhale slowly and settle your rhythm.</p>
-            </div>
+            {% endif %}
 
             <form method="post" action="{{ path('user_ui_exercises_session_finish', { id: session.controlId }) }}" class="ac-form">
                 <input type="hidden" name="activeSeconds" value="0" data-session-active-seconds>

@@ -8,6 +8,7 @@ use App\Dto\Exercice\CompleteControlRequest;
 use App\Service\AmbientSoundService;
 use App\Service\QuoteService;
 use App\Service\User\ContextAwarePlanner;
+use App\Service\User\ExerciseProfileService;
 use App\Service\User\FatigueResolver;
 use App\Service\User\YouTubeRecommendationService;
 use App\Service\User\UserExerciceService;
@@ -31,6 +32,7 @@ final class ExerciceController extends AbstractUserUiController
         private readonly QuoteService $quoteService,
         private readonly WeatherService $weatherService,
         private readonly ContextAwarePlanner $contextAwarePlanner,
+        private readonly ExerciseProfileService $exerciseProfileService,
         private readonly FatigueResolver $fatigueResolver,
         private readonly YouTubeRecommendationService $youTubeRecommendationService,
         private readonly PaginatorInterface $paginator,
@@ -45,6 +47,7 @@ final class ExerciceController extends AbstractUserUiController
         $user = $this->currentUser();
         $catalogRows = $this->userExerciceService->catalog($user)->data['items'] ?? [];
         $summary = $this->userExerciceService->summary($user)->data;
+        $exerciseProfile = $this->exerciseProfileService->predictForUser($user);
 
         $search = mb_strtolower(trim((string) $request->query->get('q', '')));
         $type = trim((string) $request->query->get('type', ''));
@@ -124,6 +127,7 @@ final class ExerciceController extends AbstractUserUiController
                 'fatigue' => $fatigue,
             ],
             'summary' => $summary,
+            'exerciseProfile' => $exerciseProfile,
             'quote' => $quote,
             'weather' => $weather,
             'plan' => $plan,
@@ -253,11 +257,13 @@ final class ExerciceController extends AbstractUserUiController
         $weather = $this->weatherService->getCurrentWeather($this->defaultLatitude, $this->defaultLongitude);
         $moment = $this->resolveMoment((string) ($weather['localTime'] ?? '12:00'));
         $ambientSound = $this->ambientSoundService->getAmbientSound([
+            'weather' => (string) ($weather['weatherLabel'] ?? ''),
+            'weatherLabel' => (string) ($weather['weatherLabel'] ?? ''),
             'moment' => $moment,
             'fatigue' => $fatigue,
             'exerciseType' => (string) ($sessionData['exercice']['type'] ?? ''),
-            'recommendationType' => (string) ($sessionData['exercice']['type'] ?? ''),
-            'weatherLabel' => (string) ($weather['weatherLabel'] ?? ''),
+            'exerciseTheme' => (string) ($sessionData['exercice']['theme'] ?? ''),
+            'exerciseTitle' => (string) ($sessionData['exercice']['title'] ?? ''),
         ]);
 
         return $this->render('user/pages/exercise_session_start.html.twig', [
