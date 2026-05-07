@@ -23,19 +23,19 @@ class Profile
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $updatedAt;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 191, unique: true)]
     private string $username;
 
-    #[ORM\Column(name: 'firstName', type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'firstName', type: Types::STRING, length: 191, nullable: true)]
     private ?string $firstName = null;
 
-    #[ORM\Column(name: 'lastName', type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'lastName', type: Types::STRING, length: 191, nullable: true)]
     private ?string $lastName = null;
 
     #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
     private ?string $phone = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(type: Types::STRING, length: 191, nullable: true)]
     private ?string $gender = null;
 
     #[ORM\Column(name: 'profile_image_url', type: Types::STRING, length: 512, nullable: true)]

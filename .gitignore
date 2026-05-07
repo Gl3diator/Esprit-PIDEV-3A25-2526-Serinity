@@ -41,4 +41,13 @@ pack/
 /project/phpunit.xml
 /project/.phpunit.result.cache
 
-
+# AI disease model - large datasets / generated files
+project/ai-disease-model/Final_Augmented_dataset_Diseases_and_Symptoms.csv
+project/ai-disease-model/*.csv
+project/ai-disease-model/data/*.csv
+project/ai-disease-model/*.pkl
+project/ai-disease-model/*.joblib
+project/ai-disease-model/*.h5
+project/ai-disease-model/*.keras
+project/ai-disease-model/__pycache__/
+project/ai-disease-model/.venv/
