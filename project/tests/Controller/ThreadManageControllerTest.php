@@ -6,12 +6,37 @@ namespace App\Tests\Controller;
 
 use App\Controller\ThreadManageController;
 use App\Entity\ForumThread;
+use App\Repository\AuditLogRepository;
+use App\Repository\AuthSessionRepository;
+use App\Repository\ProfileRepository;
+use App\Repository\UserRepository;
+use App\Service\AccountAccessService;
+use App\Service\AuditLogService;
 use App\Service\AuthenticationService;
+use App\Service\EmailVerificationService;
+use App\Service\JwtService;
+use App\Service\MailerService;
+use App\Service\Risk\UserRiskService;
+use App\Service\Security\TwoFactorCheckRateLimiter;
+use App\Service\Security\TwoFactorPendingLoginStore;
+use App\Service\SessionService;
+use App\Service\TokenGenerator;
+use App\Service\TwoFactorCryptoService;
+use App\Service\TwoFactorService;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Twig\Environment;
+use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
 
 /**
  * Unit tests for the pure-logic private helpers of ThreadManageController.
@@ -30,7 +55,95 @@ class ThreadManageControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->tokenStorage         = $this->createMock(TokenStorageInterface::class);
-        $this->authenticationService = $this->createMock(AuthenticationService::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $userRepository = $this->createMock(UserRepository::class);
+        $profileRepository = $this->createMock(ProfileRepository::class);
+        $authSessionRepository = $this->createMock(AuthSessionRepository::class);
+        $tokenGenerator = new TokenGenerator();
+
+        $sessionService = new SessionService(
+            $entityManager,
+            $authSessionRepository,
+            $tokenGenerator,
+        );
+
+        $auditLogService = new AuditLogService(
+            $entityManager,
+            new RequestStack(),
+            $tokenGenerator,
+        );
+
+        $twoFactorCryptoService = new TwoFactorCryptoService('test-secret');
+        $twoFactorService = new TwoFactorService(
+            $entityManager,
+            $this->createMock(TotpAuthenticatorInterface::class),
+            $twoFactorCryptoService,
+        );
+
+        $twoFactorPendingLoginStore = new TwoFactorPendingLoginStore(
+            $this->createMock(CacheItemPoolInterface::class),
+            300,
+        );
+        $twoFactorCheckRateLimiter = new TwoFactorCheckRateLimiter(
+            $this->createMock(CacheItemPoolInterface::class),
+            5,
+            300,
+        );
+
+        $mailerService = new MailerService(
+            $this->createMock(Environment::class),
+            'localhost',
+            25,
+            '',
+            '',
+            '',
+            'no-reply@example.com',
+            'Test',
+        );
+
+        $emailVerificationService = new EmailVerificationService(
+            $entityManager,
+            $userRepository,
+            $tokenGenerator,
+            $mailerService,
+            $this->createMock(CacheInterface::class),
+            5,
+            5,
+            300,
+            3,
+        );
+
+        $accountAccessService = new AccountAccessService($entityManager, 60);
+
+        $userRiskService = new UserRiskService(
+            $this->createMock(HttpClientInterface::class),
+            $this->createMock(CacheItemPoolInterface::class),
+            new RequestStack(),
+            $authSessionRepository,
+            $this->createMock(AuditLogRepository::class),
+            $this->createMock(LoggerInterface::class),
+            'http://localhost',
+            1.0,
+            60,
+        );
+
+        $this->authenticationService = new AuthenticationService(
+            $entityManager,
+            $userRepository,
+            $profileRepository,
+            $authSessionRepository,
+            $sessionService,
+            $auditLogService,
+            $this->createMock(UserPasswordHasherInterface::class),
+            new JwtService('test-secret'),
+            $tokenGenerator,
+            $twoFactorService,
+            $twoFactorPendingLoginStore,
+            $twoFactorCheckRateLimiter,
+            $emailVerificationService,
+            $accountAccessService,
+            $userRiskService,
+        );
 
         // Expose private helpers via an anonymous subclass
         $this->controller = new class(

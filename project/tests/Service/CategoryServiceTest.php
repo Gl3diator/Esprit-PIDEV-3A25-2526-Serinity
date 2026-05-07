@@ -1,105 +1,148 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
 use App\Entity\Category;
 use App\Service\CategoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\String\UnicodeString;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class CategoryServiceTest extends TestCase
 {
-    private EntityManagerInterface $entityManager;
-    private SluggerInterface $slugger;
-    private CategoryService $categoryService;
-
-    protected function setUp(): void
-    {
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->slugger = $this->createMock(SluggerInterface::class);
-        $this->categoryService = new CategoryService($this->entityManager, $this->slugger);
-    }
-
-    // --- save() tests ---
-
-    /**
-     * When the category has no slug yet, the slugger should be called
-     * and the generated slug assigned before persisting.
-     */
     public function testSaveGeneratesSlugWhenMissing(): void
     {
-        $category = new Category();
-        $category->setName('My Category');
-        // No slug set → slug is null/empty
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $slugger = $this->createMock(SluggerInterface::class);
+        $category = $this->createMock(Category::class);
 
-        $slugResult = $this->createMock(UnicodeString::class);
-        $slugResult->method('lower')->willReturn(new UnicodeString('my-category'));
+        $category->expects($this->once())
+            ->method('getSlug')
+            ->willReturn(null);
+        $category->expects($this->once())
+            ->method('getName')
+            ->willReturn('My Category');
+        $category->expects($this->once())
+            ->method('setSlug')
+            ->with('my-category');
 
-        $this->slugger
-            ->expects($this->once())
+        $slugger->expects($this->once())
             ->method('slug')
             ->with('My Category')
-            ->willReturn($slugResult);
+            ->willReturn(new UnicodeString('My-Category'));
 
-        $this->entityManager->expects($this->once())->method('persist')->with($category);
-        $this->entityManager->expects($this->once())->method('flush');
+        $entityManager->expects($this->once())
+            ->method('persist')
+            ->with($category);
+        $entityManager->expects($this->once())
+            ->method('flush');
 
-        $this->categoryService->save($category);
-
-        $this->assertSame('my-category', $category->getSlug());
+        $service = new CategoryService($entityManager, $slugger);
+        $service->save($category);
     }
 
-    /**
-     * When the category already has a slug, the slugger must NOT be called
-     * and the existing slug must be preserved.
-     */
-    public function testSaveDoesNotOverwriteExistingSlug(): void
+    public function testSaveDoesNotOverrideExistingSlug(): void
     {
-        $category = new Category();
-        $category->setName('My Category');
-        $category->setSlug('custom-slug');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $slugger = $this->createMock(SluggerInterface::class);
+        $category = $this->createMock(Category::class);
 
-        $this->slugger->expects($this->never())->method('slug');
+        $category->expects($this->once())
+            ->method('getSlug')
+            ->willReturn('existing-slug');
+        $category->expects($this->never())
+            ->method('setSlug');
+        $slugger->expects($this->never())
+            ->method('slug');
 
-        $this->entityManager->expects($this->once())->method('persist')->with($category);
-        $this->entityManager->expects($this->once())->method('flush');
+        $entityManager->expects($this->once())
+            ->method('persist')
+            ->with($category);
+        $entityManager->expects($this->once())
+            ->method('flush');
 
-        $this->categoryService->save($category);
-
-        $this->assertSame('custom-slug', $category->getSlug());
+        $service = new CategoryService($entityManager, $slugger);
+        $service->save($category);
     }
 
-    /**
-     * save() must always call persist() and flush(), regardless of slug state.
-     */
-    public function testSavePersistsAndFlushes(): void
+    public function testSaveGeneratesSlugWhenSlugIsEmptyString(): void
     {
-        $category = new Category();
-        $category->setName('Tech');
-        $category->setSlug('tech');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $slugger = $this->createMock(SluggerInterface::class);
+        $category = $this->createMock(Category::class);
 
-        $this->entityManager->expects($this->once())->method('persist');
-        $this->entityManager->expects($this->once())->method('flush');
+        $category->expects($this->once())
+            ->method('getSlug')
+            ->willReturn('');
+        $category->expects($this->once())
+            ->method('getName')
+            ->willReturn('Another Category');
+        $category->expects($this->once())
+            ->method('setSlug')
+            ->with('another-category');
 
-        $this->categoryService->save($category);
+        $slugger->expects($this->once())
+            ->method('slug')
+            ->with('Another Category')
+            ->willReturn(new UnicodeString('Another-Category'));
+
+        $entityManager->expects($this->once())
+            ->method('persist')
+            ->with($category);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new CategoryService($entityManager, $slugger);
+        $service->save($category);
     }
 
-    // --- delete() tests ---
+    public function testSaveCastsNullNameToEmptyString(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $slugger = $this->createMock(SluggerInterface::class);
+        $category = $this->createMock(Category::class);
 
-    /**
-     * delete() must call remove() and flush() on the entity manager.
-     */
+        $category->expects($this->once())
+            ->method('getSlug')
+            ->willReturn(null);
+        $category->expects($this->once())
+            ->method('getName')
+            ->willReturn(null);
+        $category->expects($this->once())
+            ->method('setSlug')
+            ->with('');
+
+        $slugger->expects($this->once())
+            ->method('slug')
+            ->with('')
+            ->willReturn(new UnicodeString(''));
+
+        $entityManager->expects($this->once())
+            ->method('persist')
+            ->with($category);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new CategoryService($entityManager, $slugger);
+        $service->save($category);
+    }
+
     public function testDeleteRemovesAndFlushes(): void
     {
-        $category = new Category();
-        $category->setName('To Delete');
-        $category->setSlug('to-delete');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $slugger = $this->createMock(SluggerInterface::class);
+        $category = $this->createMock(Category::class);
 
-        $this->entityManager->expects($this->once())->method('remove')->with($category);
-        $this->entityManager->expects($this->once())->method('flush');
+        $entityManager->expects($this->once())
+            ->method('remove')
+            ->with($category);
+        $entityManager->expects($this->once())
+            ->method('flush');
 
-        $this->categoryService->delete($category);
+        $service = new CategoryService($entityManager, $slugger);
+        $service->delete($category);
     }
 }

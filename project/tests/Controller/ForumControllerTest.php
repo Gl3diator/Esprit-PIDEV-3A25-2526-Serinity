@@ -8,6 +8,7 @@ use App\Controller\ForumController;
 use App\Entity\ForumThread;
 use App\Enum\ThreadStatus;
 use App\Enum\ThreadType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -87,7 +88,7 @@ class ForumControllerTest extends TestCase
         $this->assertSame('most_followers', $this->controller->publicReadSort($request));
     }
 
-    /** @dataProvider validSortProvider */
+    #[DataProvider('validSortProvider')]
     public function testReadSortAcceptsAllValidValues(string $sort): void
     {
         $request = new Request(['sort' => $sort]);
@@ -187,7 +188,7 @@ class ForumControllerTest extends TestCase
         int $dislikes = 0,
         int $replies = 0,
         int $follows = 0,
-        \DateTimeImmutable $createdAt = null,
+        ?\DateTimeImmutable $createdAt = null,
     ): ForumThread {
         $thread = $this->createMock(ForumThread::class);
         $thread->method('getLikeCount')->willReturn($likes);
@@ -263,7 +264,7 @@ class ForumControllerTest extends TestCase
         bool $pinned = false,
         ?ThreadStatus $status = null,
         ?ThreadType $type = null,
-        \DateTimeImmutable $createdAt = null,
+        ?\DateTimeImmutable $createdAt = null,
     ): ForumThread {
         $thread = $this->createMock(ForumThread::class);
         $thread->method('getTitle')->willReturn($title);

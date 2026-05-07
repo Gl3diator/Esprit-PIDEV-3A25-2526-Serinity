@@ -472,12 +472,12 @@ class ThreadManageController extends AbstractController
         return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
     }
 
-    private function expectsJson(Request $request): bool
+    protected function expectsJson(Request $request): bool
     {
         return $request->isXmlHttpRequest() || str_contains((string) $request->headers->get('Accept', ''), 'application/json');
     }
 
-    private function storeReplyPrefill(Request $request, ForumThread $thread, string $content): void
+    protected function storeReplyPrefill(Request $request, ForumThread $thread, string $content): void
     {
         $text = trim($content);
         if ($text === '' || !$request->hasSession()) {
@@ -487,7 +487,7 @@ class ThreadManageController extends AbstractController
         $request->getSession()->set($this->replyPrefillKey((int) $thread->getId()), mb_substr($text, 0, 5000));
     }
 
-    private function replyPrefillKey(int $threadId): string
+    protected function replyPrefillKey(int $threadId): string
     {
         return 'thread_reply_prefill_'.$threadId;
     }

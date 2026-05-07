@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
 use App\Entity\ForumThread;
@@ -12,227 +14,214 @@ use PHPUnit\Framework\TestCase;
 
 class ThreadServiceTest extends TestCase
 {
-    private ForumThreadRepository $threadRepository;
-    private EntityManagerInterface $entityManager;
-    private ModerationService $moderationService;
-    private ThreadService $threadService;
-
-    protected function setUp(): void
+    public function testFeedReturnsRepositoryResults(): void
     {
-        $this->threadRepository   = $this->createMock(ForumThreadRepository::class);
-        $this->entityManager      = $this->createMock(EntityManagerInterface::class);
-        $this->moderationService  = $this->createMock(ModerationService::class);
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
 
-        $this->threadService = new ThreadService(
-            $this->threadRepository,
-            $this->entityManager,
-            $this->moderationService
-        );
+        $threads = [$this->createMock(ForumThread::class)];
+        $threadRepository->expects($this->once())
+            ->method('findFeed')
+            ->with(['status' => 'open'])
+            ->willReturn($threads);
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+
+        $this->assertSame($threads, $service->feed(['status' => 'open']));
     }
 
-    // --- feed() tests ---
-
-    /**
-     * feed() with no filters should delegate to the repository and return its result.
-     */
-    public function testFeedWithNoFiltersReturnsRepositoryResult(): void
+    public function testFeedDefaultsToEmptyFilters(): void
     {
-        $thread = $this->createMock(ForumThread::class);
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
 
-        $this->threadRepository
-            ->expects($this->once())
+        $threads = [$this->createMock(ForumThread::class)];
+        $threadRepository->expects($this->once())
             ->method('findFeed')
             ->with([])
-            ->willReturn([$thread]);
+            ->willReturn($threads);
 
-        $result = $this->threadService->feed();
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
 
-        $this->assertCount(1, $result);
-        $this->assertSame($thread, $result[0]);
+        $this->assertSame($threads, $service->feed());
     }
 
-    /**
-     * feed() should forward any filters it receives to the repository.
-     */
-    public function testFeedPassesFiltersToRepository(): void
+    public function testSaveThreadThrowsWhenToxic(): void
     {
-        $filters = ['status' => 'open', 'category' => 42];
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
+        $thread = $this->createMock(ForumThread::class);
 
-        $this->threadRepository
-            ->expects($this->once())
-            ->method('findFeed')
-            ->with($filters)
-            ->willReturn([]);
+        $thread->method('getTitle')->willReturn('bad title');
+        $thread->method('getContent')->willReturn('clean content');
 
-        $this->threadService->feed($filters);
+        $moderationService->expects($this->once())
+            ->method('isToxic')
+            ->with('bad title')
+            ->willReturn(true);
+
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Thread contains inappropriate content');
+
+        $service->saveThread($thread);
     }
 
-    // --- saveThread() tests ---
+    public function testSaveThreadThrowsWhenContentIsToxic(): void
+    {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
+        $thread = $this->createMock(ForumThread::class);
 
-    /**
-     * A clean thread (no toxic content) should be touched, persisted and flushed.
-     */
+        $thread->method('getTitle')->willReturn('clean title');
+        $thread->method('getContent')->willReturn('bad content');
+
+        $moderationService->expects($this->exactly(2))
+            ->method('isToxic')
+            ->withConsecutive(['clean title'], ['bad content'])
+            ->willReturnOnConsecutiveCalls(false, true);
+
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Thread contains inappropriate content');
+
+        $service->saveThread($thread);
+    }
+
     public function testSaveThreadPersistsCleanThread(): void
     {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
-        $thread->method('getTitle')->willReturn('A valid title');
-        $thread->method('getContent')->willReturn('Some clean content.');
 
-        $this->moderationService->method('isToxic')->willReturn(false);
+        $thread->method('getTitle')->willReturn('Good title');
+        $thread->method('getContent')->willReturn('Good content');
 
-        $thread->expects($this->once())->method('touch');
-        $this->entityManager->expects($this->once())->method('persist')->with($thread);
-        $this->entityManager->expects($this->once())->method('flush');
-
-        $this->threadService->saveThread($thread);
-    }
-
-    /**
-     * A thread with a toxic title must throw RuntimeException and never be persisted.
-     */
-    public function testSaveThreadThrowsExceptionForToxicTitle(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Thread contains inappropriate content and cannot be published.');
-
-        $thread = $this->createMock(ForumThread::class);
-        $thread->method('getTitle')->willReturn('toxic title here');
-        $thread->method('getContent')->willReturn('Clean content.');
-
-        $this->moderationService
+        $moderationService->expects($this->exactly(2))
             ->method('isToxic')
-            ->willReturnCallback(fn(string $text) => str_contains($text, 'toxic'));
+            ->willReturnOnConsecutiveCalls(false, false);
 
-        $this->entityManager->expects($this->never())->method('persist');
-        $this->entityManager->expects($this->never())->method('flush');
+        $thread->expects($this->once())
+            ->method('setUpdatedAt')
+            ->with($this->callback(static fn ($value): bool => $value instanceof \DateTimeImmutable));
 
-        $this->threadService->saveThread($thread);
+        $entityManager->expects($this->once())
+            ->method('persist')
+            ->with($thread);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+        $service->saveThread($thread);
     }
 
-    /**
-     * A thread with toxic content must throw RuntimeException and never be persisted.
-     */
-    public function testSaveThreadThrowsExceptionForToxicContent(): void
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $thread = $this->createMock(ForumThread::class);
-        $thread->method('getTitle')->willReturn('Normal title');
-        $thread->method('getContent')->willReturn('toxic content here');
-
-        $this->moderationService
-            ->method('isToxic')
-            ->willReturnCallback(fn(string $text) => str_contains($text, 'toxic'));
-
-        $this->entityManager->expects($this->never())->method('persist');
-
-        $this->threadService->saveThread($thread);
-    }
-
-    // --- deleteThread() tests ---
-
-    /**
-     * deleteThread() must call remove() and flush() on the entity manager.
-     */
     public function testDeleteThreadRemovesAndFlushes(): void
     {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
 
-        $this->entityManager->expects($this->once())->method('remove')->with($thread);
-        $this->entityManager->expects($this->once())->method('flush');
+        $entityManager->expects($this->once())
+            ->method('remove')
+            ->with($thread);
+        $entityManager->expects($this->once())
+            ->method('flush');
 
-        $this->threadService->deleteThread($thread);
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+        $service->deleteThread($thread);
     }
 
-    // --- updateStatus() tests ---
-
-    /**
-     * updateStatus() must set the new status, touch the thread and flush.
-     */
     public function testUpdateStatusSetsStatusAndFlushes(): void
     {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
-        $status = ThreadStatus::Closed; // adjust to your actual enum case
 
-        $thread->expects($this->once())->method('setStatus')->with($status);
-        $thread->expects($this->once())->method('touch');
-        $this->entityManager->expects($this->once())->method('flush');
+        $thread->expects($this->once())
+            ->method('setStatus')
+            ->with(ThreadStatus::OPEN);
+        $thread->expects($this->once())
+            ->method('setUpdatedAt')
+            ->with($this->callback(static fn ($value): bool => $value instanceof \DateTimeImmutable));
 
-        $this->threadService->updateStatus($thread, $status);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+        $service->updateStatus($thread, ThreadStatus::OPEN);
     }
 
-    // --- togglePin() tests ---
-
-    /**
-     * togglePin() must invert the pinned state and flush.
-     * Scenario: thread is currently pinned → should become unpinned.
-     */
-    public function testTogglePinUnpinsAPinnedThread(): void
+    public function testTogglePinFlipsPinnedState(): void
     {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
-        $thread->method('isPinned')->willReturn(true);
 
-        $thread->expects($this->once())->method('setIsPinned')->with(false);
-        $this->entityManager->expects($this->once())->method('flush');
+        $thread->expects($this->once())
+            ->method('isPinned')
+            ->willReturn(true);
+        $thread->expects($this->once())
+            ->method('setIsPinned')
+            ->with(false);
 
-        $this->threadService->togglePin($thread);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+        $service->togglePin($thread);
     }
 
-    /**
-     * togglePin() – scenario: thread is not pinned → should become pinned.
-     */
-    public function testTogglePinPinsAnUnpinnedThread(): void
+    public function testTogglePinFlipsFromFalseToTrue(): void
     {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
-        $thread->method('isPinned')->willReturn(false);
 
-        $thread->expects($this->once())->method('setIsPinned')->with(true);
-        $this->entityManager->expects($this->once())->method('flush');
+        $thread->expects($this->once())
+            ->method('isPinned')
+            ->willReturn(false);
+        $thread->expects($this->once())
+            ->method('setIsPinned')
+            ->with(true);
 
-        $this->threadService->togglePin($thread);
+        $entityManager->expects($this->once())
+            ->method('flush');
+
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
+        $service->togglePin($thread);
     }
 
-    // --- canEdit() tests ---
-
-    /**
-     * canEdit() must return true when the userId matches the thread's author.
-     */
-    public function testCanEditReturnsTrueForAuthor(): void
+    public function testCanEditReturnsTrueForMatchingAuthor(): void
     {
-        $thread = $this->createMock(ForumThread::class);
-        $thread->method('getAuthorId')->willReturn('user-42');
-
-        $this->assertTrue($this->threadService->canEdit($thread, 'user-42'));
-    }
-
-    /**
-     * canEdit() must return false when the userId does not match the author.
-     */
-    public function testCanEditReturnsFalseForDifferentUser(): void
-    {
-        $thread = $this->createMock(ForumThread::class);
-        $thread->method('getAuthorId')->willReturn('user-42');
-
-        $this->assertFalse($this->threadService->canEdit($thread, 'user-99'));
-    }
-
-    /**
-     * canEdit() must return false when userId is null.
-     */
-    public function testCanEditReturnsFalseForNullUser(): void
-    {
+        $threadRepository = $this->createMock(ForumThreadRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $moderationService = $this->createMock(ModerationService::class);
         $thread = $this->createMock(ForumThread::class);
 
-        $this->assertFalse($this->threadService->canEdit($thread, null));
-    }
+        $thread->method('getAuthorId')->willReturn('user-123');
 
-    /**
-     * canEdit() must return false when userId is an empty string.
-     */
-    public function testCanEditReturnsFalseForEmptyStringUser(): void
-    {
-        $thread = $this->createMock(ForumThread::class);
+        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
 
-        $this->assertFalse($this->threadService->canEdit($thread, ''));
+        $this->assertTrue($service->canEdit($thread, 'user-123'));
+        $this->assertFalse($service->canEdit($thread, 'user-999'));
+        $this->assertFalse($service->canEdit($thread, null));
+        $this->assertFalse($service->canEdit($thread, ''));
     }
 }
