@@ -69,10 +69,7 @@ parameters:
     app.user_lon: '%env(float:USER_LON)%'
     app.gemini_api_key: '%env(string:GEMINI_API_KEY)%'
     app.gemini_model: '%env(string:GEMINI_MODEL)%'
-
-
     app.openweather.api_key: '%env(string:OPENWEATHER_API_KEY)%'
-
     app.openweather.lat: '%env(float:OPENWEATHER_LAT)%'
     app.openweather.lon: '%env(float:OPENWEATHER_LON)%'
     app.lm_studio.base_url: '%env(string:LM_STUDIO_BASE_URL)%'
