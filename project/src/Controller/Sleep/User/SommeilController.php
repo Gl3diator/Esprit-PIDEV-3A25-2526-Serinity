@@ -129,7 +129,12 @@ final class SommeilController extends AbstractController
             if ($form->isValid()) {
                 $sommeil->setCreatedAt(new \DateTimeImmutable());
                 $sommeil->setUpdatedAt(new \DateTimeImmutable());
-                $sommeil->setUser($this->getUser());
+                $user = $this->getUser();
+                if (!$user instanceof User) {
+                    throw $this->createAccessDeniedException('Utilisateur non connecté.');
+                }
+
+                $sommeil->setUser($user);
 
                 $em->persist($sommeil);
                 $em->flush();

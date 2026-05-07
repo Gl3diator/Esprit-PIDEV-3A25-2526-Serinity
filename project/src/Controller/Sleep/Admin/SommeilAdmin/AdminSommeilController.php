@@ -299,7 +299,16 @@ final class AdminSommeilController extends AbstractController
             default => 'emotion-neutre',
         };
     }
-
+    /**
+     * @return array<int, array{
+     *     section: string,
+     *     label: string,
+     *     route: string,
+     *     icon: string,
+     *     active: bool,
+     *     children?: array<int, array<string, string|bool>>
+     * }>
+     */
     private function buildNav(string $activeRoute): array
     {
         $items = [

@@ -11,39 +11,41 @@ if len(sys.argv) < 6:
     print(json.dumps({
         "success": False,
         "error": "Paramètres manquants"
-    }))
+    }, ensure_ascii=False))
     sys.exit(1)
 
-duree_sommeil = float(sys.argv[1])
-interruptions = int(sys.argv[2])
-temperature = float(sys.argv[3])
-bruit_niveau = int(sys.argv[4])
-humeur_reveil = sys.argv[5]
+try:
+    duree_sommeil = float(sys.argv[1])
+    interruptions = int(sys.argv[2])
+    temperature = float(sys.argv[3])
+    bruit_niveau = int(sys.argv[4])
+    humeur_reveil = sys.argv[5]
 
-bundle = joblib.load(MODEL_PATH)
+    bundle = joblib.load(MODEL_PATH)
 
-model = bundle["model"]
-humeur_encoder = bundle["humeur_encoder"]
-qualite_encoder = bundle["qualite_encoder"]
+    pipeline = bundle["pipeline"]
+    target_encoder = bundle["target_encoder"]
 
-if humeur_reveil not in list(humeur_encoder.classes_):
-    humeur_reveil = "Neutre"
+    input_data = pd.DataFrame([{
+        "duree_sommeil": duree_sommeil,
+        "interruptions": interruptions,
+        "temperature": temperature,
+        "bruit_niveau": bruit_niveau,
+        "humeur_reveil": humeur_reveil,
+    }])
 
-humeur_encoded = humeur_encoder.transform([humeur_reveil])[0]
+    prediction = pipeline.predict(input_data)[0]
+    qualite = target_encoder.inverse_transform([prediction])[0]
 
-input_data = pd.DataFrame([{
-    "duree_sommeil": duree_sommeil,
-    "interruptions": interruptions,
-    "temperature": temperature,
-    "bruit_niveau": bruit_niveau,
-    "humeur_reveil_encoded": humeur_encoded,
-}])
+    print(json.dumps({
+        "success": True,
+        "prediction": qualite,
+        "accuracy": round(float(bundle["accuracy"]), 2)
+    }, ensure_ascii=False))
 
-prediction = model.predict(input_data)[0]
-qualite = qualite_encoder.inverse_transform([prediction])[0]
-
-print(json.dumps({
-    "success": True,
-    "prediction": qualite,
-    "accuracy": round(float(bundle["accuracy"]), 2)
-}, ensure_ascii=False))
+except Exception as e:
+    print(json.dumps({
+        "success": False,
+        "error": str(e)
+    }, ensure_ascii=False))
+    sys.exit(1)

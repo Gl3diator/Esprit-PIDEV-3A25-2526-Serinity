@@ -7,66 +7,42 @@
 {% block sleep_content %}
 
     <section class="ac-card" style="margin-bottom: 1.5rem;">
-
         <div class="ac-row-between" style="align-items:center; gap:1rem;">
-
             <div>
                 <h2 style="margin-bottom:0.35rem;">
                     🤖 Intelligence artificielle du sommeil
                 </h2>
 
-                <p style="
-                color: var(--color-text-muted);
-                margin: 0;
-            ">
+                <p style="color: var(--color-text-muted); margin: 0;">
                     Analyse intelligente de la qualité du sommeil
                     basée sur vos données nocturnes.
                 </p>
             </div>
 
-            <a href="{{ path('app_sommeil_list') }}"
-               class="ac-ghost-btn">
-            <span class="material-symbols-outlined"
-                  style="font-size:18px;">
-                arrow_back
-            </span>
+            <a href="{{ path('app_sommeil_list') }}" class="ac-ghost-btn">
+                <span class="material-symbols-outlined" style="font-size:18px;">
+                    arrow_back
+                </span>
                 Retour
             </a>
-
         </div>
-
     </section>
 
     <section class="ac-card">
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
 
-        <div style="
-        display:flex;
-        flex-direction:column;
-        gap:1.25rem;
-    ">
-
-            <div style="
-            display:flex;
-            align-items:center;
-            gap:0.75rem;
-        ">
-            <span class="material-symbols-outlined"
-                  style="
-                    font-size:42px;
-                    color:var(--color-primary);
-                  ">
-                psychology
-            </span>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span class="material-symbols-outlined"
+                      style="font-size:42px; color:var(--color-primary);">
+                    psychology
+                </span>
 
                 <div>
                     <h3 style="margin:0;">
                         Résultat de la prédiction
                     </h3>
 
-                    <p style="
-                    margin:0.2rem 0 0 0;
-                    color: var(--color-text-muted);
-                ">
+                    <p style="margin:0.2rem 0 0 0; color: var(--color-text-muted);">
                         Le modèle Machine Learning analyse
                         vos données pour estimer votre qualité
                         de sommeil.
@@ -74,88 +50,83 @@
                 </div>
             </div>
 
-            <div style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-            gap:1rem;
-        ">
-
-                <div class="ac-card"
-                     style="
-                    background:rgba(59,130,246,0.06);
-                    border:1px solid rgba(59,130,246,0.12);
-                 ">
+            {% if result is defined %}
+                {% if result.success %}
 
                     <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:0.5rem;
-                    margin-bottom:0.75rem;
-                ">
-                    <span class="material-symbols-outlined">
-                        hotel
-                    </span>
+                        display:grid;
+                        grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+                        gap:1rem;
+                    ">
 
-                        <strong>
-                            Qualité prédite
-                        </strong>
+                        <div class="ac-card"
+                             style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.12);">
+
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                                <span class="material-symbols-outlined">
+                                    hotel
+                                </span>
+
+                                <strong>Qualité prédite</strong>
+                            </div>
+
+                            <div style="font-size:1.4rem; font-weight:700;">
+                                {{ result.prediction|default('Non disponible') }}
+                            </div>
+                        </div>
+
+                        <div class="ac-card"
+                             style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.12);">
+
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                                <span class="material-symbols-outlined">
+                                    analytics
+                                </span>
+
+                                <strong>Accuracy du modèle</strong>
+                            </div>
+
+                            <div style="font-size:1.4rem; font-weight:700;">
+                                {{ result.accuracy|default('N/A') }}
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div style="
-                    font-size:1.4rem;
-                    font-weight:700;
-                ">
-                        {{ result.prediction }}
+                {% else %}
+
+                    <div class="ac-card"
+                         style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.18);">
+                        <h4 style="margin-bottom:0.75rem; color:#dc2626;">
+                            Erreur lors de la prédiction
+                        </h4>
+
+                        <p style="margin:0; color:var(--color-text-muted);">
+                            {{ result.error|default('Une erreur inconnue est survenue.') }}
+                        </p>
+
+                        {% if result.details is defined and result.details %}
+                            <pre style="
+                                margin-top:1rem;
+                                padding:1rem;
+                                border-radius:0.75rem;
+                                overflow:auto;
+                                white-space:pre-wrap;
+                                background:rgba(0,0,0,0.04);
+                                font-size:0.85rem;
+                            ">{{ result.details }}</pre>
+                        {% endif %}
                     </div>
 
-                </div>
+                {% endif %}
+            {% endif %}
 
-                <div class="ac-card"
-                     style="
-                    background:rgba(16,185,129,0.06);
-                    border:1px solid rgba(16,185,129,0.12);
-                 ">
-
-                    <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:0.5rem;
-                    margin-bottom:0.75rem;
-                ">
-                    <span class="material-symbols-outlined">
-                        analytics
-                    </span>
-
-                        <strong>
-                            Accuracy du modèle
-                        </strong>
-                    </div>
-
-                    <div style="
-                    font-size:1.4rem;
-                    font-weight:700;
-                ">
-                        {{ result.accuracy }}
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="ac-card"
-                 style="
-                background:var(--color-surface-soft);
-             ">
-
+            <div class="ac-card" style="background:var(--color-surface-soft);">
                 <h4 style="margin-bottom:0.75rem;">
                     🧠 Fonctionnement du modèle IA
                 </h4>
 
-                <p style="
-                margin:0;
-                line-height:1.7;
-                color:var(--color-text-muted);
-            ">
+                <p style="margin:0; line-height:1.7; color:var(--color-text-muted);">
                     Cette prédiction est générée grâce à un modèle
                     de Machine Learning entraîné avec Python et
                     scikit-learn. Le système analyse plusieurs
@@ -165,11 +136,9 @@
                     d’estimer automatiquement la qualité
                     du sommeil.
                 </p>
-
             </div>
 
         </div>
-
     </section>
 
 {% endblock %}
