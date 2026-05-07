@@ -21,6 +21,7 @@ vendor/
 .php-cs-fixer.cache
 ###< symfony/framework-bundle ###
 forum_toxicity_bert/
+forum_toxicity_bert.zip
 ###> phpunit/phpunit ###
 phpunit.xml
 .phpunit.cache/

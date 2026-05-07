@@ -261,7 +261,17 @@ class ForumController extends AbstractController
 
             $reply->setThread($thread);
             $reply->setAuthorId($currentUser->getId());
-            $replyService->add($reply, $currentUser);
+
+            try {
+                $replyService->add($reply, $currentUser);
+            } catch (\RuntimeException $exception) {
+                if ($request->hasSession()) {
+                    $request->getSession()->set($prefillKey, (string) $reply->getContent());
+                }
+                $this->addFlash('danger', $exception->getMessage());
+
+                return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
+            }
 
             return $this->redirectToRoute('app_forum_thread_detail', ['id' => $thread->getId()]);
         }
