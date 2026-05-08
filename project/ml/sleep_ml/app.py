@@ -14,7 +14,7 @@ import joblib, numpy as np, os
 app = Flask(__name__)
 CORS(app)
 
-MODEL_DIR = os.path.join(os.path.dirname(__file__), "ml_models")
+MODEL_DIR = os.path.join(os.path.dirname(__file__))
 
 clf      = joblib.load(f"{MODEL_DIR}/sleep_quality_model.pkl")
 reg      = joblib.load(f"{MODEL_DIR}/wake_time_model.pkl")
