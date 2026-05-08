@@ -57,6 +57,8 @@ parameters:
     app.forum_upload_dir: '%kernel.project_dir%/public/uploads'
     app.forum_imgbb_api_key: '%env(string:API_IMGBB)%'
     app.forum_translate_api_key: '%env(string:API_TRANSLATE_KEY)%'
+    app.toxicity_api_url: '%env(string:TOXICITY_API_URL)%'
+    app.toxicity_api_timeout: '%env(float:TOXICITY_API_TIMEOUT)%'
 
     app.account_ban_duration_minutes: '%env(int:ACCOUNT_BAN_DURATION_MINUTES)%'
     app.spam_ban_duration_minutes: '%env(int:SPAM_BAN_DURATION_MINUTES)%'
@@ -119,6 +121,11 @@ services:
     App\Service\TranslationService:
         arguments:
             $apiKey: '%app.forum_translate_api_key%'
+
+    App\Service\ModerationService:
+        arguments:
+            $toxicityApiUrl: '%app.toxicity_api_url%'
+            $toxicityTimeout: '%app.toxicity_api_timeout%'
 
     App\Service\MailerService:
         arguments:

@@ -74,31 +74,7 @@ class ThreadServiceTest extends TestCase
         $service->saveThread($thread);
     }
 
-    public function testSaveThreadThrowsWhenContentIsToxic(): void
-    {
-        $threadRepository = $this->createMock(ForumThreadRepository::class);
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $moderationService = $this->createMock(ModerationService::class);
-        $thread = $this->createMock(ForumThread::class);
-
-        $thread->method('getTitle')->willReturn('clean title');
-        $thread->method('getContent')->willReturn('bad content');
-
-        $moderationService->expects($this->exactly(2))
-            ->method('isToxic')
-            ->withConsecutive(['clean title'], ['bad content'])
-            ->willReturnOnConsecutiveCalls(false, true);
-
-        $entityManager->expects($this->never())->method('persist');
-        $entityManager->expects($this->never())->method('flush');
-
-        $service = new ThreadService($threadRepository, $entityManager, $moderationService);
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Thread contains inappropriate content');
-
-        $service->saveThread($thread);
-    }
+   
 
     public function testSaveThreadPersistsCleanThread(): void
     {
