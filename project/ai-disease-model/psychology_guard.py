@@ -48,7 +48,7 @@ def has_psychological_keywords(prompt: str) -> bool:
     return any(pattern in normalized for pattern in PSYCHOLOGICAL_HINT_PATTERNS)
 
 
-def is_psychological_prompt(scope_model, prompt: str, threshold: float = 0.20) -> bool:
+def is_psychological_prompt(scope_model, prompt: str, threshold: float = 0.30) -> bool:
     """
     Decides if a prompt is psychological using the trained scope model.
     Falls back to keyword hints for short natural-language prompts.

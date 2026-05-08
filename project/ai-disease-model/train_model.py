@@ -1,4 +1,7 @@
 import os
+import re
+import unicodedata
+from glob import glob
 
 import joblib
 import pandas as pd
@@ -6,7 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion, Pipeline
 
 
 DATASET_PATHS = [
@@ -80,15 +83,39 @@ EXCLUDED_DISEASE_KEYWORDS = [
 
 
 def find_dataset_path() -> str:
-    for path in DATASET_PATHS:
-        absolute_path = os.path.join(BASE_DIR, path)
+    search_roots = [
+        BASE_DIR,
+        os.getcwd(),
+        os.path.dirname(BASE_DIR),
+    ]
 
-        if os.path.exists(absolute_path):
-            return absolute_path
+    for root in search_roots:
+        for path in DATASET_PATHS:
+            absolute_path = os.path.join(root, path)
+
+            if os.path.exists(absolute_path):
+                return absolute_path
+
+    glob_patterns = [
+        "*Diseases*Symptoms*.csv",
+        "*dataset*Diseases*Symptoms*.csv",
+        "*.csv",
+    ]
+
+    for root in search_roots:
+        for pattern in glob_patterns:
+            matches = sorted(
+                candidate
+                for candidate in glob(os.path.join(root, pattern))
+                if os.path.isfile(candidate)
+            )
+
+            if matches:
+                return matches[0]
 
     raise FileNotFoundError(
         "Dataset not found. Put Final_Augmented_dataset_Diseases_and_Symptoms.csv "
-        "in the same folder as train_model.py"
+        "in the same folder as train_model.py or project/ai-disease-model"
     )
 
 
@@ -112,7 +139,12 @@ def detect_target_column(df: pd.DataFrame) -> str:
 
 
 def normalize_text(value: str) -> str:
-    return " ".join(str(value).lower().replace("_", " ").strip().split())
+    normalized = unicodedata.normalize("NFKD", str(value))
+    normalized = normalized.encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.lower().replace("_", " ")
+    normalized = re.sub(r"[^a-z0-9\s]", " ", normalized)
+
+    return " ".join(normalized.strip().split())
 
 
 def is_psychological_disease(disease: str) -> bool:
@@ -124,7 +156,11 @@ def is_psychological_disease(disease: str) -> bool:
     return any(keyword in normalized for keyword in PSYCHOLOGICAL_DISEASE_KEYWORDS)
 
 
-def row_to_text(row: pd.Series, feature_columns: list[str]) -> str:
+def extract_active_symptoms(
+    row: pd.Series,
+    feature_columns: list[str],
+    max_symptoms: int | None = None
+) -> list[str]:
     symptoms = []
 
     for column in feature_columns:
@@ -136,29 +172,87 @@ def row_to_text(row: pd.Series, feature_columns: list[str]) -> str:
             numeric_value = 0.0
 
         if numeric_value > 0:
-            symptoms.append(column.replace("_", " "))
+            symptoms.append(normalize_text(column))
+
+    if max_symptoms is not None:
+        return symptoms[:max_symptoms]
+
+    return symptoms
+
+
+def format_symptom_phrase(symptoms: list[str]) -> str:
+    if not symptoms:
+        return ""
+
+    if len(symptoms) == 1:
+        return symptoms[0]
+
+    if len(symptoms) == 2:
+        return f"{symptoms[0]} and {symptoms[1]}"
+
+    return ", ".join(symptoms[:-1]) + f", and {symptoms[-1]}"
+
+
+def row_to_text(row: pd.Series, feature_columns: list[str]) -> str:
+    symptoms = extract_active_symptoms(row, feature_columns)
 
     return normalize_text(" ".join(symptoms))
+
+
+def row_to_prompt_variants(row: pd.Series, feature_columns: list[str]) -> list[str]:
+    symptoms = extract_active_symptoms(row, feature_columns, max_symptoms=6)
+
+    if not symptoms:
+        return []
+
+    phrase = format_symptom_phrase(symptoms)
+    short_phrase = format_symptom_phrase(symptoms[:4])
+
+    variants = [
+        f"i have {phrase}",
+        f"my symptoms are {short_phrase}",
+    ]
+
+    if len(symptoms) >= 3:
+        variants.append(f"i feel {short_phrase}")
+
+    return [normalize_text(variant) for variant in variants]
 
 
 def create_text_model() -> Pipeline:
     return Pipeline([
         (
-            "tfidf",
-            TfidfVectorizer(
-                lowercase=True,
-                ngram_range=(1, 3),
-                max_features=40000,
-                sublinear_tf=True,
-                min_df=1
-            )
+            "features",
+            FeatureUnion([
+                (
+                    "word_tfidf",
+                    TfidfVectorizer(
+                        lowercase=True,
+                        ngram_range=(1, 3),
+                        max_features=40000,
+                        sublinear_tf=True,
+                        min_df=1,
+                    )
+                ),
+                (
+                    "char_tfidf",
+                    TfidfVectorizer(
+                        analyzer="char_wb",
+                        ngram_range=(3, 5),
+                        max_features=20000,
+                        sublinear_tf=True,
+                        min_df=1,
+                    )
+                ),
+            ])
         ),
         (
             "classifier",
             LogisticRegression(
-                max_iter=2000,
-                C=1.5,
-                class_weight="balanced"
+                max_iter=3000,
+                C=2.0,
+                class_weight="balanced",
+                solver="lbfgs"
             )
         )
     ])
@@ -277,6 +371,34 @@ def oversample_small_classes(df: pd.DataFrame, text_column: str, label_column: s
     return pd.concat(frames, ignore_index=True).reset_index(drop=True)
 
 
+def build_prompt_augmented_frame(
+    df: pd.DataFrame,
+    feature_columns: list[str],
+    target_column: str,
+    scope_column: str | None = None
+) -> pd.DataFrame:
+    rows = []
+
+    for _, row in df.iterrows():
+        prompt_variants = row_to_prompt_variants(row, feature_columns)
+
+        for variant in prompt_variants:
+            new_row = {
+                "text": variant,
+                target_column: row[target_column],
+            }
+
+            if scope_column is not None and scope_column in row:
+                new_row[scope_column] = row[scope_column]
+
+            rows.append(new_row)
+
+    if not rows:
+        return pd.DataFrame(columns=["text", target_column] + ([scope_column] if scope_column else []))
+
+    return pd.DataFrame(rows)
+
+
 def main() -> None:
     print("Loading dataset...")
 
@@ -317,6 +439,19 @@ def main() -> None:
     print("Scope distribution:")
     print(df["scope"].value_counts())
 
+    prompt_augmented_scope_df = build_prompt_augmented_frame(
+        df,
+        feature_columns,
+        target_column,
+        "scope"
+    )
+    if not prompt_augmented_scope_df.empty:
+        df = pd.concat(
+            [df, prompt_augmented_scope_df],
+            ignore_index=True
+        )
+        df = clean_training_frame(df, "text", target_column)
+
     psychological_df = df[df["scope"] == "psychological"].copy()
 
     if psychological_df.empty:
@@ -333,8 +468,19 @@ def main() -> None:
         psychological_df,
         target_column
     )
+    prompt_augmented_psychological_df = build_prompt_augmented_frame(
+        psychological_df,
+        feature_columns,
+        target_column,
+        "scope"
+    )
+    if not prompt_augmented_psychological_df.empty:
+        psychological_df = pd.concat(
+            [psychological_df, prompt_augmented_psychological_df],
+            ignore_index=True
+        )
     psychological_df = clean_training_frame(psychological_df, "text", target_column)
-    psychological_df = oversample_small_classes(psychological_df, "text", target_column)
+    psychological_df = oversample_small_classes(psychological_df, "text", target_column, min_examples=12)
 
     natural_scope_examples = psychological_df[["text", target_column, "scope"]].tail(80)
 
@@ -391,10 +537,10 @@ def main() -> None:
     bundle = {
         "scope_model": scope_model,
         "disease_model": disease_model,
-        "scope_threshold": 0.20,
-        "disease_confidence_threshold": 0.38,
-        "disease_margin_threshold": 0.08,
-        "model_version": "2",
+        "scope_threshold": 0.30,
+        "disease_confidence_threshold": 0.45,
+        "disease_margin_threshold": 0.12,
+        "model_version": "3",
     }
 
     joblib.dump(bundle, MODEL_PATH)
