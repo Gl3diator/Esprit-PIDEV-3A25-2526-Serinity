@@ -232,6 +232,8 @@ final class AdminSommeilController extends AbstractController
         ]);
     }
 
+
+
     #[Route('/modal/reve/{id}', name: 'modal_reve_show', methods: ['GET'])]
     public function modalReve(Reves $reve): Response
     {
@@ -259,6 +261,7 @@ final class AdminSommeilController extends AbstractController
 
         return $this->redirectToRoute('app_admin_sommeil_index');
     }
+
 
     #[Route('/delete/reve/{id}', name: 'delete_reve', methods: ['POST', 'DELETE'])]
     public function deleteReve(
@@ -299,7 +302,16 @@ final class AdminSommeilController extends AbstractController
             default => 'emotion-neutre',
         };
     }
-
+    /**
+     * @return array<int, array{
+     *     section: string,
+     *     label: string,
+     *     route: string,
+     *     icon: string,
+     *     active: bool,
+     *     children?: array<int, array<string, string|bool>>
+     * }>
+     */
     private function buildNav(string $activeRoute): array
     {
         $items = [

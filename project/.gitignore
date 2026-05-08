@@ -20,6 +20,7 @@ config/secrets/prod/prod.decrypt.private.php
 public/bundles/
 var/
 vendor/
+.idea/
 .php-cs-fixer.cache
 ###< symfony/framework-bundle ###
 forum_toxicity_bert/
