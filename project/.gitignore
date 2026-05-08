@@ -3,7 +3,8 @@
 
 ### CUSTOM IGNORES ###
 public/antelopev2
-.venv/
+.venv
+*/__pycache__/*
 ### !CUSTOM IGNORES ###
 
 ###> symfony/framework-bundle ###
