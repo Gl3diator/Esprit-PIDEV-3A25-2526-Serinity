@@ -3,7 +3,9 @@
 
 ### CUSTOM IGNORES ###
 public/antelopev2
-.venv/
+.venv
+*/__pycache__/*
+ml/forum_ml/model.safetensors
 ### !CUSTOM IGNORES ###
 
 ###> symfony/framework-bundle ###
@@ -21,7 +23,8 @@ vendor/
 .idea/
 .php-cs-fixer.cache
 ###< symfony/framework-bundle ###
-
+forum_toxicity_bert/
+forum_toxicity_bert.zip
 ###> phpunit/phpunit ###
 phpunit.xml
 .phpunit.cache/
