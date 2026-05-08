@@ -517,7 +517,7 @@ final class AccessControlUiController extends AbstractController
             'nav' => $this->buildNav('ac_ui_exercises'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
             'summary' => $this->adminExerciceService->summary(),
-            'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 8),
+            'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 3),
             'exerciseTypeChart' => $this->buildPieChart(
                 'Exercises by type',
                 ['Type', 'Exercises'],
@@ -756,6 +756,14 @@ final class AccessControlUiController extends AbstractController
         $dto->durationMinutes = max(1, min(300, (int) $request->request->get('durationMinutes', 10)));
         $description = trim((string) $request->request->get('description', ''));
         $dto->description = $description !== '' ? $description : null;
+        $benefits = trim((string) $request->request->get('benefits', ''));
+        $dto->benefits = $benefits !== '' ? $benefits : null;
+        $tips = trim((string) $request->request->get('tips', ''));
+        $dto->tips = $tips !== '' ? $tips : null;
+        $theme = trim((string) $request->request->get('theme', ''));
+        $dto->theme = $theme !== '' ? $theme : null;
+        $guidedInstructionsText = trim((string) $request->request->get('guidedInstructionsText', ''));
+        $dto->guidedInstructionsText = $guidedInstructionsText !== '' ? $guidedInstructionsText : null;
         $dto->isActive = $request->request->has('isActive');
 
         return $dto;
