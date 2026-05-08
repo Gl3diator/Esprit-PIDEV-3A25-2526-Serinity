@@ -12,21 +12,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-/**
- * Unit tests for the pure-logic private helpers of ForumController.
- *
- * Because AbstractController depends on the DI container for render/redirect,
- * we expose the private methods via an anonymous subclass so we can test them
- * in full isolation — no kernel, no database, no HTTP stack needed.
- *
- * For route-level smoke tests (feed, detail, etc.) use a WebTestCase
- * with a booted kernel.
- */
+
 class ForumControllerTest extends TestCase
 {
-    // -------------------------------------------------------------------------
-    // Test subject: an anonymous subclass that publicises the private helpers
-    // -------------------------------------------------------------------------
+
 
     private ForumController $controller;
 
@@ -66,9 +55,7 @@ class ForumControllerTest extends TestCase
         };
     }
 
-    // =========================================================================
-    // readSort()
-    // =========================================================================
+
 
     public function testReadSortReturnsDefaultWhenMissing(): void
     {
