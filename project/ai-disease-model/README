@@ -1,18 +1,18 @@
-//do this : 
+Setup:
 composer install
-
-//http-client
 composer require symfony/http-client
-
 python -m pip install -r requirements.txt
-//to check 
+
+Quick dependency check:
 python -c "import pandas, sklearn, flask, flask_cors, joblib; print('EVERYTHING OK')"
-//if the model dir contain these files skip this step 
-//disease_model.pkl
-label_encoder.pkl
-symptoms_columns.pkl
-//otherwise this : 
+
+Train the model bundle:
 python train_model.py
 
-//how to run this model 
-python api.py // it runs on http://127.0.0.1:5001
+Run the API:
+python api.py
+
+Notes:
+- The API runs on `http://127.0.0.1:5001`
+- The trained bundle is stored at `model/psychological_ai_bundle.pkl`
+- `/predict-from-prompt` expects JSON like `{"prompt": "i feel anxious and cannot sleep"}`

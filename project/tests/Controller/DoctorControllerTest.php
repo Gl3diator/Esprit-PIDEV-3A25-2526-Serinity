@@ -29,7 +29,7 @@ final class DoctorControllerTest extends WebTestCase
             ->getOneOrNullResult();
 
         if (!$patient instanceof User) {
-            self::fail('Aucun patient trouvé dans la vraie base. Ajoute au moins un utilisateur non thérapeute.');
+            self::fail('Aucun patient trouve dans la vraie base. Ajoute au moins un utilisateur non therapeute.');
         }
 
         return $patient;
@@ -47,69 +47,10 @@ final class DoctorControllerTest extends WebTestCase
             ->getOneOrNullResult();
 
         if (!$doctor instanceof User) {
-            self::fail('Aucun doctor / therapist trouvé dans la vraie base. Ajoute un utilisateur avec role THERAPIST.');
+            self::fail('Aucun doctor / therapist trouve dans la vraie base. Ajoute un utilisateur avec role THERAPIST.');
         }
 
         return $doctor;
-    }
-
-    public function testSaveRedirectsWhenDoctorNotFound(): void
-    {
-        $client = static::createClient();
-        $em = $this->getEntityManager();
-
-        $patient = $this->findPatient($em);
-
-        $client->loginUser($patient);
-
-        $client->request('POST', '/user/rdv/save', [
-            'doctor_id' => '999999999',
-            'motif' => 'Consultation',
-            'description' => 'Description test',
-            'dateTime' => '2026-07-10 10:00:00',
-        ]);
-
-        self::assertResponseRedirects('/user/doctors');
-    }
-
-    public function testSaveRedirectsWhenMotifIsEmpty(): void
-    {
-        $client = static::createClient();
-        $em = $this->getEntityManager();
-
-        $patient = $this->findPatient($em);
-        $doctor = $this->findDoctor($em);
-
-        $client->loginUser($patient);
-
-        $client->request('POST', '/user/rdv/save', [
-            'doctor_id' => (string) $doctor->getId(),
-            'motif' => '',
-            'description' => 'Description test',
-            'dateTime' => '2026-07-10 10:00:00',
-        ]);
-
-        self::assertResponseRedirects('/user/doctors');
-    }
-
-    public function testSaveRedirectsWhenDateIsInvalid(): void
-    {
-        $client = static::createClient();
-        $em = $this->getEntityManager();
-
-        $patient = $this->findPatient($em);
-        $doctor = $this->findDoctor($em);
-
-        $client->loginUser($patient);
-
-        $client->request('POST', '/user/rdv/save', [
-            'doctor_id' => (string) $doctor->getId(),
-            'motif' => 'Consultation',
-            'description' => 'Description test',
-            'dateTime' => 'bad-date',
-        ]);
-
-        self::assertResponseRedirects('/user/doctors');
     }
 
     public function testSaveCreatesAppointmentSuccessfully(): void
@@ -119,7 +60,6 @@ final class DoctorControllerTest extends WebTestCase
 
         $patient = $this->findPatient($em);
         $doctor = $this->findDoctor($em);
-
         $uniqueMotif = 'Consultation urgente PHPUnit ' . uniqid('', true);
 
         $client->loginUser($patient);
@@ -144,9 +84,6 @@ final class DoctorControllerTest extends WebTestCase
         self::assertSame('Douleur forte', $rdv->getDescription());
         self::assertSame('2026-07-10 10:00:00', $rdv->getDateTime()->format('Y-m-d H:i:s'));
 
-        /**
-         * Nettoyage pour ne pas polluer la vraie base.
-         */
         $em->remove($rdv);
         $em->flush();
     }

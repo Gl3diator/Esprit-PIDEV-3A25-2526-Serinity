@@ -21,7 +21,7 @@ class AuthSession
     private string $id;
 
     /** Sensitive: refresh token, never expose in API payloads. */
-    #[ORM\Column(name: 'refresh_token', type: Types::STRING, length: 191, unique: true)]
+    #[ORM\Column(name: 'refresh_token', type: Types::STRING, length: 255, unique: true)]
     private string $refreshToken;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
