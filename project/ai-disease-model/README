@@ -1,0 +1,18 @@
+Install Python deps:
+`python -m pip install -r requirements.txt`
+
+Quick environment check:
+`python -c "import pandas, sklearn, flask, flask_cors, joblib; print('EVERYTHING OK')"`
+
+Train or retrain the bundle:
+`python train_model.py`
+
+Run the API:
+`python api.py`
+
+API URL:
+`http://127.0.0.1:5001`
+
+Notes:
+- The API now adds `confidence` and `predictionSource` to help debug unstable predictions.
+- Rule-based matching is used for very obvious symptom clusters before falling back to the ML model.

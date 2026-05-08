@@ -1,12 +1,12 @@
 import os
+
 import joblib
 import pandas as pd
-
-from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
 
 
 DATASET_PATHS = [
@@ -14,10 +14,12 @@ DATASET_PATHS = [
     "Final_Augmented_dataset_Diseases_and_Symptoms",
 ]
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = "model"
-MODEL_PATH = os.path.join(MODEL_DIR, "psychological_ai_bundle.pkl")
+MODEL_DIR_PATH = os.path.join(BASE_DIR, MODEL_DIR)
+MODEL_PATH = os.path.join(MODEL_DIR_PATH, "psychological_ai_bundle.pkl")
 
-os.makedirs(MODEL_DIR, exist_ok=True)
+os.makedirs(MODEL_DIR_PATH, exist_ok=True)
 
 
 PSYCHOLOGICAL_DISEASE_KEYWORDS = [
@@ -79,8 +81,10 @@ EXCLUDED_DISEASE_KEYWORDS = [
 
 def find_dataset_path() -> str:
     for path in DATASET_PATHS:
-        if os.path.exists(path):
-            return path
+        absolute_path = os.path.join(BASE_DIR, path)
+
+        if os.path.exists(absolute_path):
+            return absolute_path
 
     raise FileNotFoundError(
         "Dataset not found. Put Final_Augmented_dataset_Diseases_and_Symptoms.csv "
@@ -108,7 +112,7 @@ def detect_target_column(df: pd.DataFrame) -> str:
 
 
 def normalize_text(value: str) -> str:
-    return str(value).lower().replace("_", " ").strip()
+    return " ".join(str(value).lower().replace("_", " ").strip().split())
 
 
 def is_psychological_disease(disease: str) -> bool:
@@ -134,7 +138,7 @@ def row_to_text(row: pd.Series, feature_columns: list[str]) -> str:
         if numeric_value > 0:
             symptoms.append(column.replace("_", " "))
 
-    return " ".join(symptoms)
+    return normalize_text(" ".join(symptoms))
 
 
 def create_text_model() -> Pipeline:
@@ -143,14 +147,17 @@ def create_text_model() -> Pipeline:
             "tfidf",
             TfidfVectorizer(
                 lowercase=True,
-                ngram_range=(1, 2),
-                max_features=30000
+                ngram_range=(1, 3),
+                max_features=40000,
+                sublinear_tf=True,
+                min_df=1
             )
         ),
         (
             "classifier",
             LogisticRegression(
-                max_iter=1200,
+                max_iter=2000,
+                C=1.5,
                 class_weight="balanced"
             )
         )
@@ -174,7 +181,6 @@ def add_natural_prompt_examples(
     )
 
     examples = [
-        # Anxiety / panic
         ("anxiety", "i feel very anxious nervous worried and afraid all the time"),
         ("anxiety", "i feel anxious and i cannot calm down"),
         ("anxiety", "i worry too much and feel nervous every day"),
@@ -183,56 +189,42 @@ def add_natural_prompt_examples(
         ("panic attack", "my heart races and i feel intense panic"),
         ("panic disorder", "i keep having panic attacks and fear another one will happen"),
         ("panic disorder", "i feel sudden fear panic and intense anxiety"),
-
-        # Depression
         ("depression", "i feel sad hopeless tired and empty"),
         ("depression", "i lost interest in everything and nothing makes me happy"),
         ("depression", "i feel depressed worthless and i cry often"),
         ("depression", "i feel sad hopeless tired and i lost interest in everything"),
+        ("depression", "i do not enjoy anything anymore and feel empty"),
+        ("depression", "i feel down every day and have no energy"),
         ("postpartum depression", "after giving birth i feel depressed hopeless and tired"),
-
-        # Insomnia / stress
         ("primary insomnia", "i cannot sleep at night and i wake up tired"),
         ("primary insomnia", "i have insomnia and difficulty sleeping every night"),
         ("primary insomnia", "i cannot sleep i feel stressed and exhausted all day"),
+        ("primary insomnia", "i keep waking up at night and cannot rest"),
         ("acute stress reaction", "i feel stressed overwhelmed shocked and unable to relax"),
         ("acute stress reaction", "after a traumatic event i feel stressed anxious and scared"),
-
-        # PTSD
         ("post-traumatic stress disorder (ptsd)", "i have flashbacks nightmares fear and trauma memories"),
         ("post-traumatic stress disorder (ptsd)", "i keep remembering the traumatic event and cannot feel safe"),
         ("post-traumatic stress disorder (ptsd)", "i have nightmares flashbacks and avoid reminders of what happened"),
-
-        # OCD
         ("obsessive compulsive disorder (ocd)", "i have intrusive thoughts and compulsions"),
         ("obsessive compulsive disorder (ocd)", "i repeat actions many times because of obsessive thoughts"),
         ("obsessive compulsive disorder (ocd)", "i cannot stop repeated thoughts and repeated checking"),
-
-        # Psychosis / schizophrenia
         ("psychotic disorder", "i hear voices and see things that others do not see"),
         ("psychotic disorder", "i feel paranoid and believe people are watching me"),
+        ("psychotic disorder", "i hear things and feel disconnected from reality"),
         ("schizophrenia", "i hear voices feel paranoid and have strange beliefs"),
         ("schizophrenia", "i see things hear voices and feel disconnected from reality"),
-
-        # Bipolar
         ("bipolar disorder", "my mood changes from very happy energetic to very depressed"),
         ("bipolar disorder", "i have manic episodes and then depression"),
         ("bipolar disorder", "sometimes i feel extremely energetic and then very sad"),
-
-        # ADHD
+        ("bipolar disorder", "i switch from extreme energy to deep sadness"),
         ("attention deficit hyperactivity disorder (adhd)", "i cannot focus i am distracted and restless"),
         ("attention deficit hyperactivity disorder (adhd)", "i have attention problems and cannot concentrate"),
         ("attention deficit hyperactivity disorder (adhd)", "i am restless impulsive and cannot stay focused"),
-
-        # Social phobia
         ("social phobia", "i feel intense fear when i meet people or speak in public"),
         ("social phobia", "i avoid social situations because i feel embarrassed and anxious"),
-
-        # Eating disorder
+        ("social phobia", "i panic when i have to talk to people"),
         ("eating disorder", "i am afraid of gaining weight and i avoid eating"),
         ("eating disorder", "i have unhealthy eating habits and worry too much about my body"),
-
-        # Substance / addiction
         ("alcohol abuse", "i cannot stop drinking alcohol even when it harms me"),
         ("drug abuse", "i cannot stop using drugs and it affects my life"),
         ("substance-related mental disorder", "substance use is affecting my mood and behavior"),
@@ -243,7 +235,7 @@ def add_natural_prompt_examples(
     for disease, text in examples:
         if disease.lower().strip() in existing_diseases:
             rows.append({
-                "text": text,
+                "text": normalize_text(text),
                 target_column: disease,
                 "scope": "psychological",
             })
@@ -257,6 +249,32 @@ def add_natural_prompt_examples(
     print(f"Added {len(augmented_df)} natural psychological prompt examples.")
 
     return pd.concat([psychological_df, augmented_df], ignore_index=True)
+
+
+def clean_training_frame(df: pd.DataFrame, text_column: str, label_column: str) -> pd.DataFrame:
+    cleaned = df.copy()
+    cleaned[text_column] = cleaned[text_column].astype(str).map(normalize_text)
+    cleaned[label_column] = cleaned[label_column].astype(str).str.strip()
+    cleaned = cleaned[cleaned[text_column] != ""]
+    cleaned = cleaned.drop_duplicates(subset=[text_column, label_column]).reset_index(drop=True)
+
+    return cleaned
+
+
+def oversample_small_classes(df: pd.DataFrame, text_column: str, label_column: str, min_examples: int = 8) -> pd.DataFrame:
+    frames = [df]
+
+    for _, group in df.groupby(label_column):
+        group_size = len(group)
+
+        if group_size >= min_examples:
+            continue
+
+        repetitions = (min_examples + group_size - 1) // group_size
+        expanded_group = pd.concat([group] * repetitions, ignore_index=True).head(min_examples)
+        frames.append(expanded_group)
+
+    return pd.concat(frames, ignore_index=True).reset_index(drop=True)
 
 
 def main() -> None:
@@ -284,13 +302,11 @@ def main() -> None:
     print("Converting symptom columns to text...")
 
     df = df.copy()
-
     df["text"] = df.apply(
         lambda row: row_to_text(row, feature_columns),
         axis=1
     )
-
-    df = df[df["text"].str.strip() != ""].copy()
+    df = clean_training_frame(df, "text", target_column)
 
     df["scope"] = df[target_column].apply(
         lambda disease: "psychological"
@@ -317,6 +333,8 @@ def main() -> None:
         psychological_df,
         target_column
     )
+    psychological_df = clean_training_frame(psychological_df, "text", target_column)
+    psychological_df = oversample_small_classes(psychological_df, "text", target_column)
 
     natural_scope_examples = psychological_df[["text", target_column, "scope"]].tail(80)
 
@@ -327,6 +345,7 @@ def main() -> None:
         ],
         ignore_index=True
     )
+    df = clean_training_frame(df, "text", target_column)
 
     print(f"Psychological dataset shape: {psychological_df.shape}")
     print(f"Number of psychological diseases: {psychological_df[target_column].nunique()}")
@@ -373,6 +392,9 @@ def main() -> None:
         "scope_model": scope_model,
         "disease_model": disease_model,
         "scope_threshold": 0.20,
+        "disease_confidence_threshold": 0.38,
+        "disease_margin_threshold": 0.08,
+        "model_version": "2",
     }
 
     joblib.dump(bundle, MODEL_PATH)
