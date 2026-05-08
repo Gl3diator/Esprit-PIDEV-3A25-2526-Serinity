@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\User;
-use App\Service\Sleep\SleepMachineLearningService;
 
 #[Route('/sommeil')]
 final class SommeilController extends AbstractController
@@ -118,43 +117,10 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    #[Route('/ia', name: 'app_sommeil_ia', methods: ['GET', 'POST'])]
-    public function ia(
-        Request $request,
-        SleepMachineLearningService $sleepMachineLearningService
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-
-        $result = null;
-
-        if ($request->isMethod('POST')) {
-            $submittedToken = (string) $request->request->get('_token', '');
-
-            if (!$this->isCsrfTokenValid('sleep_predict', $submittedToken)) {
-                $result = [
-                    'success' => false,
-                    'error' => 'Jeton CSRF invalide.',
-                ];
-            } else {
-                $dureeSommeil = (float) $request->request->get('dureeSommeil', 0);
-                $interruptions = (int) $request->request->get('interruptions', 0);
-                $temperature = (float) $request->request->get('temperature', 0);
-                $bruitNiveau = (int) $request->request->get('bruitNiveau', 0);
-                $humeurReveil = (string) $request->request->get('humeurReveil', 'Neutre');
-
-                $result = $sleepMachineLearningService->predictSleepQuality(
-                    $dureeSommeil,
-                    $interruptions,
-                    $temperature,
-                    $bruitNiveau,
-                    $humeurReveil
-                );
-            }
-        }
-
-        return $this->render('sleep/ml_prediction.html.twig', [
-            'result' => $result,
-        ]);
+    #[Route('/ml-widget', name: 'ml_widget', methods: ['GET'])]
+    public function mlWidget(): Response
+    {
+        return $this->render('sleep/sommeil/components/_ml_widget_inner.html.twig');
     }
 
     #[Route('/new', name: 'app_sommeil_new', methods: ['GET', 'POST'])]
@@ -262,38 +228,6 @@ final class SommeilController extends AbstractController
         ]);
     }
 
-    #[Route('/prediction/{id<\d+>}', name: 'app_sommeil_prediction', methods: ['GET'])]
-    public function prediction(
-        Sommeil $sommeil,
-        SleepMachineLearningService $sleepMachineLearningService
-    ): Response {
-        $user = $this->getUser();
-
-        if (!$user instanceof User || $sommeil->getUser() !== $user) {
-            throw $this->createAccessDeniedException('Accès refusé à cette nuit de sommeil.');
-        }
-
-        $bruitRaw = (string) ($sommeil->getBruitNiveau() ?? '');
-        $bruit = match (trim($bruitRaw)) {
-            '🔇 Aucun' => 0,
-            '🔉 Léger' => 1,
-            '🔊 Fort'  => 2,
-            default    => is_numeric($bruitRaw) ? (int) $bruitRaw : 0,
-        };
-
-        $result = $sleepMachineLearningService->predictSleepQuality(
-            (float) ($sommeil->getDureeSommeil() ?? 0),
-            (int) ($sommeil->getInterruptions() ?? 0),
-            (float) ($sommeil->getTemperature() ?? 0),
-            $bruit,
-            (string) ($sommeil->getHumeurReveil() ?? 'Neutre')
-        );
-
-        return $this->render('sleep/ml_prediction.html.twig', [
-            'sommeil' => $sommeil,
-            'result'  => $result,
-        ]);
-    }
     #[Route('/delete/{id<\d+>}', name: 'app_sommeil_delete', methods: ['POST'])]
     public function delete(Request $request, Sommeil $sommeil, EntityManagerInterface $em): Response
     {
