@@ -5,6 +5,7 @@
 public/antelopev2
 .venv
 */__pycache__/*
+ml/forum_ml/model.safetensors
 ### !CUSTOM IGNORES ###
 
 ###> symfony/framework-bundle ###

@@ -4,7 +4,7 @@ import torch
 from flask import Flask, request, jsonify
 from transformers import BertTokenizer, BertForSequenceClassification
 
-MODEL_DIR = os.path.join(os.path.dirname(__file__), "forum_toxicity_bert")
+MODEL_DIR = os.path.join(os.path.dirname(__file__))
 
 with open(os.path.join(MODEL_DIR, "config.json"), encoding="utf-8") as file_handle:
     cfg = json.load(file_handle)
