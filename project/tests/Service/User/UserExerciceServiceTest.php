@@ -137,8 +137,73 @@ final class UserExerciceServiceTest extends TestCase
         self::assertTrue($result->success);
         self::assertSame('Assigned exercices fetched successfully.', $result->message);
         self::assertCount(1, $result->data['items']);
-        self::assertSame('Assigned', $result->data['items'][0]['statusMessage']);
+        self::assertSame('Not started', $result->data['items'][0]['statusMessage']);
         self::assertTrue($result->data['items'][0]['exercice']['favorite']);
+    }
+
+    public function testCatalogReturnsNotStartedWhenNoControlExists(): void
+    {
+        $user = $this->buildUser('patient-catalog-empty');
+        $exercise = $this->buildExercise(id: 410, title: 'Grounding');
+
+        $this->exerciceRepository
+            ->expects(self::once())
+            ->method('findCatalog')
+            ->with(null, null, true)
+            ->willReturn([$exercise]);
+        $this->controlRepository
+            ->expects(self::once())
+            ->method('findAssignedForUser')
+            ->with($user)
+            ->willReturn([]);
+        $this->favoriteRepository
+            ->expects(self::once())
+            ->method('findForUser')
+            ->with($user)
+            ->willReturn([]);
+
+        $result = $this->service->catalog($user);
+
+        self::assertTrue($result->success);
+        self::assertSame('NOT_STARTED', $result->data['items'][0]['status']);
+        self::assertSame('Not started', $result->data['items'][0]['statusMessage']);
+    }
+
+    public function testCatalogKeepsAssignedControlAsNotStartedUntilSessionBegins(): void
+    {
+        $user = $this->buildUser('patient-catalog-assigned');
+        $exercise = $this->buildExercise(id: 411, title: 'Body Reset');
+        $control = $this->buildControl(
+            id: '1411',
+            user: $user,
+            exercice: $exercise,
+            status: ExerciceControl::STATUS_ASSIGNED,
+            activeSeconds: 0,
+            startedAt: null,
+            keepStartedAtNull: true,
+        );
+
+        $this->exerciceRepository
+            ->expects(self::once())
+            ->method('findCatalog')
+            ->with(null, null, true)
+            ->willReturn([$exercise]);
+        $this->controlRepository
+            ->expects(self::once())
+            ->method('findAssignedForUser')
+            ->with($user)
+            ->willReturn([$control]);
+        $this->favoriteRepository
+            ->expects(self::once())
+            ->method('findForUser')
+            ->with($user)
+            ->willReturn([]);
+
+        $result = $this->service->catalog($user);
+
+        self::assertTrue($result->success);
+        self::assertSame('NOT_STARTED', $result->data['items'][0]['status']);
+        self::assertSame('Not started', $result->data['items'][0]['statusMessage']);
     }
 
     public function testStartReturnsFailureWhenAssignmentIsMissing(): void
@@ -242,9 +307,9 @@ final class UserExerciceServiceTest extends TestCase
         self::assertSame('Exercice is already completed.', $result->message);
     }
 
-    public function testCompleteFlushesAndStoresFeedbackAndActiveSeconds(): void
+    public function testCompleteEarlyFinishKeepsExerciseInProgress(): void
     {
-        $user = $this->buildUser('patient-complete-success');
+        $user = $this->buildUser('patient-complete-early');
         $exercise = $this->buildExercise(id: 46);
         $control = $this->buildControl(
             id: '1007',
@@ -266,9 +331,42 @@ final class UserExerciceServiceTest extends TestCase
         $result = $this->service->complete($user, 503, 'Very calming.', 150);
 
         self::assertTrue($result->success);
+        self::assertSame('Exercice session saved. Keep going to complete it.', $result->message);
+        self::assertSame(ExerciceControl::STATUS_IN_PROGRESS, $control->getStatus());
+        self::assertSame(210, $control->getActiveSeconds());
+        self::assertSame('Very calming.', $control->getFeedback());
+        self::assertNotNull($control->getStartedAt());
+        self::assertNull($control->getCompletedAt());
+        self::assertSame('In progress', $result->data['statusMessage']);
+    }
+
+    public function testCompleteFullDurationMarksExerciseCompleted(): void
+    {
+        $user = $this->buildUser('patient-complete-full');
+        $exercise = $this->buildExercise(id: 460, duration: 3);
+        $control = $this->buildControl(
+            id: '1060',
+            user: $user,
+            exercice: $exercise,
+            status: ExerciceControl::STATUS_IN_PROGRESS,
+            activeSeconds: 60,
+            startedAt: null,
+            keepStartedAtNull: true,
+        );
+
+        $this->controlRepository
+            ->expects(self::once())
+            ->method('findOneOwnedByUser')
+            ->with($user, 560)
+            ->willReturn($control);
+        $this->entityManager->expects(self::once())->method('flush');
+
+        $result = $this->service->complete($user, 560, 'Very calming.', 120);
+
+        self::assertTrue($result->success);
         self::assertSame('Exercice completed successfully.', $result->message);
         self::assertSame(ExerciceControl::STATUS_COMPLETED, $control->getStatus());
-        self::assertSame(210, $control->getActiveSeconds());
+        self::assertSame(180, $control->getActiveSeconds());
         self::assertSame('Very calming.', $control->getFeedback());
         self::assertNotNull($control->getStartedAt());
         self::assertNotNull($control->getCompletedAt());

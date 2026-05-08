@@ -26,7 +26,7 @@
                     <span class="ac-badge ac-badge-secondary">Level {{ item.exercice.level }}</span>
                     <span class="ac-badge ac-badge-secondary">{{ item.exercice.durationMinutes }} min</span>
                     <span class="ac-badge ac-badge-secondary">Theme {{ exerciseTheme|capitalize }}</span>
-                    <span class="ac-badge {{ item.status == 'COMPLETED' ? 'ac-badge-success' : (item.status == 'NOT_STARTED' ? 'ac-badge-secondary' : 'ac-badge-warning') }}">{{ item.statusMessage ?? item.status }}</span>
+                    <span class="ac-badge {{ item.status == 'COMPLETED' ? 'ac-badge-success' : (item.status == 'NOT_STARTED' ? 'ac-badge-secondary' : 'ac-badge-warning') }}">{{ (item.statusMessage ?? item.status)|upper }}</span>
                 </div>
             </article>
 

@@ -230,9 +230,39 @@ final class UserExerciceControllerTest extends TestCase
 
         self::assertSame(200, $response->getStatusCode());
         self::assertTrue($payload['success']);
+        self::assertSame('Exercice session saved. Keep going to complete it.', $payload['message']);
+        self::assertSame('In progress', $payload['data']['statusMessage']);
+        self::assertSame(120, $payload['data']['activeSeconds']);
+    }
+
+    public function testCompleteReturnsCompletedPayloadWhenRequiredDurationIsReached(): void
+    {
+        $validator = $this->createValidatorReturningViolations([]);
+        $user = $this->buildUser('patient-complete-full');
+        $exercise = $this->buildExercise(id: 631, title: 'Focus Walk');
+        $control = $this->buildControl(id: '6031', user: $user, exercice: $exercise, status: ExerciceControl::STATUS_IN_PROGRESS, activeSeconds: 40, startedAt: null, keepStartedAtNull: true);
+        $this->setAuthenticatedUser($user);
+
+        $this->controlRepository
+            ->expects(self::once())
+            ->method('findOneOwnedByUser')
+            ->with($user, 8031)
+            ->willReturn($control);
+        $this->entityManager->expects(self::once())->method('flush');
+
+        $request = $this->jsonRequest('POST', '/api/user/exercice/session/8031/complete', [
+            'feedback' => 'Very helpful.',
+            'activeSeconds' => 560,
+        ]);
+
+        $response = $this->controller->complete(8031, $request, $validator);
+        $payload = $this->decodeResponse($response);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertTrue($payload['success']);
         self::assertSame('Exercice completed successfully.', $payload['message']);
         self::assertSame('Completed', $payload['data']['statusMessage']);
-        self::assertSame(120, $payload['data']['activeSeconds']);
+        self::assertSame(600, $payload['data']['activeSeconds']);
     }
 
     public function testHistoryReturnsMappedItems(): void

@@ -116,7 +116,7 @@ final class ExerciceController extends AbstractUserUiController
         return $this->render('user/pages/exercises.html.twig', [
             'nav' => $this->buildNav('user_ui_exercises'),
             'userName' => $user->getEmail(),
-            'catalog' => $this->paginator->paginate($catalog, max(1, $request->query->getInt('page', 1)), 9),
+            'catalog' => $this->paginator->paginate($catalog, max(1, $request->query->getInt('page', 1)), 3),
             'availableTypes' => $availableTypes,
             'availableLevels' => $availableLevels,
             'filters' => [
@@ -296,7 +296,7 @@ final class ExerciceController extends AbstractUserUiController
     {
         $rows = [];
         foreach ([
-            'Assigned' => (int) ($summary['assigned'] ?? 0),
+            'Not started' => (int) ($summary['assigned'] ?? 0),
             'In progress' => (int) ($summary['inProgress'] ?? 0),
             'Completed' => (int) ($summary['completed'] ?? 0),
         ] as $label => $count) {

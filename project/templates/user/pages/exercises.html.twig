@@ -199,7 +199,7 @@
                                 <span class="ac-badge ac-badge-secondary">{{ item.exercice.type }}</span>
                                 <span class="ac-badge ac-badge-secondary">Level {{ item.exercice.level }}</span>
                                 <span class="ac-badge ac-badge-secondary">{{ item.exercice.durationMinutes }} min</span>
-                                <span class="ac-badge {{ item.status == 'COMPLETED' ? 'ac-badge-success' : (item.status == 'NOT_STARTED' ? 'ac-badge-secondary' : 'ac-badge-warning') }}">{{ item.statusMessage ?? item.status }}</span>
+                                <span class="ac-badge {{ item.status == 'COMPLETED' ? 'ac-badge-success' : (item.status == 'NOT_STARTED' ? 'ac-badge-secondary' : 'ac-badge-warning') }}">{{ (item.statusMessage ?? item.status)|upper }}</span>
                             </div>
                             <div class="ac-row-between">
                                 <a class="ac-ghost-btn" href="{{ path('user_ui_exercises_show', { id: item.exercice.id }) }}">View exercise</a>

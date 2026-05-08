@@ -517,7 +517,7 @@ final class AccessControlUiController extends AbstractController
             'nav' => $this->buildNav('ac_ui_exercises'),
             'userName' => $this->getUser()?->getEmail() ?? 'Admin',
             'summary' => $this->adminExerciceService->summary(),
-            'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 8),
+            'exercices' => $this->paginator->paginate($exercices, max(1, $request->query->getInt('page', 1)), 3),
             'exerciseTypeChart' => $this->buildPieChart(
                 'Exercises by type',
                 ['Type', 'Exercises'],
