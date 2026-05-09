@@ -226,109 +226,123 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const promptInput = document.getElementById('promptInput');
-    const predictBtn = document.getElementById('predictBtn');
-    const resultBox = document.getElementById('resultBox');
-    const alertBox = document.getElementById('alertBox');
-    const loadingBox = document.getElementById('loadingBox');
-    const examples = document.querySelectorAll('.ai-example');
+(function () {
+    function initDiseasePredictionPage() {
+        const panel = document.querySelector('.ai-panel');
 
-    examples.forEach(function (button) {
-        button.addEventListener('click', function () {
-            promptInput.value = this.dataset.example;
-            promptInput.focus();
+        if (!panel || panel.dataset.aiInitialized === 'true') {
+            return;
+        }
+
+        panel.dataset.aiInitialized = 'true';
+
+        const promptInput = document.getElementById('promptInput');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultBox = document.getElementById('resultBox');
+        const alertBox = document.getElementById('alertBox');
+        const loadingBox = document.getElementById('loadingBox');
+        const examples = document.querySelectorAll('.ai-example');
+
+        examples.forEach(function (button) {
+            button.addEventListener('click', function () {
+                promptInput.value = this.dataset.example;
+                promptInput.focus();
+            });
         });
-    });
 
-    function escapeHtml(value) {
-        return String(value)
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#039;');
-    }
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
 
-    function showError(message) {
-        resultBox.innerHTML = '';
-        alertBox.innerHTML = `
-            <div class="ai-error">
-                ${escapeHtml(message)}
-            </div>
-        `;
-    }
-
-    function showResult(data) {
-        alertBox.innerHTML = '';
-
-        if (!data.success) {
-            resultBox.innerHTML = `
+        function showError(message) {
+            resultBox.innerHTML = '';
+            alertBox.innerHTML = `
                 <div class="ai-error">
-                    ${escapeHtml(data.message || 'No psychological prediction returned.')}
+                    ${escapeHtml(message)}
                 </div>
             `;
-            return;
         }
 
-        let symptomsHtml = '';
+        function showResult(data) {
+            alertBox.innerHTML = '';
 
-        (data.mentionedSymptoms || []).forEach(function (symptom) {
-            symptomsHtml += `<span class="symptom-pill">${escapeHtml(symptom)}</span>`;
-        });
-
-        resultBox.innerHTML = `
-            <div class="ai-result">
-                <h3 class="ai-result-title">AI Result</h3>
-                <div class="ai-result-muted">
-                    Psychological orientation based on mentioned symptoms.
-                </div>
-
-                <div class="disease-result">
-                    <div class="label">Mentioned symptoms</div>
-                    <div class="symptom-list">
-                        ${symptomsHtml || '<span style="color:var(--text-muted);font-weight:700;">No psychological symptoms detected.</span>'}
+            if (!data.success) {
+                resultBox.innerHTML = `
+                    <div class="ai-error">
+                        ${escapeHtml(data.message || 'No psychological prediction returned.')}
                     </div>
+                `;
+                return;
+            }
 
-                    <div class="label">Probable psychological disease</div>
-                    <h3>${escapeHtml(data.probableDisease || 'Psychological distress')}</h3>
-                </div>
-            </div>
-        `;
-    }
+            let symptomsHtml = '';
 
-    predictBtn.addEventListener('click', async function () {
-        const prompt = promptInput.value.trim();
-
-        if (!prompt) {
-            showError('Please describe psychological symptoms first.');
-            return;
-        }
-
-        predictBtn.disabled = true;
-        loadingBox.classList.add('active');
-        alertBox.innerHTML = '';
-        resultBox.innerHTML = '';
-
-        try {
-            const response = await fetch('http://127.0.0.1:5001/predict-from-prompt', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ prompt: prompt })
+            (data.mentionedSymptoms || []).forEach(function (symptom) {
+                symptomsHtml += `<span class="symptom-pill">${escapeHtml(symptom)}</span>`;
             });
 
-            const data = await response.json();
-            showResult(data);
-        } catch (error) {
-            showError('Could not connect to the AI service. Please try again later.');
-        } finally {
-            predictBtn.disabled = false;
-            loadingBox.classList.remove('active');
+            resultBox.innerHTML = `
+                <div class="ai-result">
+                    <h3 class="ai-result-title">AI Result</h3>
+                    <div class="ai-result-muted">
+                        Psychological orientation based on mentioned symptoms.
+                    </div>
+
+                    <div class="disease-result">
+                        <div class="label">Mentioned symptoms</div>
+                        <div class="symptom-list">
+                            ${symptomsHtml || '<span style="color:var(--text-muted);font-weight:700;">No psychological symptoms detected.</span>'}
+                        </div>
+
+                        <div class="label">Probable psychological disease</div>
+                        <h3>${escapeHtml(data.probableDisease || 'Psychological distress')}</h3>
+                    </div>
+                </div>
+            `;
         }
-    });
-});
+
+        predictBtn.addEventListener('click', async function () {
+            const prompt = promptInput.value.trim();
+
+            if (!prompt) {
+                showError('Please describe psychological symptoms first.');
+                return;
+            }
+
+            predictBtn.disabled = true;
+            loadingBox.classList.add('active');
+            alertBox.innerHTML = '';
+            resultBox.innerHTML = '';
+
+            try {
+                const response = await fetch('{{ path('app_rdv_disease_ai_predict') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showError('Could not connect to the AI service. Please try again later.');
+            } finally {
+                predictBtn.disabled = false;
+                loadingBox.classList.remove('active');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initDiseasePredictionPage);
+    document.addEventListener('turbo:load', initDiseasePredictionPage);
+    initDiseasePredictionPage();
+})();
 </script>
 
 {% endblock %}
