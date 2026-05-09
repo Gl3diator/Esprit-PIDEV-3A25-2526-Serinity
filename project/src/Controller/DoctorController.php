@@ -22,6 +22,9 @@ final class DoctorController extends AbstractUserUiController
     public function list(EntityManagerInterface $em): Response
     {
         $user = $this->currentUser();
+        if ($user->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
+        }
 
         $doctors = $em->createQueryBuilder()
             ->select('u', 'p')
@@ -44,6 +47,9 @@ final class DoctorController extends AbstractUserUiController
     public function save(Request $request, EntityManagerInterface $em): Response
     {
         $patient = $this->currentUser();
+        if ($patient->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
+        }
 
         $doctorId = $request->request->get('doctor_id');
         $motif = trim((string) $request->request->get('motif'));
@@ -90,6 +96,10 @@ final class DoctorController extends AbstractUserUiController
     #[Route('/user/doctor/{id}', name: 'app_doctor_show', methods: ['GET'])] public function show(string $id, EntityManagerInterface $em): Response
     {
         $user = $this->currentUser();
+        if ($user->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
+        }
+
         $doctor = $em->createQueryBuilder()->select('u', 'p')->from(User::class, 'u')->leftJoin('u.profile', 'p')->where('u.id = :id')->setParameter('id', $id)->getQuery()->getOneOrNullResult();
         if (!$doctor instanceof User) {
             throw $this->createNotFoundException('Doctor not found.');

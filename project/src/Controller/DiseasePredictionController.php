@@ -12,6 +12,9 @@ final class DiseasePredictionController extends AbstractUserUiController
     public function index(): Response
     {
         $user = $this->currentUser();
+        if ($user->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
+        }
 
         return $this->render('rdv/rdv_disease.html.twig', [
             'nav' => $this->buildNav('app_rdv_disease_ai'),

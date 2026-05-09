@@ -21,7 +21,10 @@ public function new(
     Request $request,
     EntityManagerInterface $em
 ): Response {
-    $patient = $this->getUser();
+    $patient = $this->currentUser();
+    if ($patient->getRole() === 'THERAPIST') {
+        return $this->redirectToRoute('app_therapist_rdv');
+    }
 
     $doctor = $em->createQueryBuilder()
         ->select('u', 'p')
@@ -63,10 +66,9 @@ public function new(
     #[Route('/user/mes-rdv', name: 'app_patient_rdv', methods: ['GET'])]
     public function mesRdv(EntityManagerInterface $em): Response
     {
-        $patient = $this->getUser();
-
-        if (!$patient instanceof User) {
-            return $this->redirectToRoute('ac_ui_login');
+        $patient = $this->currentUser();
+        if ($patient->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
         }
 
         $conn = $em->getConnection();
@@ -112,10 +114,9 @@ public function addGoogleCalendar(
     int $id,
     EntityManagerInterface $em
 ): Response {
-    $user = $this->getUser();
-
-    if (!$user instanceof User) {
-        return $this->redirectToRoute('ac_ui_login');
+    $user = $this->currentUser();
+    if ($user->getRole() === 'THERAPIST') {
+        return $this->redirectToRoute('app_therapist_rdv');
     }
 
     $conn = $em->getConnection();
@@ -189,10 +190,9 @@ public function edit(
     Request $request,
     EntityManagerInterface $em
 ): Response {
-    $patient = $this->getUser();
-
-    if (!$patient instanceof User) {
-        return $this->redirectToRoute('ac_ui_login');
+    $patient = $this->currentUser();
+    if ($patient->getRole() === 'THERAPIST') {
+        return $this->redirectToRoute('app_therapist_rdv');
     }
 
     if (!$rdv->getPatient() || $rdv->getPatient()->getId() !== $patient->getId()) {
@@ -231,6 +231,11 @@ public function edit(
 #[Route('/user/rdv/delete/{id}', name: 'app_rdv_delete')]
 public function delete(RendezVous $rdv, EntityManagerInterface $em): Response
 {
+    $patient = $this->currentUser();
+    if ($patient->getRole() === 'THERAPIST') {
+        return $this->redirectToRoute('app_therapist_rdv');
+    }
+
     $em->remove($rdv);
     $em->flush();
 
@@ -244,10 +249,9 @@ public function show(
     EntityManagerInterface $em
 ): Response {
 
-    $patient = $this->getUser();
-
-    if (!$patient instanceof User) {
-        return $this->redirectToRoute('ac_ui_login');
+    $patient = $this->currentUser();
+    if ($patient->getRole() === 'THERAPIST') {
+        return $this->redirectToRoute('app_therapist_rdv');
     }
 
     if ($rdv->getPatient()?->getId() !== $patient->getId()) {
