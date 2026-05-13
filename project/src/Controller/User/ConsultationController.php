@@ -13,6 +13,9 @@ final class ConsultationController extends AbstractUserUiController
     public function index(EntityManagerInterface $entityManager): Response
     {
         $patient = $this->currentUser();
+        if ($patient->getRole() === 'THERAPIST') {
+            return $this->redirectToRoute('app_therapist_rdv');
+        }
 
         $sql = <<<'SQL'
             SELECT 
