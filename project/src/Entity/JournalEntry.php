@@ -27,10 +27,12 @@ class JournalEntry
         minMessage: 'Title must contain at least {{ limit }} characters.',
         maxMessage: 'Title cannot exceed {{ limit }} characters.',
     )]
+
     #[Assert\Regex(
         pattern: '/.*[A-Za-zÀ-ÿ].*/u',
         message: 'Title must contain at least one letter.',
     )]
+
     #[Assert\Regex(
         pattern: "/^[A-Za-zÀ-ÿ0-9\\s'.,!?:()\\-]+$/u",
         message: 'Title contains invalid characters.',
@@ -45,10 +47,18 @@ class JournalEntry
     )]
     private string $content = '';
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(
+        name: 'created_at',
+        type: Types::DATETIME_IMMUTABLE,
+        options: ['default' => 'CURRENT_TIMESTAMP']
+    )]
     private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(
+        name: 'updated_at',
+        type: Types::DATETIME_IMMUTABLE,
+        options: ['default' => 'CURRENT_TIMESTAMP']
+    )]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\Column(name: 'ai_tags', type: Types::TEXT, nullable: true)]
