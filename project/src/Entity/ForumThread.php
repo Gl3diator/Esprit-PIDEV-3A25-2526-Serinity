@@ -66,28 +66,28 @@ class ForumThread
 
     #[ORM\Column(
         name: 'likecount',
-        type: Types::DATETIME_IMMUTABLE,
+        type: Types::INTEGER,
         options: ['default' => '0']
     )]
     private int $likeCount = 0;
 
     #[ORM\Column(
         name: 'dislikecount',
-        type: Types::DATETIME_IMMUTABLE,
+        type: Types::INTEGER,
         options: ['default' => '0']
     )]
     private int $dislikeCount = 0;
 
     #[ORM\Column(
         name: 'followcount',
-        type: Types::DATETIME_IMMUTABLE,
+        type: Types::INTEGER,
         options: ['default' => '0']
     )]
     private int $followCount = 0;
 
     #[ORM\Column(
         name: 'repliescount',
-        type: Types::DATETIME_IMMUTABLE,
+        type: Types::INTEGER,
         options: ['default' => '0']
     )]
     private int $replyCount = 0;
